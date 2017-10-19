@@ -42,7 +42,6 @@ import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Particles;
 import com.games.utils.Title;
-import com.realcraft.RealCraft;
 import com.realcraft.playermanazer.PlayerManazer;
 
 public class RageModeListeners implements Listener {
@@ -98,7 +97,7 @@ public class RageModeListeners implements Listener {
 					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§fVyhral jsi tuto hru",0.5,8,0.5);
 
-					Bukkit.getScheduler().runTaskLater(RealCraft.getInstance(),new Runnable(){
+					Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 						public void run(){
 							PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).runCoinsEffect("§a§lVitezstvi!",reward);
 						}

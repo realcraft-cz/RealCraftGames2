@@ -19,6 +19,7 @@ import com.games.Games;
 import com.games.arena.GameArena;
 import com.games.events.GameCycleEvent;
 import com.games.events.GameEndEvent;
+import com.games.events.GamePlayerJoinEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
@@ -271,6 +272,15 @@ public abstract class Game implements Runnable {
 
 		lobbyScoreboard.updateForPlayer(gPlayer);
 		lobbyBossBar.updateForPlayer(gPlayer);
+
+		Bukkit.getServer().getPluginManager().callEvent(new GamePlayerJoinEvent(this,gPlayer));
+
+		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+			@Override
+			public void run(){
+				gPlayer.getPlayer().teleport(Game.this.getLobbyLocation());
+			}
+		},5);
 	}
 
 	public void leavePlayer(GamePlayer gPlayer){

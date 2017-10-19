@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.blockparty.BlockParty;
 import com.games.utils.Glow;
+import com.paintball.Paintball;
 import com.ragemode.RageMode;
 import com.realcraft.RealCraft;
 import com.realcraft.ServerType;
@@ -23,6 +24,7 @@ public class Games extends JavaPlugin {
 
 	private BlockParty blockparty;
 	private RageMode ragemode;
+	private Paintball paintball;
 
 	public static Games getInstance(){
 		return instance;
@@ -42,6 +44,7 @@ public class Games extends JavaPlugin {
 	public void onDisable(){
 		if(blockparty != null) blockparty.onDisable();
 		if(ragemode != null) ragemode.onDisable();
+		if(paintball != null) paintball.onDisable();
 	}
 
 	public void init(){
@@ -52,6 +55,7 @@ public class Games extends JavaPlugin {
 
 		if(RealCraft.getServerType() == ServerType.BLOCKPARTY) blockparty = new BlockParty();
 		if(RealCraft.getServerType() == ServerType.RAGEMODE) ragemode = new RageMode();
+		if(RealCraft.getServerType() == ServerType.PAINTBALL) paintball = new Paintball();
 	}
 
 	public static String[] getCommands(){

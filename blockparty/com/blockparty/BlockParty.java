@@ -150,8 +150,8 @@ public class BlockParty extends Game {
 		round = 0;
 		countdown = 5;
 		state = BlockPartyState.WAITING;
-		this.getArena().chooseDefaultFloor();
 		this.getArena().reset();
+		this.getArena().chooseDefaultFloor();
 	}
 
 	public void nextRound(){

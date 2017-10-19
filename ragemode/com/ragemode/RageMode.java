@@ -1,5 +1,6 @@
 package com.ragemode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -10,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
 
+import com.games.Games;
 import com.games.game.Game;
 import com.games.game.GameFlag;
 import com.games.game.GameScoreboard;
@@ -33,9 +35,17 @@ public class RageMode extends Game {
 	}
 
 	public void loadArenas(){
-		new RageModeArena(this,"Testoid");
-		new RageModeArena(this,"Prikladex");
-		new RageModeArena(this,"Ukazac");
+		File [] arenasFiles = new File(Games.getInstance().getDataFolder()+"/"+this.getType().getName()).listFiles();
+		if(arenasFiles != null){
+			for(File file : arenasFiles){
+				if(file.isDirectory()){
+					File config = new File(file.getPath()+"/config.yml");
+					if(config.exists()){
+						new RageModeArena(this,file.getName());
+					}
+				}
+			}
+		}
 	}
 
 	public RageModeArena getArena(){
