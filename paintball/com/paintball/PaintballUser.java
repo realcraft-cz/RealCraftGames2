@@ -1,10 +1,10 @@
 package com.paintball;
 
-public class PaintballPlayer {
+public class PaintballUser {
 
 	private int pistols = 64;
 
-	public PaintballPlayer(){
+	public PaintballUser(){
 	}
 
 	public int getPistols(){
@@ -14,5 +14,9 @@ public class PaintballPlayer {
 	public void addPistols(int pistols){
 		this.pistols += pistols;
 		if(this.pistols > 64) this.pistols = 64;
+	}
+
+	public void resetPistols(){
+		this.pistols = 64;
 	}
 }

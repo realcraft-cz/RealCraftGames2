@@ -15,16 +15,19 @@ public abstract class GameArena {
 	private Game game;
 	private String name;
 
+	private GameArenaImage image;
+	private GameArenaRegion region;
+
 	private FileConfiguration config;
 
 	private int spectatorRadius;
 	private Location spectatorLocation;
-	private GameArenaImage image;
 
 	public GameArena(Game game,String name){
 		this.game = game;
 		this.name = name;
 		this.image = new GameArenaImage(this);
+		this.region = new GameArenaRegion(this);
 		this.game.addArena(this);
 	}
 
@@ -34,6 +37,14 @@ public abstract class GameArena {
 
 	public String getName(){
 		return name;
+	}
+
+	public GameArenaImage getImage(){
+		return image;
+	}
+
+	public GameArenaRegion getRegion(){
+		return region;
 	}
 
 	public FileConfiguration getConfig(){
@@ -59,9 +70,5 @@ public abstract class GameArena {
 	public Location getSpectatorLocation(){
 		if(spectatorLocation == null) spectatorLocation = LocationUtil.getConfigLocation(this.getConfig(),"spectator");
 		return spectatorLocation;
-	}
-
-	public GameArenaImage getImage(){
-		return image;
 	}
 }

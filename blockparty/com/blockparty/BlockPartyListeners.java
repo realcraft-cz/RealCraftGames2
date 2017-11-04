@@ -17,9 +17,11 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import com.games.Games;
 import com.games.events.GameCycleEvent;
 import com.games.events.GameEndEvent;
+import com.games.events.GamePlayerJoinEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
+import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameState;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
@@ -42,6 +44,11 @@ public class BlockPartyListeners implements Listener {
 	}
 
 	@EventHandler
+	public void GamePlayerJoinEvent(GamePlayerJoinEvent event){
+		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
+	}
+
+	@EventHandler
 	public void GameStartEvent(GameStartEvent event){
 		game.reset();
 		game.getArena().getWorld().setFullTime(1000);
@@ -61,7 +68,6 @@ public class BlockPartyListeners implements Listener {
 				}
 			},40+i);
 		}
-		game.setStartPlayers(game.getPlayersCount());
 	}
 
 	@EventHandler
@@ -122,7 +128,7 @@ public class BlockPartyListeners implements Listener {
 
 					game.sendMessage("§b"+gPlayer.getPlayer().getName()+" §fvyhral a ziskava §a+"+reward+" coins");
 
-					//this.getLeaderBoard().addScore(winner.getPlayer(),System.currentTimeMillis());
+					game.getStats().addScore(gPlayer,1,GamePodiumType.LEFT.getId());
 					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§fVyhral jsi tuto hru",0.5,8,0.5);
 
@@ -179,7 +185,7 @@ public class BlockPartyListeners implements Listener {
 		game.getBossBar().update();
 	}
 
-	@EventHandler(ignoreCancelled=true)
+	@EventHandler
 	public void PlayerRespawnEvent(PlayerRespawnEvent event){
 		event.setRespawnLocation(game.getArena().getLobbyLocation());
 		game.getGamePlayer(event.getPlayer()).resetPlayer();
@@ -209,6 +215,7 @@ public class BlockPartyListeners implements Listener {
 				event.getPlayer().getWorld().strikeLightningEffect(event.getPlayer().getLocation());
 				event.getPlayer().teleport(game.getArena().getLobbyLocation());
 				game.getGamePlayer(event.getPlayer()).setState(GamePlayerState.SPECTATOR);
+				game.getGamePlayer(event.getPlayer()).toggleSpectator();
 			}
 		}
 	}

@@ -4,6 +4,7 @@ import org.bukkit.Location;
 
 import com.games.arena.GameArena;
 import com.games.utils.LocationUtil;
+import com.paintball.PaintballTeam.PaintballTeamType;
 
 public class PaintballArena extends GameArena {
 
@@ -26,7 +27,7 @@ public class PaintballArena extends GameArena {
 	}
 
 	private void loadSpawns(){
-		this.redSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.spawns."+PaintballTeamType.RED.toName().toLowerCase());
-		this.blueSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.spawns."+PaintballTeamType.BLUE.toName().toLowerCase());
+		this.redSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.spawns."+PaintballTeamType.RED.toString());
+		this.blueSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.spawns."+PaintballTeamType.BLUE.toString());
 	}
 }

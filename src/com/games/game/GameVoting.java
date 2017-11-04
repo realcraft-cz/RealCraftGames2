@@ -15,14 +15,13 @@ import org.bukkit.util.Vector;
 import com.games.Games;
 import com.games.arena.GameArena;
 import com.games.player.GamePlayer;
+import com.games.utils.LocationUtil;
+import com.games.utils.Particles;
 import com.games.utils.RandomUtil;
+import com.games.utils.StringUtil;
 import com.games.utils.Title;
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
-import com.realcraft.RealCraft;
-import com.realcraft.utils.LocationUtil;
-import com.realcraft.utils.Particles;
-import com.realcraft.utils.StringUtil;
 
 public class GameVoting {
 
@@ -85,7 +84,7 @@ public class GameVoting {
 	private void votePlayer(GamePlayer gPlayer,GameVoteboard board){
 		votes.put(gPlayer,board);
 		gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1f,1f);
-		Title.sendActionBar(gPlayer.getPlayer(),"§fHlasujes pro §6"+board.getArena().getName());
+		Title.sendActionBar(gPlayer.getPlayer(),"§fHlasujes pro §6§l"+board.getArena().getName());
 		board.runEffectForPlayer(gPlayer);
 		if(leftBoard != null) leftBoard.updateVotes();
 		if(rightBoard != null) rightBoard.updateVotes();
@@ -102,11 +101,11 @@ public class GameVoting {
 			for(GamePlayer gPlayer : game.getPlayers()){
 				if(this.isPlayerVoted(gPlayer,leftBoard)){
 					leftBoard.runEffectForPlayer(gPlayer);
-					Title.sendActionBar(gPlayer.getPlayer(),"§fHlasujes pro §6"+leftBoard.getArena().getName());
+					Title.sendActionBar(gPlayer.getPlayer(),"§fHlasujes pro §6§l"+leftBoard.getArena().getName());
 				}
 				else if(this.isPlayerVoted(gPlayer,rightBoard)){
 					rightBoard.runEffectForPlayer(gPlayer);
-					Title.sendActionBar(gPlayer.getPlayer(),"§fHlasujes pro §6"+rightBoard.getArena().getName());
+					Title.sendActionBar(gPlayer.getPlayer(),"§fHlasujes pro §6§l"+rightBoard.getArena().getName());
 				}
 				else Title.sendActionBar(gPlayer.getPlayer(),"§fHlasuj kliknutim na mapu");
 			}
@@ -156,14 +155,14 @@ public class GameVoting {
 
 	private GameArena getRandomArena(int step){
 		GameArena arena = game.getArenas().get(RandomUtil.getRandomInteger(0,game.getArenas().size()-1));
-		if((leftBoard.getArena() == arena || rightBoard.getArena() == arena || leftBoard.getLastArena() == arena || rightBoard.getLastArena() == arena) && step < 100) arena = this.getRandomArena(step+1);
+		if((leftBoard.getArena() == arena || rightBoard.getArena() == arena || game.getArena() == arena) && step < 100) arena = this.getRandomArena(step+1);
+		if(step >= 100) Games.DEBUG("getRandomArena step >= 100");
 		return arena;
 	}
 
 	private class GameVoteboard {
 
 		private GameArena arena;
-		private GameArena lastArena;
 
 		private Location center;
 		private Location location1;
@@ -199,17 +198,12 @@ public class GameVoting {
 			return arena;
 		}
 
-		public GameArena getLastArena(){
-			return lastArena;
-		}
-
 		public void setArena(GameArena arena){
 			this.setArena(arena,true);
 		}
 
 		public void setArena(GameArena arena,boolean hologram){
 			this.arena = arena;
-			if(arena != null) this.lastArena = arena;
 			this.drawArena();
 			if(game.getArenas().size() > 1) this.hologram.getVisibilityManager().setVisibleByDefault(true);
 			this.updateVotes();
@@ -236,7 +230,7 @@ public class GameVoting {
 		public void runEffectForPlayer(GamePlayer gPlayer){
 			for(int i=0;i<50;i++){
 				final int index = i;
-				Bukkit.getScheduler().runTaskLater(RealCraft.getInstance(),new Runnable(){
+				Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 					public void run(){
 						Particles.SPELL_WITCH.display(0.0f,0.0f,0.0f,0.0f,1,effectLocations.get(index),gPlayer.getPlayer());
 					}

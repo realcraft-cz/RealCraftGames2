@@ -35,6 +35,7 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerBedEnterEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -46,10 +47,10 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.material.Bed;
 import org.bukkit.material.Door;
 import org.bukkit.material.Gate;
 import org.bukkit.material.TrapDoor;
+import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -57,13 +58,14 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.games.Games;
 import com.games.events.GameEndEvent;
+import com.games.events.GameRegionLoadEvent;
 import com.games.events.GameStateChangeEvent;
+import com.games.exceptions.GameMaintenanceException;
 import com.games.exceptions.GameMaxPlayersException;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.LocationUtil;
 import com.games.utils.ReflectionUtils;
-import com.realcraft.RealCraft;
 import com.realcraft.lobby.LobbyMenu;
 
 import net.minecraft.server.v1_12_R1.EnumGamemode;
@@ -76,7 +78,7 @@ public class GameListeners implements Listener {
 	public GameListeners(Game game){
 		this.game = game;
 		Bukkit.getPluginManager().registerEvents(this,Games.getInstance());
-		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(RealCraft.getInstance(),PacketType.Play.Server.PLAYER_INFO,PacketType.Play.Server.GAME_STATE_CHANGE,PacketType.Play.Server.CAMERA){
+		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(Games.getInstance(),PacketType.Play.Server.PLAYER_INFO,PacketType.Play.Server.GAME_STATE_CHANGE,PacketType.Play.Server.CAMERA){
 			@Override
 			public void onPacketSending(PacketEvent event){
 				Player player = event.getPlayer();
@@ -115,29 +117,38 @@ public class GameListeners implements Listener {
 
 	@EventHandler
 	public void PlayerLoginEvent(PlayerLoginEvent event){
-		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		try {
-			game.tryToConnect(gPlayer);
+			game.tryToConnect(event.getPlayer());
 		} catch (GameMaxPlayersException exception){
 			event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
-			event.setKickMessage("GameMaxPlayersException");
+			event.setKickMessage(game.getPrefix()+"§cTato hra je jiz plna.");
+		} catch (GameMaintenanceException e){
+			event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
+			event.setKickMessage(game.getPrefix()+"§cTato hra je docasne nedostupna, zkuste to prosim pozdeji.");
 		}
 	}
 
 	@EventHandler
 	public void PlayerJoinEvent(PlayerJoinEvent event){
-		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		try {
-			game.joinPlayer(gPlayer);
+			game.joinPlayer(event.getPlayer());
 		} catch (GameMaxPlayersException exception){
-			event.getPlayer().kickPlayer("GameMaxPlayersException");
+			event.getPlayer().kickPlayer(game.getPrefix()+"§cTato hra je jiz plna.");
+		} catch (GameMaintenanceException e){
+			event.getPlayer().kickPlayer(game.getPrefix()+"§cTato hra je docasne nedostupna, zkuste to prosim pozdeji.");
 		}
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void PlayerQuitEvent(PlayerQuitEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
+		gPlayer.setPlayer(event.getPlayer());
 		game.removePlayer(gPlayer);
+	}
+
+	@EventHandler
+	public void PlayerSpawnLocationEvent(PlayerSpawnLocationEvent event){
+		event.setSpawnLocation(game.getLobbyLocation());
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
@@ -184,8 +195,7 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
-		if(game.getState() != GameState.INGAME) event.setCancelled(true);
-		if(event.getDamager() instanceof Player && game.getGamePlayer((Player)event.getDamager()).getState() == GamePlayerState.SPECTATOR && ((Player)event.getDamager()).getGameMode() != GameMode.CREATIVE) event.setCancelled(true);
+		if(game.getState() != GameState.INGAME && (!(event.getDamager() instanceof Player) || ((Player)event.getDamager()).getGameMode() != GameMode.CREATIVE || game.getGamePlayer((Player)event.getDamager()).getState() == GamePlayerState.SPECTATOR)) event.setCancelled(true);
 		if(event.getEntity() instanceof ItemFrame){
 			if(event.getDamager() instanceof Player){
 				Player player = (Player) event.getDamager();
@@ -230,7 +240,7 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void EntityExplodeEvent(EntityExplodeEvent event){
-		if(event.getEntityType() == EntityType.PRIMED_TNT) event.blockList().clear();
+		if(game.getState().isLobby() && event.getEntityType() == EntityType.PRIMED_TNT) event.blockList().clear();
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
@@ -262,11 +272,12 @@ public class GameListeners implements Listener {
 			event.setCancelled(true);
 			if(game.getState().isLobby()) game.getVoting().clickVoting(game.getGamePlayer(event.getPlayer()),event.getRightClicked().getLocation().getBlock().getLocation());
 		}
+		else if(event.getPlayer().getGameMode() != GameMode.CREATIVE && (game.getState().isLobby() || game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR)) event.setCancelled(true);
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void PlayerArmorStandManipulateEvent(PlayerArmorStandManipulateEvent event){
-		if(event.getPlayer().getGameMode() != GameMode.CREATIVE) event.setCancelled(true);
+		if(game.getState().isLobby() && event.getPlayer().getGameMode() != GameMode.CREATIVE) event.setCancelled(true);
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
@@ -305,9 +316,6 @@ public class GameListeners implements Listener {
 						else if((blockState.getData() instanceof Door || blockState.getData() instanceof TrapDoor || blockState.getData() instanceof Gate) && GameFlag.USE_DOOR == false){
 							event.setCancelled(true);
 						}
-						else if(blockState.getData() instanceof Bed && GameFlag.USE_BED == false){
-							event.setCancelled(true);
-						}
 						else if((blockState.getType() == Material.CHEST || blockState.getType() == Material.ENDER_CHEST || blockState.getType() == Material.TRAPPED_CHEST) && GameFlag.USE_CONTAINER == false){
 							event.setCancelled(true);
 						}
@@ -332,6 +340,11 @@ public class GameListeners implements Listener {
 				}
 			}
 		}
+	}
+
+	@EventHandler(priority=EventPriority.LOW)
+	public void PlayerBedEnterEvent(PlayerBedEnterEvent event){
+		if(game.getState().isLobby() || GameFlag.USE_BED == false || game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR) event.setCancelled(true);
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
@@ -373,7 +386,9 @@ public class GameListeners implements Listener {
 			event.setCancelled(true);
 			return;
 		}
-		if(!event.getPlayer().hasPermission("group.Admin")) event.setCancelled(true);
+		if(!event.getPlayer().hasPermission("group.Admin")){
+			event.setCancelled(true);
+		}
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
@@ -385,12 +400,16 @@ public class GameListeners implements Listener {
 			game.getLobbyScoreboard().update();
 			game.getLobbyBossBar().update();
 		}
+		else if(game.getState() == GameState.STARTING){
+			game.sendGameStartingReminder();
+		}
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void GameEndEvent(GameEndEvent event){
 		game.setState(GameState.LOBBY);
 		game.getVoting().resetVoting();
+		game.getStats().addGame(game.getStartPlayers());
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
 			gPlayer.getPlayer().teleport(game.getLobbyLocation());
@@ -398,5 +417,16 @@ public class GameListeners implements Listener {
 			game.getLobbyScoreboard().updateForPlayer(gPlayer);
 			game.getLobbyBossBar().updateForPlayer(gPlayer);
 		}
+		Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
+			@Override
+			public void run(){
+				game.getArena().getRegion().reset();
+			}
+		});
+	}
+
+	@EventHandler(priority=EventPriority.LOW)
+	public void GameRegionLoadEvent(GameRegionLoadEvent event){
+		Games.DEBUG("Region "+event.getArena().getName()+" loaded");
 	}
 }

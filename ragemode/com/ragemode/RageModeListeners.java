@@ -34,9 +34,11 @@ import org.bukkit.util.Vector;
 
 import com.games.Games;
 import com.games.events.GameCycleEvent;
+import com.games.events.GamePlayerJoinEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
+import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameState;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
@@ -58,6 +60,11 @@ public class RageModeListeners implements Listener {
 	}
 
 	@EventHandler
+	public void GamePlayerJoinEvent(GamePlayerJoinEvent event){
+		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
+	}
+
+	@EventHandler
 	public void GameStartEvent(GameStartEvent event){
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
@@ -68,7 +75,6 @@ public class RageModeListeners implements Listener {
 			game.loadInventory(gPlayer);
 			game.getScoreboard().updateForPlayer(gPlayer);
 		}
-		game.setStartPlayers(game.getPlayersCount());
 	}
 
 	@EventHandler
@@ -93,7 +99,8 @@ public class RageModeListeners implements Listener {
 
 					game.sendMessage("§b"+gPlayer.getPlayer().getName()+" §fvyhral a ziskava §a+"+reward+" coins");
 
-					//this.getLeaderBoard().addScore(winner.getPlayer(),System.currentTimeMillis());
+					game.getStats().addScore(gPlayer,1,GamePodiumType.LEFT.getId());
+					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
 					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§fVyhral jsi tuto hru",0.5,8,0.5);
 
@@ -103,6 +110,7 @@ public class RageModeListeners implements Listener {
 						}
 					},10*20);
 				} else {
+					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
 					Title.showTitle(gPlayer.getPlayer(),"§c§lProhra",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§b"+winner.getPlayer().getName()+" §fvyhral tuto hru",0.5,8,0.5);
 				}
@@ -113,7 +121,7 @@ public class RageModeListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getPlayersCount() < 1) game.setState(GameState.ENDING);
+			if(game.getPlayersCount() < 2) game.setState(GameState.ENDING);
 		}
 		game.getScoreboard().update();
 	}
@@ -140,7 +148,7 @@ public class RageModeListeners implements Listener {
 		}
 	}
 
-	@EventHandler(ignoreCancelled=true)
+	@EventHandler
 	public void PlayerRespawnEvent(PlayerRespawnEvent event){
 		event.setRespawnLocation(game.getArena().getRandomSpawn());
 		game.getGamePlayer(event.getPlayer()).resetPlayer();

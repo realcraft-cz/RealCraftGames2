@@ -14,7 +14,10 @@ import org.bukkit.scoreboard.Team.OptionStatus;
 import com.games.Games;
 import com.games.game.Game;
 import com.games.game.GameFlag;
+import com.games.game.GamePodium;
+import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
+import com.games.game.GameStats.GameStatsScore;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
@@ -23,14 +26,16 @@ import com.games.utils.FormatUtil;
 public class RageMode extends Game {
 
 	public static final int WINSCORE = 20;
-	private int startPlayers;
 	private RageModeScoreboard scoreboard;
 
 	public RageMode(){
 		super(GameType.RAGEMODE);
+		if(this.isMaintenance()) return;
 		GameFlag.PICKUP = true;
 		new RageModeListeners(this);
 		this.scoreboard = new RageModeScoreboard(this);
+		new RageModePodium(this,GamePodiumType.LEFT);
+		new RageModePodium(this,GamePodiumType.RIGHT);
 		this.loadArenas();
 	}
 
@@ -50,14 +55,6 @@ public class RageMode extends Game {
 
 	public RageModeArena getArena(){
 		return (RageModeArena) super.getArena();
-	}
-
-	public int getStartPlayers(){
-		return startPlayers;
-	}
-
-	public void setStartPlayers(int startPlayers){
-		this.startPlayers = startPlayers;
 	}
 
 	public RageModeScoreboard getScoreboard(){
@@ -102,7 +99,8 @@ public class RageMode extends Game {
 			this.setLine(6,"");
 			this.setLine(7,"");
 			this.setLine(8,"");
-			this.setLine(9,"§ewww.realcraft.cz");
+			this.setLine(9,"");
+			this.setLine(10,"§ewww.realcraft.cz");
 			if(this.getScoreboard().getTeam("team") == null) this.getScoreboard().registerNewTeam("team");
 			this.getScoreboard().getTeam("team").setOption(Option.NAME_TAG_VISIBILITY,OptionStatus.NEVER);
 		}
@@ -135,6 +133,24 @@ public class RageMode extends Game {
 			} else {
 				this.removePlayer(gPlayer);
 				this.getScoreboard().getTeam("team").removeEntry(gPlayer.getPlayer().getName());
+			}
+		}
+	}
+
+	public class RageModePodium extends GamePodium {
+		public RageModePodium(Game game,GamePodiumType type){
+			super(game,type);
+		}
+
+		@Override
+		public void update(){
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(this.getType().getId());
+			int index = 0;
+			for(GamePodiumStand stand : this.getStands()){
+				if(scores.size() <= index) continue;
+				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
+				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" zabiti");
+				index ++;
 			}
 		}
 	}

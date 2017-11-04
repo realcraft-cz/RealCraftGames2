@@ -139,7 +139,7 @@ public class LocationUtil {
 	}
 
 	public static BlockFace yawToFace (float yaw) {
-        return yawToFace(yaw, true);
+        return yawToFace(yaw, false);
     }
     public static BlockFace yawToFace(float yaw, boolean useSubCardinalDirections) {
         yaw = normalAngle(yaw);
@@ -191,13 +191,32 @@ public class LocationUtil {
             }
         }
     }
+
     public static float faceToYaw(BlockFace face){
-    	switch(face){
-    	case NORTH: return 0f;
-    	case EAST: return 90f;
-    	case SOUTH: return 180f;
-    	case WEST: return 270f;
-		default: return 0f;
+    	return faceToYaw(face,false);
+    }
+
+    public static float faceToYaw(BlockFace face, boolean useSubCardinalDirections){
+    	if(useSubCardinalDirections){
+	    	switch(face){
+		    	case NORTH: return 0f;
+		    	case NORTH_EAST: return 45f;
+		    	case EAST: return 90f;
+		    	case SOUTH_EAST: return 135f;
+		    	case SOUTH: return 180f;
+		    	case SOUTH_WEST: return 225f;
+		    	case WEST: return 270f;
+		    	case NORTH_WEST: return 315f;
+				default: return 0f;
+	    	}
+    	} else {
+    		switch(face){
+		    	case NORTH: return 0f;
+		    	case EAST: return 90f;
+		    	case SOUTH: return 180f;
+		    	case WEST: return 270f;
+				default: return 0f;
+	    	}
     	}
     }
 
@@ -277,4 +296,16 @@ public class LocationUtil {
     	}
     	return (!HOLLOW_MATERIALS.contains(world.getBlockAt(x, y, z).getType())) || (!HOLLOW_MATERIALS.contains(world.getBlockAt(x, y + 1, z).getType()));
     }
+
+    public static Block getBedNeighbor(Block head){
+		if (head.getRelative(BlockFace.EAST).getType() == Material.BED_BLOCK){
+			return head.getRelative(BlockFace.EAST);
+		} else if (head.getRelative(BlockFace.WEST).getType() == Material.BED_BLOCK){
+			return head.getRelative(BlockFace.WEST);
+		} else if (head.getRelative(BlockFace.SOUTH).getType() == Material.BED_BLOCK){
+			return head.getRelative(BlockFace.SOUTH);
+		} else {
+			return head.getRelative(BlockFace.NORTH);
+		}
+	}
 }

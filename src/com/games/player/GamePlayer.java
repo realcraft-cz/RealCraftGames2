@@ -2,14 +2,10 @@ package com.games.player;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 
 import com.games.Games;
-import com.games.arena.GameArena;
 import com.games.game.Game;
 import com.games.utils.BorderUtil;
 import com.google.common.io.ByteArrayDataOutput;
@@ -21,7 +17,6 @@ public class GamePlayer {
 
 	private Player player;
 	private Game game;
-	private GameArena arena;
 	private GamePlayerState state;
 	private GamePlayerSettings settings;
 
@@ -36,12 +31,12 @@ public class GamePlayer {
 		return player;
 	}
 
-	public GameArena getArena(){
-		return arena;
+	public void setPlayer(Player player){
+		this.player = player;
 	}
 
-	public void setArena(GameArena arena){
-		this.arena = arena;
+	public Game getGame(){
+		return game;
 	}
 
 	public GamePlayerSettings getSettings(){
@@ -61,37 +56,24 @@ public class GamePlayer {
 	}
 
 	public void teleportToSpectatorLocation(){
-		player.teleport(arena.getSpectatorLocation());
+		player.teleport(game.getArena().getSpectatorLocation());
 	}
 
 	public void toggleSpectator(){
-		this.updateSpectatorInventory();
+		player.getInventory().clear();
 		player.setAllowFlight(true);
 		player.setFlying(true);
 		player.setGameMode(GameMode.SPECTATOR);
+		player.setFlySpeed(0.2f);
 		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 			@Override
 			public void run(){
 				player.setAllowFlight(true);
 				player.setFlying(true);
 				player.setGameMode(GameMode.SPECTATOR);
-				BorderUtil.setBorder(player,arena.getSpectatorLocation(),arena.getConfig().getInt("spectator.radius")*2);
+				BorderUtil.setBorder(player,game.getArena().getSpectatorLocation(),game.getArena().getSpectatorRadius()*2);
 			}
 		},2);
-	}
-
-	public void updateSpectatorInventory(){
-		player.getInventory().clear();
-		ItemStack itemStack;
-		ItemMeta meta;
-
-		itemStack = new ItemStack(Material.SLIME_BALL,1);
-		meta = itemStack.getItemMeta();
-		meta.setDisplayName("§c§lOpustit hru");
-		itemStack.setItemMeta(meta);
-		player.getInventory().setItem(8,itemStack);
-
-		player.setFlySpeed(0.2f);
 	}
 
 	public void resetPlayer(){

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.games.player.GamePlayer;
+import com.paintball.PaintballTeam.PaintballTeamType;
 
 public class PaintballTeams {
 
@@ -48,6 +49,11 @@ public class PaintballTeams {
 	}
 
 	public void resetTeams(){
+		for(GamePlayer gPlayer : game.getPlayers()){
+			if(this.getGame().getTeams().getPlayerTeam(gPlayer) != null){
+				this.getGame().getTeams().getPlayerTeam(gPlayer).removePlayer(gPlayer);
+			}
+		}
 		redTeam.resetTeam();
 		blueTeam.resetTeam();
 	}

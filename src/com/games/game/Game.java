@@ -20,19 +20,22 @@ import com.games.arena.GameArena;
 import com.games.events.GameCycleEvent;
 import com.games.events.GameEndEvent;
 import com.games.events.GamePlayerJoinEvent;
+import com.games.events.GamePlayerLeaveEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
+import com.games.exceptions.GameMaintenanceException;
 import com.games.exceptions.GameMaxPlayersException;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.LocationUtil;
+import com.games.utils.StringUtil;
+import com.games.utils.Title;
 import com.realcraft.RealCraft;
 import com.realcraft.ServerType;
 import com.realcraft.lobby.LobbyAutoParkour;
 import com.realcraft.lobby.LobbyMenu;
-import com.realcraft.utils.StringUtil;
-import com.realcraft.utils.Title;
+import com.realcraft.minihry.GamesReminder;
 
 public abstract class Game implements Runnable {
 
@@ -47,7 +50,9 @@ public abstract class Game implements Runnable {
 	private LobbyScoreboard lobbyScoreboard;
 	private LobbyBossBar lobbyBossBar;
 	private GameVoting gameVoting;
+	private GameStats gameStats;
 
+	private boolean maintenance;
 	private int lobbyTimeDefault;
 	private int lobbyTime;
 	private int gameTimeDefault;
@@ -57,9 +62,13 @@ public abstract class Game implements Runnable {
 	private int minPlayers;
 	private int maxPlayers;
 	private String prefix;
+	private int startPlayers;
+	private long lastReminder;
+	private static final String[] numbers = new String[]{"§c\u278A","§6\u278B","§6\u278C","§e\u278D","§e\u278E"};
 
 	public Game(GameType type){
 		this.type = type;
+		this.maintenance = this.getConfig().getBoolean("maintenance",false);
 		this.lobbyTimeDefault = this.getConfig().getInt("lobbyTime");
 		this.gameTimeDefault = this.getConfig().getInt("gameTime");
 		this.endTimeDefault = this.getConfig().getInt("endTime");
@@ -72,25 +81,38 @@ public abstract class Game implements Runnable {
 		this.lobbyScoreboard = new LobbyScoreboard(this);
 		this.lobbyBossBar = new LobbyBossBar(this);
 		this.gameVoting = new GameVoting(this);
+		this.gameStats = new GameStats(this);
 		new GameListeners(this);
 		for(World world : Bukkit.getWorlds()){
 			world.setGameRuleValue("doDaylightCycle","false");
 			world.setGameRuleValue("doWeatherCycle","false");
 			world.setFullTime(6000);
 		}
-		Bukkit.getScheduler().scheduleSyncRepeatingTask(Games.getInstance(),this,20,20);
-		Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
-			@Override
-			public void run(){
-				gameVoting.resetVoting();
-			}
-		});
+		if(!this.isMaintenance()){
+			Bukkit.getScheduler().scheduleSyncRepeatingTask(Games.getInstance(),this,20,20);
+			Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
+				@Override
+				public void run(){
+					gameVoting.resetVoting();
+				}
+			});
+			Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
+				@Override
+				public void run(){
+					for(GameArena arena : Game.this.getArenas()){
+						arena.getRegion().reset();
+					}
+				}
+			});
+		}
 		new LobbyMenu(RealCraft.getInstance());
 		new LobbyAutoParkour(RealCraft.getInstance());
 	}
 
 	@Override
 	public void run(){
+		if(this.isMaintenance()) return;
+		this.removeOfflinePlayers();
 		if(this.getState() == GameState.LOBBY){
 			if(this.getPlayers().size() >= this.getMinPlayers()){
 				this.setState(GameState.STARTING);
@@ -102,12 +124,13 @@ public abstract class Game implements Runnable {
 				if(lobbyTime <= 10){
 					for(GamePlayer gPlayer : this.getPlayers()){
 						gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_HAT,1,1);
-						if(lobbyTime <= 5) Title.showTitle(gPlayer.getPlayer(),"§3"+lobbyTime,0.2,0.6,0.2);
+						if(lobbyTime <= 5) Title.showTitle(gPlayer.getPlayer(),numbers[lobbyTime-1],0,1.2,0);
 					}
 				}
 			} else {
 				this.setArena(gameVoting.getWinningArena());
 				this.setState(GameState.INGAME);
+				this.setStartPlayers(this.getPlayersCount());
 				for(GamePlayer gPlayer : this.getPlayers()){
 					lobbyScoreboard.updateForPlayer(gPlayer);
 					lobbyBossBar.updateForPlayer(gPlayer);
@@ -180,15 +203,39 @@ public abstract class Game implements Runnable {
 		return new ArrayList<GamePlayer>(players.values());
 	}
 
+	public ArrayList<GamePlayer> getGamePlayers(){
+		ArrayList<GamePlayer> tmpPlayers = new ArrayList<GamePlayer>();
+		for(GamePlayer gPlayer : this.getPlayers()){
+			if(gPlayer.getState() != GamePlayerState.SPECTATOR) tmpPlayers.add(gPlayer);
+		}
+		return tmpPlayers;
+	}
+
 	public int getPlayersCount(){
 		int count = 0;
 		for(GamePlayer gPlayer : this.getPlayers()) if(gPlayer.getState() != GamePlayerState.SPECTATOR) count ++;
 		return count;
 	}
 
+	public int getStartPlayers(){
+		return startPlayers;
+	}
+
+	public void setStartPlayers(int startPlayers){
+		this.startPlayers = startPlayers;
+	}
+
 	public GamePlayer getGamePlayer(Player player){
 		if(!players.containsKey(player.getName())) players.put(player.getName(),new GamePlayer(player,this));
 		return players.get(player.getName());
+	}
+
+	private void removeOfflinePlayers(){
+		ArrayList<GamePlayer> toRemove = new ArrayList<GamePlayer>();
+		for(GamePlayer gPlayer : this.getPlayers()){
+			if(!gPlayer.getPlayer().isOnline()) toRemove.add(gPlayer);
+		}
+		for(GamePlayer gPlayer : toRemove) this.removePlayer(gPlayer);
 	}
 
 	public ArrayList<GameArena> getArenas(){
@@ -214,6 +261,14 @@ public abstract class Game implements Runnable {
 
 	public GameVoting getVoting(){
 		return gameVoting;
+	}
+
+	public GameStats getStats(){
+		return gameStats;
+	}
+
+	public boolean isMaintenance(){
+		return maintenance;
 	}
 
 	public int getLobbyTime(){
@@ -260,31 +315,51 @@ public abstract class Game implements Runnable {
 		return maxPlayers;
 	}
 
-	public void tryToConnect(GamePlayer gPlayer) throws GameMaxPlayersException {
-		if(this.getPlayers().size() >= this.getMaxPlayers()) throw new GameMaxPlayersException();
+	public String getPrefix(){
+		return prefix;
 	}
 
-	public void joinPlayer(GamePlayer gPlayer) throws GameMaxPlayersException {
-		this.tryToConnect(gPlayer);
+	public void tryToConnect(Player player) throws GameMaintenanceException, GameMaxPlayersException {
+		if(this.isMaintenance() && !player.hasPermission("group.Admin") && !player.hasPermission("group.Builder")) throw new GameMaintenanceException();
+		if(this.getPlayers().size() >= this.getMaxPlayers() && !player.hasPermission("group.Admin") && !player.hasPermission("group.Builder")) throw new GameMaxPlayersException();
+	}
+
+	public void joinPlayer(Player player) throws GameMaintenanceException, GameMaxPlayersException {
+		this.tryToConnect(player);
+		GamePlayer gPlayer = this.getGamePlayer(player);
 		gPlayer.resetPlayer();
 		gPlayer.getPlayer().teleport(this.getLobbyLocation());
-		gPlayer.getPlayer().getInventory().setItem(0,LobbyMenu.getItem());
+		if(this.getState().isLobby()){
+			gPlayer.getPlayer().getInventory().setItem(0,LobbyMenu.getItem());
 
-		lobbyScoreboard.updateForPlayer(gPlayer);
-		lobbyBossBar.updateForPlayer(gPlayer);
+			lobbyScoreboard.updateForPlayer(gPlayer);
+			lobbyBossBar.updateForPlayer(gPlayer);
 
-		Bukkit.getServer().getPluginManager().callEvent(new GamePlayerJoinEvent(this,gPlayer));
+			Bukkit.getServer().getPluginManager().callEvent(new GamePlayerJoinEvent(this,gPlayer));
 
-		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
-			@Override
-			public void run(){
-				gPlayer.getPlayer().teleport(Game.this.getLobbyLocation());
-			}
-		},5);
+			Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+				@Override
+				public void run(){
+					gPlayer.getPlayer().teleport(Game.this.getLobbyLocation());
+				}
+			},5);
+
+			Games.getEssentials().getUser(gPlayer.getPlayer()).setNickname(Games.getEssentials().getUser(gPlayer.getPlayer()).getName());
+			Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
+		} else {
+			gPlayer.setState(GamePlayerState.SPECTATOR);
+			Bukkit.getServer().getPluginManager().callEvent(new GamePlayerJoinEvent(this,gPlayer));
+			Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+				@Override
+				public void run(){
+					gPlayer.teleportToSpectatorLocation();
+					gPlayer.toggleSpectator();
+				}
+			},5);
+		}
 	}
 
 	public void leavePlayer(GamePlayer gPlayer){
-		gPlayer.getPlayer().sendMessage("Teleporting to lobby");
 		gPlayer.connectToServer(ServerType.LOBBY);
 	}
 
@@ -294,6 +369,7 @@ public abstract class Game implements Runnable {
 		if(this.getState() == GameState.STARTING && this.getPlayers().size() < this.getMinPlayers()){
 			this.setState(GameState.LOBBY);
 		}
+		Bukkit.getServer().getPluginManager().callEvent(new GamePlayerLeaveEvent(this,gPlayer));
 	}
 
 	public class LobbyScoreboard extends GameScoreboard {
@@ -359,5 +435,19 @@ public abstract class Game implements Runnable {
 
 	public void sendMessage(GamePlayer gPlayer,String message){
 		this.sendMessage(gPlayer.getPlayer(),message);
+	}
+
+	public void sendGameStartingReminder(){
+		Bukkit.getServer().getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+			@Override
+			public void run(){
+				if(Game.this.getState() == GameState.STARTING){
+					if(lastReminder+(5*60*1000) < System.currentTimeMillis()){
+						lastReminder = System.currentTimeMillis();
+						GamesReminder.sendGameStartingMessage(type.getName(),"",0,players.size());
+					}
+				}
+			}
+		},(lobbyTimeDefault/3)*20);
 	}
 }

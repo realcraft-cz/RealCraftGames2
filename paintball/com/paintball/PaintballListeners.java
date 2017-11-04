@@ -27,16 +27,19 @@ import com.games.Games;
 import com.games.events.GameCycleEvent;
 import com.games.events.GameEndEvent;
 import com.games.events.GamePlayerJoinEvent;
+import com.games.events.GamePlayerLeaveEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
+import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameState;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Particles;
 import com.games.utils.RandomUtil;
 import com.games.utils.Title;
-import com.realcraft.nicks.NickManager;
+import com.paintball.PaintballTeam.PaintballTeamType;
+import com.realcraft.playermanazer.PlayerManazer;
 
 public class PaintballListeners implements Listener {
 
@@ -53,7 +56,15 @@ public class PaintballListeners implements Listener {
 
 	@EventHandler
 	public void GamePlayerJoinEvent(GamePlayerJoinEvent event){
-		game.loadLobbyInventory(event.getPlayer());
+		if(game.getState().isLobby()) game.loadLobbyInventory(event.getPlayer());
+		else game.getScoreboard().updateForPlayer(event.getPlayer());
+	}
+
+	@EventHandler
+	public void GamePlayerLeaveEvent(GamePlayerLeaveEvent event){
+		if(game.getTeams().getPlayerTeam(event.getPlayer()) != null){
+			game.getTeams().getPlayerTeam(event.getPlayer()).removePlayer(event.getPlayer());
+		}
 	}
 
 	@EventHandler
@@ -65,8 +76,7 @@ public class PaintballListeners implements Listener {
 			gPlayer.getSettings().setInt("deaths",0);
 			gPlayer.getPlayer().setGameMode(GameMode.ADVENTURE);
 			PaintballTeam team = game.getTeams().getPlayerTeam(gPlayer);
-			team.setPlayerTeamInventory(gPlayer);
-			team.setPlayerNickColor(gPlayer);
+			team.setPlayerInventory(gPlayer);
 			game.setPlayerWeapons(gPlayer,true);
 			gPlayer.getPlayer().teleport(team.getSpawnLocation());
 			game.getScoreboard().updateForPlayer(gPlayer);
@@ -77,8 +87,8 @@ public class PaintballListeners implements Listener {
 	public void GameEndEvent(GameEndEvent event){
 		game.getTeams().resetTeams();
 		for(GamePlayer gPlayer : game.getPlayers()){
+			game.getScoreboard().updateForPlayer(gPlayer);
 			game.loadLobbyInventory(gPlayer);
-			NickManager.clearPlayerNick(gPlayer.getPlayer());
 		}
 	}
 
@@ -90,13 +100,48 @@ public class PaintballListeners implements Listener {
 	@EventHandler
 	public void GameStateChangeEvent(GameStateChangeEvent event){
 		if(game.getState() == GameState.ENDING){
+			PaintballTeam winner = game.getTeams().getWinnerTeam();
+			game.sendMessage(winner.getType().getChatColor()+winner.getType().toName()+" §fvyhrali tuto hru");
+			for(GamePlayer gPlayer : game.getPlayers()){
+				gPlayer.getPlayer().getInventory().clear();
+				if(gPlayer.getState() != GamePlayerState.SPECTATOR && game.getTeams().getPlayerTeam(gPlayer).getType() == winner.getType()){
+					if(game.getGameTime() < game.getGameTimeDefault()-60){
+						int kdreward = (game.getConfig().getInt("reward.kill",0)*gPlayer.getSettings().getInt("kills"))-(game.getConfig().getInt("reward.death",0)*gPlayer.getSettings().getInt("deaths"));
+						if(kdreward < 0) kdreward = 0;
+						final int reward = PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).giveCoins(
+							(game.getConfig().getInt("reward.base",0))+kdreward
+						);
+
+						game.getStats().addScore(gPlayer,1,GamePodiumType.LEFT.getId());
+						if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+
+						Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+							public void run(){
+								PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).runCoinsEffect("§a§lVitezstvi!",reward);
+							}
+						},10*20);
+					}
+					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
+					Title.showSubTitle(gPlayer.getPlayer(),"§fTvuj tym vyhral tuto hru",0.5,8,0.5);
+				} else {
+					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+					Title.showTitle(gPlayer.getPlayer(),"§c§lProhra",0.5,8,0.5);
+					Title.showSubTitle(gPlayer.getPlayer(),winner.getType().getChatColor()+winner.getType().toName()+" §fvyhrali tuto hru",0.5,8,0.5);
+				}
+			}
 		}
 	}
 
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getPlayersCount() < 1) game.setState(GameState.ENDING);
+			if(game.getTeams().getActiveTeams().size() < 2) game.setState(GameState.ENDING);
+			for(GamePlayer gPlayer : game.getPlayers()){
+				if(gPlayer.getState() == GamePlayerState.SPECTATOR) continue;
+				PaintballUser user = game.getUser(gPlayer);
+				user.addPistols(1);
+				game.setPlayerWeapons(gPlayer);
+			}
 		}
 		game.getScoreboard().update();
 	}
@@ -116,22 +161,25 @@ public class PaintballListeners implements Listener {
 
 			Title.showActionTitle(killer,ChatColor.GRAY+"Zabil jsi hrace "+ChatColor.AQUA+player.getName());
 			Title.showActionTitle(player,ChatColor.GRAY+"Hrac "+ChatColor.AQUA+killer.getName()+ChatColor.GRAY+" te zabil");
+
+			game.getTeams().getPlayerTeam(game.getGamePlayer(killer)).addKill();
 		}
 	}
 
-	@EventHandler(ignoreCancelled=true)
+	@EventHandler
 	public void PlayerRespawnEvent(PlayerRespawnEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		event.setRespawnLocation(game.getTeams().getPlayerTeam(gPlayer).getSpawnLocation());
 		gPlayer.resetPlayer();
-		game.getTeams().getPlayerTeam(gPlayer).setPlayerTeamInventory(gPlayer);
+		game.getTeams().getPlayerTeam(gPlayer).setPlayerInventory(gPlayer);
+		game.getUser(gPlayer).resetPistols();
 		game.setPlayerWeapons(gPlayer,true);
 	}
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityDamageEvent(EntityDamageEvent event){
 		if(event.getEntity() instanceof Player){
-			if(event.getCause() == EntityDamageEvent.DamageCause.FALL){
+			if(event.getCause() == DamageCause.FALL){
 				event.setCancelled(true);
 			}
 			else if(event.getCause() == DamageCause.LAVA || event.getCause() == DamageCause.FIRE || event.getCause() == DamageCause.FIRE_TICK){
@@ -147,13 +195,11 @@ public class PaintballListeners implements Listener {
 			Player player = (Player)event.getEntity();
 			Player attacker = (Player)((Snowball)event.getDamager()).getShooter();
 			if(game.getTeams().getPlayerTeam(game.getGamePlayer(player)) != game.getTeams().getPlayerTeam(game.getGamePlayer(attacker))){
+				event.setCancelled(true);
 				player.damage(100,attacker);
 			} else {
 				event.setCancelled(true);
 			}
-		}
-		else if(event.getEntity() instanceof Player && event.getDamager() instanceof Player){
-			event.setCancelled(true);
 		}
 	}
 
@@ -203,6 +249,7 @@ public class PaintballListeners implements Listener {
 							if(!game.getTeams().isTeamFull(PaintballTeamType.RED)){
 								game.getTeams().setPlayerTeam(gPlayer,game.getTeams().getTeam(PaintballTeamType.RED));
 								gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1,1);
+								game.loadLobbyInventories();
 							} else {
 								gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
 								Title.showActionTitle(gPlayer.getPlayer(),"§c\u2716 §fTento tym je jiz plny §c\u2716",3*20);
@@ -213,13 +260,13 @@ public class PaintballListeners implements Listener {
 							if(!game.getTeams().isTeamFull(PaintballTeamType.BLUE)){
 								game.getTeams().setPlayerTeam(gPlayer,game.getTeams().getTeam(PaintballTeamType.BLUE));
 								gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1,1);
+								game.loadLobbyInventories();
 							} else {
 								gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
 								Title.showActionTitle(gPlayer.getPlayer(),"§c\u2716 §fTento tym je jiz plny §c\u2716",3*20);
 							}
 						}
 					}
-					game.loadLobbyInventory(gPlayer);
 				}
 			}
 		} else {
@@ -230,7 +277,7 @@ public class PaintballListeners implements Listener {
 					Snowball snowball = (Snowball) gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getEyeLocation(),EntityType.SNOWBALL);
 			        snowball.setShooter(gPlayer.getPlayer());
 			        snowball.setVelocity(gPlayer.getPlayer().getLocation().getDirection().multiply(1.5));
-			        game.getPlayer(gPlayer).addPistols(-1);
+			        game.getUser(gPlayer).addPistols(-1);
 			        game.setPlayerWeapons(gPlayer,false,true);
 				}
 			}

@@ -9,7 +9,7 @@ import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.realcraft.RealCraft;
+import com.games.Games;
 
 import net.minecraft.server.v1_12_R1.ChatMessageType;
 import net.minecraft.server.v1_12_R1.IChatBaseComponent;
@@ -81,7 +81,7 @@ public class Title {
                 public void run() {
                     sendActionBar(player, "");
                 }
-            }.runTaskLater(RealCraft.getInstance(),duration+1);
+            }.runTaskLater(Games.getInstance(),duration+1);
         }
 
         while (duration > 40) {
@@ -91,7 +91,7 @@ public class Title {
                 public void run() {
                     sendActionBar(player, message);
                 }
-            }.runTaskLater(RealCraft.getInstance(), duration);
+            }.runTaskLater(Games.getInstance(), duration);
         }
     }
 }

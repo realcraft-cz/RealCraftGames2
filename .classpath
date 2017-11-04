@@ -13,9 +13,12 @@
 			<attribute name="javadoc_location" value="jar:file:/D:/Backups/realcraft_server/source/spigot-api-1.12-R0.1-20170610.061059-9-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="D:/Backups/realcraft_server/public/lobby/plugins/RealCraft.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/ProtocolLib.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/HolographicDisplays.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/worldedit-bukkit-6.1.1-SNAPSHOT-dist.jar"/>
+	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/Essentials-2.x-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/citizens-2.0.21-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/LibsDisguises.jar"/>
+	<classpathentry kind="lib" path="D:/Backups/realcraft_server/public/lobby/plugins/RealCraft.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

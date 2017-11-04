@@ -1,5 +1,7 @@
 package com.blockparty;
 
+import java.util.ArrayList;
+
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
@@ -8,17 +10,19 @@ import org.bukkit.inventory.ItemStack;
 
 import com.games.game.Game;
 import com.games.game.GameBossBar;
+import com.games.game.GamePodium;
+import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
 import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsScore;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
+import com.games.utils.Particles;
 import com.games.utils.StringUtil;
-import com.realcraft.utils.Particles;
 
 public class BlockParty extends Game {
 
-	private int startPlayers;
 	private BlockPartyState state;
 	private BlockPartyScoreboard scoreboard;
 	private BlockPartyBossBar bossbar;
@@ -30,9 +34,12 @@ public class BlockParty extends Game {
 
 	public BlockParty(){
 		super(GameType.BLOCKPARTY);
+		if(this.isMaintenance()) return;
 		new BlockPartyListeners(this);
 		this.scoreboard = new BlockPartyScoreboard(this);
 		this.bossbar = new BlockPartyBossBar(this);
+		new BlockPartyPodium(this,GamePodiumType.LEFT);
+		new BlockPartyPodium(this,GamePodiumType.RIGHT);
 		this.loadArenas();
 	}
 
@@ -42,14 +49,6 @@ public class BlockParty extends Game {
 
 	public BlockPartyArena getArena(){
 		return (BlockPartyArena) super.getArena();
-	}
-
-	public int getStartPlayers(){
-		return startPlayers;
-	}
-
-	public void setStartPlayers(int startPlayers){
-		this.startPlayers = startPlayers;
 	}
 
 	public BlockPartyState getRoundState(){
@@ -294,6 +293,24 @@ public class BlockParty extends Game {
 				case 15: return "BLACK";
 			}
 			return "UNKNOWN";
+		}
+	}
+
+	public class BlockPartyPodium extends GamePodium {
+		public BlockPartyPodium(Game game,GamePodiumType type){
+			super(game,type);
+		}
+
+		@Override
+		public void update(){
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(GamePodiumType.LEFT.getId());
+			int index = 0;
+			for(GamePodiumStand stand : this.getStands()){
+				if(scores.size() <= index) continue;
+				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
+				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
+				index ++;
+			}
 		}
 	}
 }
