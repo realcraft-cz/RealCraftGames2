@@ -91,7 +91,16 @@ public class GameStats {
 	}
 
 	public enum GameStatsType {
+		GAME, WIN, KILL, DEATH;
 
-		GAME, WIN, KILL, DEATH
+		public int getId(){
+			switch(this){
+				case GAME: return 0;
+				case WIN: return 1;
+				case KILL: return 2;
+				case DEATH: return 3;
+			}
+			return 0;
+		}
 	}
 }
