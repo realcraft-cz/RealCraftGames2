@@ -1,6 +1,8 @@
 package com.dominate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -9,6 +11,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -22,11 +25,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import com.comphenix.protocol.ProtocolLibrary;
 import com.dominate.skills.DominateSkill.DominateSkillType;
 import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Glow;
+
+import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy;
 
 public class DominateKit implements Listener {
 
@@ -35,14 +41,14 @@ public class DominateKit implements Listener {
 	private DominateKitType type;
 	private Location location;
 	private ArmorStand stand;
-	private boolean lobby;
 
-	public DominateKit(Dominate game,DominateArena arena,DominateKitType type,Location location,boolean lobby){
+	private HashMap<GamePlayer,Boolean> spawned = new HashMap<GamePlayer,Boolean>();
+
+	public DominateKit(Dominate game,DominateArena arena,DominateKitType type,Location location){
 		this.game = game;
 		this.arena = arena;
 		this.type = type;
 		this.location = location;
-		this.lobby = lobby;
 		Bukkit.getPluginManager().registerEvents(this,Games.getInstance());
 	}
 
@@ -60,10 +66,6 @@ public class DominateKit implements Listener {
 
 	public Location getLocation(){
 		return location;
-	}
-
-	public boolean isLobby(){
-		return lobby;
 	}
 
 	public ArmorStand getStand(){
@@ -98,6 +100,22 @@ public class DominateKit implements Listener {
 		}
 	}
 
+	public void spawnForPlayer(GamePlayer gPlayer){
+		if(!spawned.containsKey(gPlayer) || spawned.get(gPlayer) == false){
+			spawned.put(gPlayer,true);
+			ProtocolLibrary.getProtocolManager().updateEntity(stand,Arrays.asList(gPlayer.getPlayer()));
+		}
+	}
+
+	public void despawnForPlayer(GamePlayer gPlayer){
+		spawned.put(gPlayer,false);
+		((CraftPlayer)gPlayer.getPlayer()).getHandle().playerConnection.sendPacket(new PacketPlayOutEntityDestroy(stand.getEntityId()));
+	}
+
+	public boolean isSpawnedForPlayer(GamePlayer gPlayer){
+		return (spawned.containsKey(gPlayer) && spawned.get(gPlayer));
+	}
+
 	public void run(){
 		if(stand != null){
 			if(stand.isDead()) this.spawn();
@@ -109,7 +127,7 @@ public class DominateKit implements Listener {
 	}
 
 	public void click(GamePlayer gPlayer){
-		game.getUser(gPlayer).setKit(this.getType(),this.isLobby());
+		game.getUser(gPlayer).setKit(this.getType());
 		gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1f,1f);
 		gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_HORSE_ARMOR,0.5f,1f);
 	}
@@ -129,15 +147,15 @@ public class DominateKit implements Listener {
 	@EventHandler
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
 		if(event.getEntity().getType() == EntityType.ARMOR_STAND){
-			if(event.getDamager() instanceof Player){
-				Player player = (Player) event.getDamager();
-				GamePlayer gPlayer = arena.getGame().getGamePlayer(player);
-				if(gPlayer.getState() != GamePlayerState.SPECTATOR){
-					if(this.getStand() != null && event.getEntity().equals(this.getStand())){
+			if(this.getStand() != null && event.getEntity().equals(this.getStand())){
+				if(event.getDamager() instanceof Player){
+					Player player = (Player) event.getDamager();
+					GamePlayer gPlayer = arena.getGame().getGamePlayer(player);
+					if(gPlayer.getState() != GamePlayerState.SPECTATOR){
 						this.click(gPlayer);
-						event.setCancelled(true);
 					}
 				}
+				event.setCancelled(true);
 			}
 		}
 	}

@@ -193,7 +193,7 @@ public class DominateArena extends GameArena {
 				}
 				if(type != null){
 					Location location = new Location(world,x,y,z,yaw,pitch);
-					kits.add(new DominateKit(this.getGame(),this,type,location,false));
+					kits.add(new DominateKit(this.getGame(),this,type,location));
 				}
 			}
 		}

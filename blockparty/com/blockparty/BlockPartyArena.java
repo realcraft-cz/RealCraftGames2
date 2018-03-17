@@ -10,7 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Item;
 
 import com.games.Games;
 import com.games.arena.GameArena;
@@ -25,7 +25,7 @@ public class BlockPartyArena extends GameArena {
 	private World world;
 	private Vector locMin;
 	private Vector locMax;
-	private Block currentBlock;
+	private BlockPartyBlock currentBlock;
 
 	private Location lobbyLocation;
 	private Location gameLocation;
@@ -59,6 +59,14 @@ public class BlockPartyArena extends GameArena {
 		return world;
 	}
 
+	public Vector getLocMin(){
+		return locMin;
+	}
+
+	public Vector getLocMax(){
+		return locMax;
+	}
+
 	public Location getLobbyLocation(){
 		if(lobbyLocation == null) lobbyLocation = LocationUtil.getConfigLocation(this.getConfig(),"custom.lobbySpawn");
 		return lobbyLocation;
@@ -69,7 +77,7 @@ public class BlockPartyArena extends GameArena {
 		return gameLocation;
 	}
 
-	public Block getCurrentBlock(){
+	public BlockPartyBlock getCurrentBlock(){
 		return currentBlock;
 	}
 
@@ -127,7 +135,7 @@ public class BlockPartyArena extends GameArena {
 					}
 					List<Entity> entities = (List<Entity>) world.getNearbyEntities(this.getGameLocation(),20,10,20);
 					for(Entity entity : entities){
-	                    if(entity instanceof Player) continue;
+	                    if(!(entity instanceof Item)) continue;
 	                    entity.remove();
 					}
 				}
@@ -138,18 +146,93 @@ public class BlockPartyArena extends GameArena {
 	public void teleportAboveFloor(GamePlayer gPlayer){
 		Location location = gPlayer.getPlayer().getLocation().clone();
 		if(location.getBlockY() >= 0){
-			Block topBlock = null;
-			for(int y=locMax.getBlockY();y>=locMin.getBlockY();y--){
-				if(!gPlayer.getPlayer().getWorld().getBlockAt(location.getBlockX(),y,location.getBlockZ()).isEmpty()){
-					topBlock = gPlayer.getPlayer().getWorld().getBlockAt(location.getBlockX(),y,location.getBlockZ());
+			int maxY = 0;
+			for(Vector2D vector : POS_VOLUMES){
+				for(int y=locMax.getBlockY();y>=locMin.getBlockY();y--){
+					if(!location.getWorld().getBlockAt(location.getBlockX()+vector.x,y,location.getBlockZ()+vector.z).isEmpty()){
+						if(maxY < y) maxY = y;
+					}
 				}
 			}
-			if(topBlock != null){
-				if(location.getBlockY() <= topBlock.getY()){
-					location.setY(topBlock.getY()+1);
+			if(maxY != 0){
+				if(location.getBlockY() <= maxY){
+					location.setY(maxY+1.1);
 					gPlayer.getPlayer().teleport(location);
 				}
 			}
+		}
+	}
+
+	public Location getRandomPickupLocation(){
+		int randX = RandomUtil.getRandomInteger(locMin.getBlockX(),locMax.getBlockX());
+		int randZ = RandomUtil.getRandomInteger(locMin.getBlockZ(),locMax.getBlockZ());
+		int randY = 0;
+		for(int y=locMax.getBlockY();y>=locMin.getBlockY();y--){
+			if(this.getWorld().getBlockAt(randX,y,randZ).isEmpty() && !this.getWorld().getBlockAt(randX,y-1,randZ).isEmpty()){
+				randY = y;
+				break;
+			}
+		}
+		if(randY == 0) return this.getRandomPickupLocation();
+		return new Location(this.getWorld(),randX,randY,randZ);
+	}
+
+	public boolean isBlockInArena(Location location){
+		Vector vec = new Vector(location.getBlockX(),location.getBlockY(),location.getBlockZ());
+		return vec.containedWithinBlock(locMin,locMax);
+	}
+
+	public Location getStartLocation(int index,int max){
+		Location location = this.getGameLocation().clone();
+		double angle = index*(2*Math.PI)/max;
+		Vector vector = new Vector(Math.cos(angle),0,Math.sin(angle)).multiply(4.0);
+		location.add(vector.getX(),vector.getY(),vector.getZ());
+		location.setDirection(this.getGameLocation().getDirection());
+		location = this.setLocationLookingAt(location,this.getGameLocation());
+		return location;
+	}
+
+	private Location setLocationLookingAt(Location loc,Location lookat){
+		loc = loc.clone();
+
+		double dx = lookat.getX() - loc.getX();
+		double dy = lookat.getY() - loc.getY();
+		double dz = lookat.getZ() - loc.getZ();
+
+		if(dx != 0){
+			if(dx < 0){
+				loc.setYaw((float) (1.5 * Math.PI));
+			} else {
+				loc.setYaw((float) (0.5 * Math.PI));
+			}
+			loc.setYaw(loc.getYaw() - (float) Math.atan(dz / dx));
+		} else if(dz < 0){
+			loc.setYaw((float) Math.PI);
+		}
+
+		double dxz = Math.sqrt(Math.pow(dx, 2) + Math.pow(dz, 2));
+		loc.setPitch((float) -Math.atan(dy / dxz));
+		loc.setYaw(-loc.getYaw() * 180f / (float) Math.PI);
+		loc.setPitch(loc.getPitch() * 180f / (float) Math.PI);
+
+		return loc;
+    }
+
+	private static final Vector2D[] POS_VOLUMES = new Vector2D[]{
+		new Vector2D(0,0),
+		new Vector2D(0,1),
+		new Vector2D(1,0),
+		new Vector2D(0,-1),
+		new Vector2D(-1,0),
+	};
+
+	public static class Vector2D {
+		public int x;
+		public int z;
+
+		public Vector2D(int x,int z){
+			this.x = x;
+			this.z = z;
 		}
 	}
 }

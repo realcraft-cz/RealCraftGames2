@@ -44,7 +44,8 @@ import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Particles;
 import com.games.utils.Title;
-import com.realcraft.playermanazer.PlayerManazer;
+
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class RageModeListeners implements Listener {
 

@@ -19,7 +19,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.util.Vector;
 
-import com.anticheat.AntiCheat;
 import com.dominate.Dominate;
 import com.dominate.DominateUser;
 import com.dominate.DominateUtils;
@@ -28,6 +27,8 @@ import com.games.game.GameState;
 import com.games.player.GamePlayerState;
 import com.games.utils.Particles;
 import com.games.utils.Particles.BlockData;
+
+import realcraft.bukkit.anticheat.AntiCheat;
 
 public class DominateSkillSmashDown extends DominateSkill {
 

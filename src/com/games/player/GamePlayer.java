@@ -10,8 +10,9 @@ import com.games.game.Game;
 import com.games.utils.BorderUtil;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.realcraft.RealCraft;
-import com.realcraft.ServerType;
+
+import realcraft.bukkit.RealCraft;
+import realcraft.bukkit.ServerType;
 
 public class GamePlayer {
 

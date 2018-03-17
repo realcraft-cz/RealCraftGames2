@@ -18,9 +18,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -43,10 +42,10 @@ import com.games.player.GamePlayerState;
 import com.games.utils.ItemUtil;
 import com.games.utils.LocationUtil;
 import com.games.utils.Title;
-import com.realcraft.playermanazer.PlayerManazer;
 
 import net.citizensnpcs.api.event.NPCLeftClickEvent;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class BedWarsListeners implements Listener {
 
@@ -82,6 +81,7 @@ public class BedWarsListeners implements Listener {
 			gPlayer.getSettings().setInt("kills",0);
 			gPlayer.getSettings().setInt("deaths",0);
 			gPlayer.getSettings().setInt("beds",0);
+			gPlayer.getSettings().setLong("pickup",0);
 			gPlayer.getPlayer().setGameMode(GameMode.SURVIVAL);
 			BedWarsTeam team = game.getTeams().getPlayerTeam(gPlayer);
 			gPlayer.getPlayer().teleport(team.getSpawnLocation());
@@ -267,13 +267,15 @@ public class BedWarsListeners implements Listener {
 		else event.setCancelled(true);
 	}
 
-	@EventHandler(ignoreCancelled=true)
-	public void ProjectileLaunchEvent(ProjectileLaunchEvent event){
-	}
-
-	@EventHandler(ignoreCancelled=true)
-	public void ProjectileHitEvent(ProjectileHitEvent event){
-	}
+	/*@EventHandler(ignoreCancelled=true)
+	public void EntityShootBowEvent(EntityShootBowEvent event){
+		int level = event.getBow().getEnchantmentLevel(Enchantment.DURABILITY);
+		int damage = 9;
+		if(level == 1) damage = 8;
+		else if(level == 2) damage = 7;
+		else if(level == 3) damage = 6;
+		event.getBow().setDurability((short)(event.getBow().getDurability()+damage));
+	}*/
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityExplodeEvent(EntityExplodeEvent event){
@@ -283,6 +285,18 @@ public class BedWarsListeners implements Listener {
 				if(game.getArena().isBlockInArena(block) && !game.getArena().isPlayerBlock(block)){
 					event.blockList().remove(block);
 				}
+			}
+		}
+	}
+
+	@EventHandler(ignoreCancelled=true)
+    public void EntityPickupItemEvent(EntityPickupItemEvent event){
+		if(event.getEntity() instanceof Player){
+			GamePlayer gPlayer = game.getGamePlayer((Player)event.getEntity());
+			if(gPlayer.getSettings().getLong("pickup") < System.currentTimeMillis()-50){
+				gPlayer.getSettings().setLong("pickup",System.currentTimeMillis());
+			} else {
+				event.setCancelled(true);
 			}
 		}
 	}

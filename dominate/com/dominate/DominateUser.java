@@ -59,12 +59,10 @@ public class DominateUser {
 		return kit;
 	}
 
-	public void setKit(DominateKitType kit,boolean lobby){
+	public void setKit(DominateKitType kit){
 		this.kit = kit;
-		if(!lobby){
-			this.setKitInventory();
-			this.loadSkills();
-		}
+		this.setKitInventory();
+		this.loadSkills();
 	}
 
 	public long getLastInSpawn(){

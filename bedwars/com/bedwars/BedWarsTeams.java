@@ -84,7 +84,18 @@ public class BedWarsTeams {
 
 	public void autoBalancingTeams(){
 		ArrayList<BedWarsTeam> aTeams = this.getActiveTeams();
-		if(this.getActiveTeams().size() == 2){
+		if(this.getActiveTeams().size() == 1){
+			ArrayList<GamePlayer> players = new ArrayList<GamePlayer>(game.getPlayers());
+			Collections.shuffle(players);
+			for(GamePlayer gPlayer : players){
+				if(this.getPlayerTeam(gPlayer) == null){
+					this.setPlayerTeam(gPlayer,this.getLowestBalancingTeam(true));
+					this.autoBalancingTeams();
+					break;
+				}
+			}
+		}
+		else if(this.getActiveTeams().size() == 2){
 			ArrayList<GamePlayer> players = new ArrayList<GamePlayer>(game.getPlayers());
 			Collections.shuffle(players);
 			for(GamePlayer gPlayer : players){
@@ -92,7 +103,7 @@ public class BedWarsTeams {
 					this.setPlayerTeam(gPlayer,this.getLowestBalancingTeam(false));
 				}
 			}
-			int difference = aTeams.get(0).getPlayers().size()-aTeams.get(0).getPlayers().size();
+			int difference = aTeams.get(0).getPlayers().size()-aTeams.get(1).getPlayers().size();
 			if(difference > 1){
 				Object [] values = aTeams.get(0).getPlayers().toArray();
 				for(int i=0;i<difference/2;i++){

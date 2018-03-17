@@ -116,6 +116,8 @@ public class GameArenaRegion {
 
 		public void clearEntities(){
 			for(Vector2D coords : schema.getRegion().getChunks()){
+				coords = coords.add(-(schema.getRegion().getMinimumPoint().getBlockX() >> 4),-(schema.getRegion().getMinimumPoint().getBlockZ() >> 4));
+				coords = coords.add((location.getBlockX() >> 4),(location.getBlockZ() >> 4));
 				Chunk chunk = location.getWorld().getChunkAt(coords.getBlockX(),coords.getBlockZ());
 				if(!chunk.isLoaded()) chunk.load();
 				for(org.bukkit.entity.Entity entity : chunk.getEntities()){

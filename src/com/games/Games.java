@@ -16,9 +16,10 @@ import com.games.utils.Glow;
 import com.hidenseek.HidenSeek;
 import com.paintball.Paintball;
 import com.ragemode.RageMode;
-import com.realcraft.RealCraft;
-import com.realcraft.ServerType;
-import com.realcraft.database.DB;
+
+import realcraft.bukkit.RealCraft;
+import realcraft.bukkit.ServerType;
+import realcraft.bukkit.database.DB;
 
 public class Games extends JavaPlugin {
 

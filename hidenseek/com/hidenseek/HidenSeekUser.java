@@ -33,6 +33,9 @@ import net.minecraft.server.v1_12_R1.World;
 
 public class HidenSeekUser {
 
+	private static final int WEAPON_DAMAGE = 10;
+	private static final int WEAPON_TIMEOUT = 100;
+
 	private HidenSeek game;
 	private GamePlayer gPlayer;
 
@@ -43,6 +46,9 @@ public class HidenSeekUser {
 	private int fireworks = 5;
 	private int solidCountdown = 5;
 	private int tracker = 1;
+	private int weaponDamage = 0;
+	private boolean weaponActive = true;
+	private long weaponTime = 0;
 
 	private int entityId;
 	private boolean solid = false;
@@ -110,6 +116,23 @@ public class HidenSeekUser {
 
 	public void setSolidCountdown(int solidCountdown){
 		this.solidCountdown = solidCountdown;
+	}
+
+	public void useWeapon(){
+		if(weaponActive){
+			weaponDamage += WEAPON_DAMAGE;
+			weaponTime = System.currentTimeMillis();
+			if(weaponDamage >= 100){
+				weaponDamage = 100;
+				weaponActive = false;
+				gPlayer.getPlayer().getInventory().remove(Material.IRON_AXE);
+				gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
+			}
+		}
+	}
+
+	public boolean isWeaponActive(){
+		return weaponActive;
 	}
 
 	public int getEntityId(){
@@ -222,6 +245,11 @@ public class HidenSeekUser {
 	public void reset(){
 		fireworkTime = System.currentTimeMillis()+(40*1000);
 		fireworks = 5;
+		solidCountdown = 5;
+		solid = false;
+		spawnTime = 0;
+		weaponDamage = 0;
+		weaponActive = true;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -283,35 +311,53 @@ public class HidenSeekUser {
 		if(itemStack.getType() == Material.COMPASS){
 			double distance = this.getDistanceOfNearestHider(gPlayer);
 			int tmpTracker = 10;
-			if(distance < 1.0) tmpTracker = 1;
-			else if(distance < 2.0) tmpTracker = 2;
-			else if(distance < 3.0) tmpTracker = 3;
-			else if(distance < 4.0) tmpTracker = 4;
-			else if(distance < 5.0) tmpTracker = 5;
-			else if(distance < 6.0) tmpTracker = 6;
-			else if(distance < 7.0) tmpTracker = 7;
-			else if(distance < 8.0) tmpTracker = 8;
-			else if(distance < 9.0) tmpTracker = 9;
+			if(distance < 4.0) tmpTracker = 2;
+			else if(distance < 5.0) tmpTracker = 3;
+			else if(distance < 6.0) tmpTracker = 4;
+			else if(distance < 7.0) tmpTracker = 5;
+			else if(distance < 8.0) tmpTracker = 6;
+			else if(distance < 9.0) tmpTracker = 7;
+			else if(distance < 10.0) tmpTracker = 8;
+			else if(distance < 11.0) tmpTracker = 9;
 			else tmpTracker = 10;
 			if(tracker+1 > tmpTracker){
 				tracker = 1;
 				gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_HAT,1,1);
-				gPlayer.getPlayer().setExp((distance > 10 ? 0 : 1-((float)distance/10.0f)));
 			} else {
 				tracker += 1;
 			}
 		}
-		else gPlayer.getPlayer().setExp(0);
+	}
+
+	public void runWeaponDamage(){
+		if(weaponTime+WEAPON_TIMEOUT < System.currentTimeMillis()){
+			weaponDamage -= 1;
+			if(weaponDamage <= 0){
+				weaponDamage = 0;
+				if(!weaponActive){
+					weaponActive = true;
+					gPlayer.getPlayer().getInventory().setItem(0,new ItemStack(Material.IRON_AXE));
+					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_PICKUP,1,1);
+				}
+			}
+		}
+		if(gPlayer.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR) gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
+	}
+
+	public void updateWeaponDamage(){
+		gPlayer.getPlayer().setExp(weaponDamage*0.01f);
 	}
 
 	private double getDistanceOfNearestHider(GamePlayer gPlayer){
 		double distance = Double.MAX_VALUE;
 		GamePlayer nearestPlayer = null;
 		for(GamePlayer player2 : game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getPlayers()){
-			double tmpDistance = player2.getPlayer().getLocation().distanceSquared(gPlayer.getPlayer().getLocation());
-			if(tmpDistance < distance){
-				distance = tmpDistance;
-				nearestPlayer = player2;
+			if(gPlayer.getPlayer().getWorld().equals(player2.getPlayer().getWorld())){
+				double tmpDistance = player2.getPlayer().getLocation().distanceSquared(gPlayer.getPlayer().getLocation());
+				if(tmpDistance < distance){
+					distance = tmpDistance;
+					nearestPlayer = player2;
+				}
 			}
 		}
 		return (nearestPlayer != null ? nearestPlayer.getPlayer().getLocation().distance(gPlayer.getPlayer().getLocation()) : Double.MAX_VALUE);

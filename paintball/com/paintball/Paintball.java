@@ -142,6 +142,8 @@ public class Paintball extends Game {
 			teamBlue.setAllowFriendlyFire(false);
 			teamRed.setColor(PaintballTeamType.RED.getChatColor());
 			teamBlue.setColor(PaintballTeamType.BLUE.getChatColor());
+			teamRed.setPrefix(PaintballTeamType.RED.getChatColor().toString());
+			teamBlue.setPrefix(PaintballTeamType.BLUE.getChatColor().toString());
 		}
 
 		public Paintball getGame(){

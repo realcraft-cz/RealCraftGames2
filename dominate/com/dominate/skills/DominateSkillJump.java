@@ -11,12 +11,13 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 
-import com.anticheat.AntiCheat;
 import com.dominate.Dominate;
 import com.dominate.DominateUser;
 import com.games.Games;
 import com.games.game.GameState;
 import com.games.utils.Particles;
+
+import realcraft.bukkit.anticheat.AntiCheat;
 
 public class DominateSkillJump extends DominateSkill {
 

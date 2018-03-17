@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/citizens-2.0.21-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/LibsDisguises.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/public/lobby/plugins/RealCraft.jar"/>
+	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/LightAPI.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -8,8 +8,10 @@ import org.bukkit.Bukkit;
 
 import com.games.Games;
 import com.games.player.GamePlayer;
-import com.realcraft.database.DB;
-import com.realcraft.playermanazer.PlayerManazer;
+
+import realcraft.bukkit.RealCraft;
+import realcraft.bukkit.database.DB;
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class GameStats {
 
@@ -48,21 +50,25 @@ public class GameStats {
 	}
 
 	public void addScore(int userid,int value,int type){
-		Bukkit.getScheduler().runTaskAsynchronously(Games.getInstance(),new Runnable(){
-			@Override
-			public void run(){
-				DB.update("INSERT INTO "+SCORES+" (game_id,user_id,score_value,score_type,score_created) VALUES('"+game.getType().getId()+"','"+userid+"','"+value+"','"+type+"','"+(System.currentTimeMillis()/1000)+"')");
-			}
-		});
+		if(!RealCraft.isTestServer()){
+			Bukkit.getScheduler().runTaskAsynchronously(Games.getInstance(),new Runnable(){
+				@Override
+				public void run(){
+					DB.update("INSERT INTO "+SCORES+" (game_id,user_id,score_value,score_type,score_created) VALUES('"+game.getType().getId()+"','"+userid+"','"+value+"','"+type+"','"+(System.currentTimeMillis()/1000)+"')");
+				}
+			});
+		}
 	}
 
 	public void addGame(int players){
-		Bukkit.getScheduler().runTaskAsynchronously(Games.getInstance(),new Runnable(){
-			@Override
-			public void run(){
-				DB.update("INSERT INTO "+GAMES+" (game_id,game_players,game_created) VALUES('"+game.getType().getId()+"','"+players+"','"+(System.currentTimeMillis()/1000)+"')");
-			}
-		});
+		if(!RealCraft.isTestServer()){
+			Bukkit.getScheduler().runTaskAsynchronously(Games.getInstance(),new Runnable(){
+				@Override
+				public void run(){
+					DB.update("INSERT INTO "+GAMES+" (game_id,game_players,game_created) VALUES('"+game.getType().getId()+"','"+players+"','"+(System.currentTimeMillis()/1000)+"')");
+				}
+			});
+		}
 	}
 
 	public class GameStatsScore {
@@ -82,5 +88,10 @@ public class GameStats {
 		public int getValue(){
 			return value;
 		}
+	}
+
+	public enum GameStatsType {
+
+		GAME, WIN, KILL, DEATH
 	}
 }

@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import org.bukkit.entity.Player;
 
-import com.realcraft.database.DB;
+import realcraft.bukkit.database.DB;
 
 public class SkinUtil {
 

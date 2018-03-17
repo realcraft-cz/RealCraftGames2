@@ -58,7 +58,8 @@ import com.games.utils.Particles;
 import com.games.utils.RandomUtil;
 import com.games.utils.Title;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
-import com.realcraft.playermanazer.PlayerManazer;
+
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class HidenSeekListeners implements Listener {
 
@@ -230,8 +231,8 @@ public class HidenSeekListeners implements Listener {
 			for(GamePlayer gPlayer : game.getPlayers()){
 				if(gPlayer.getState() == GamePlayerState.SPECTATOR) continue;
 				ItemStack item = gPlayer.getPlayer().getInventory().getItem(0);
-				if(item != null && item.getType() != Material.AIR && item.getDurability() != (byte)0){
-					item.setDurability((short)0);
+				if(item != null && item.getType() != Material.AIR && item.getType() != Material.IRON_AXE && item.getDurability() != (byte)0){
+					//item.setDurability((short)0);
 					gPlayer.getPlayer().updateInventory();
 				}
 				gPlayer.getPlayer().setFoodLevel(20);
@@ -251,7 +252,7 @@ public class HidenSeekListeners implements Listener {
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
 					if(block.getType() == Material.WATER || block.getType() == Material.STATIONARY_WATER){
 						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,1*25,1),true);
-						gPlayer.getPlayer().damage(1);
+						gPlayer.getPlayer().damage(2);
 					}
 				}
 			}
@@ -274,7 +275,7 @@ public class HidenSeekListeners implements Listener {
 					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_HAT,1,1);
 				}
 			}
-			else if(game.getGameTime() == 120){
+			else if(game.getGameTime() == 60){
 				for(GamePlayer gPlayer : game.getTeams().getTeam(HidenSeekTeamType.SEEKERS).getPlayers()){
 					game.loadGameInventory(gPlayer);
 					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_PICKUP,1,1);
@@ -333,11 +334,17 @@ public class HidenSeekListeners implements Listener {
 	@EventHandler(ignoreCancelled=true)
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
 		if(event.getDamager() instanceof Player && event.getEntity() instanceof Player){
+			GamePlayer gPlayer = game.getGamePlayer((Player)event.getEntity());
 			GamePlayer gAttacker = game.getGamePlayer((Player)event.getDamager());
-			double damage = 0;
-			if(game.getTeams().getPlayerTeam(gAttacker).getType() == HidenSeekTeamType.SEEKERS) damage = (gAttacker.getPlayer().getInventory().getItemInMainHand().getType() == Material.IRON_AXE ? 6 : 2);
-			else if(game.getTeams().getPlayerTeam(gAttacker).getType() == HidenSeekTeamType.HIDERS) damage = 2;
-			event.setDamage(damage);
+			if(game.getTeams().getPlayerTeam(gAttacker).getType() == HidenSeekTeamType.SEEKERS){
+				if(!game.getUser(gAttacker).isWeaponActive() || gAttacker.getPlayer().getInventory().getItemInMainHand().getType() != Material.IRON_AXE){
+					event.setCancelled(true);
+					return;
+				}
+				event.setDamage(6);
+				game.getUser(gPlayer).setSolid(false);
+			}
+			else if(game.getTeams().getPlayerTeam(gAttacker).getType() == HidenSeekTeamType.HIDERS) event.setDamage(2);
 			gAttacker.getPlayer().getWorld().playSound(event.getEntity().getLocation(),Sound.ENTITY_PLAYER_HURT,1,1);
 		}
 		else if(event.getDamager() instanceof Player && event.getEntity() instanceof Animals){
@@ -444,6 +451,13 @@ public class HidenSeekListeners implements Listener {
 						}
 					}
 					event.setCancelled(true);
+				}
+				else if(itemStack.getType() == Material.IRON_AXE){
+					if(event.getAction() == Action.LEFT_CLICK_BLOCK){
+						if(game.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.SEEKERS){
+							game.getUser(gPlayer).useWeapon();
+						}
+					}
 				}
 			}
 		}

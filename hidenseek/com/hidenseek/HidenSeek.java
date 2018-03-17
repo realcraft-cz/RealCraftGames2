@@ -54,9 +54,13 @@ public class HidenSeek extends Game {
 					for(GamePlayer gPlayer : HidenSeek.this.getTeams().getTeam(HidenSeekTeamType.HIDERS).getPlayers()){
 						HidenSeek.this.getUser(gPlayer).run();
 					}
+					for(GamePlayer gPlayer : HidenSeek.this.getTeams().getTeam(HidenSeekTeamType.SEEKERS).getPlayers()){
+						HidenSeek.this.getUser(gPlayer).updateWeaponDamage();
+					}
 					if(cycleTime%2 == 0){
 						for(GamePlayer gPlayer : HidenSeek.this.getTeams().getTeam(HidenSeekTeamType.SEEKERS).getPlayers()){
 							HidenSeek.this.getUser(gPlayer).runTracker();
+							HidenSeek.this.getUser(gPlayer).runWeaponDamage();
 						}
 					}
 					if(cycleTime == 10 || cycleTime == 20){
@@ -113,7 +117,7 @@ public class HidenSeek extends Game {
 			if(this.getGameTimeDefault()-this.getGameTime() >= 30){
 				itemStack = new ItemStack(Material.STICK,1);
 				meta = itemStack.getItemMeta();
-				meta.addEnchant(Enchantment.KNOCKBACK,1,false);
+				meta.addEnchant(Enchantment.KNOCKBACK,2,false);
 				itemStack.setItemMeta(meta);
 				gPlayer.getPlayer().getInventory().setItem(0,itemStack);
 			}
@@ -139,7 +143,7 @@ public class HidenSeek extends Game {
 			gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
 		}
 		else if(this.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.SEEKERS){
-			if(this.getGameTime() <= 120){
+			if(this.getGameTime() <= 60){
 				itemStack = new ItemStack(Material.COMPASS,1);
 				meta = itemStack.getItemMeta();
 				meta.setDisplayName("§b§lLokalizator");

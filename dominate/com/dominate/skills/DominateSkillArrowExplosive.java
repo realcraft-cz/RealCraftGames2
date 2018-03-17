@@ -23,7 +23,6 @@ import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import com.anticheat.AntiCheat;
 import com.dominate.Dominate;
 import com.dominate.DominateUser;
 import com.dominate.DominateUtils;
@@ -33,6 +32,8 @@ import com.games.player.GamePlayerState;
 import com.games.utils.Glow;
 import com.games.utils.Particles;
 import com.games.utils.Particles.BlockData;
+
+import realcraft.bukkit.anticheat.AntiCheat;
 
 public class DominateSkillArrowExplosive extends DominateSkill {
 

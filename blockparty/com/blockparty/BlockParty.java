@@ -2,14 +2,28 @@ package com.blockparty;
 
 import java.util.ArrayList;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.inventory.ItemStack;
 
+import com.blockparty.pickups.BlockPartyPickup;
+import com.blockparty.pickups.BlockPartyPickup.BlockPartyPickupType;
+import com.blockparty.pickups.BlockPartyPickupAcid;
+import com.blockparty.pickups.BlockPartyPickupBabyzombie;
+import com.blockparty.pickups.BlockPartyPickupBlindness;
+import com.blockparty.pickups.BlockPartyPickupColorBlindness;
+import com.blockparty.pickups.BlockPartyPickupJump;
+import com.blockparty.pickups.BlockPartyPickupShovels;
+import com.blockparty.pickups.BlockPartyPickupSilverfish;
+import com.blockparty.pickups.BlockPartyPickupSnowballs;
+import com.blockparty.pickups.BlockPartyPickupThunderstorm;
+import com.games.Games;
 import com.games.game.Game;
 import com.games.game.GameBossBar;
+import com.games.game.GameFlag;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
@@ -26,6 +40,7 @@ public class BlockParty extends Game {
 	private BlockPartyState state;
 	private BlockPartyScoreboard scoreboard;
 	private BlockPartyBossBar bossbar;
+	private BlockPartyPickup pickup;
 
 	private static final int ROUNDS = 20;
 	public static final int MINY = -20;
@@ -35,6 +50,7 @@ public class BlockParty extends Game {
 	public BlockParty(){
 		super(GameType.BLOCKPARTY);
 		if(this.isMaintenance()) return;
+		GameFlag.PICKUP = true;
 		new BlockPartyListeners(this);
 		this.scoreboard = new BlockPartyScoreboard(this);
 		this.bossbar = new BlockPartyBossBar(this);
@@ -77,6 +93,10 @@ public class BlockParty extends Game {
 
 	public BlockPartyBossBar getBossBar(){
 		return bossbar;
+	}
+
+	public BlockPartyPickup getPickup(){
+		return pickup;
 	}
 
 	public GamePlayer getWinner(){
@@ -135,48 +155,81 @@ public class BlockParty extends Game {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void loadRoundInventory(Block block){
+	public void loadRoundInventory(BlockPartyBlock block){
+		ItemStack item = new ItemStack(block.getType(),1,(short)0,block.getData());
 		for(GamePlayer gPlayer : this.getPlayers()){
-			ItemStack item = new ItemStack(block.getType(),1,(short)0,block.getData());
-			gPlayer.getPlayer().getInventory().clear();
+			gPlayer.getPlayer().getInventory().remove(Material.STAINED_CLAY);
 			gPlayer.getPlayer().setFoodLevel(20);
 			gPlayer.getPlayer().setSaturation(20);
-			for(int i=0;i<9;i++) gPlayer.getPlayer().getInventory().setItem(i,item);
+			for(int i=3;i<6;i++) gPlayer.getPlayer().getInventory().setItem(i,item);
 		}
 	}
 
 	public void reset(){
 		round = 0;
-		countdown = 5;
+		countdown = 6;
 		state = BlockPartyState.WAITING;
 		this.getArena().reset();
 		this.getArena().chooseDefaultFloor();
+		this.getArena().getWorld().setStorm(false);
+		this.getArena().getWorld().setThundering(false);
 	}
 
 	public void nextRound(){
+		this.getArena().getWorld().setStorm(false);
+		this.getArena().getWorld().setThundering(false);
+		if(pickup != null) pickup.clear();
 		int nextRound = round+1;
 		if(ROUNDS >= nextRound){
 			round = nextRound;
 			this.getArena().chooseRandomFloor();
 			for(GamePlayer gPlayer : this.getPlayers()){
-				gPlayer.getPlayer().getInventory().clear();
+				gPlayer.getPlayer().getInventory().remove(Material.STAINED_CLAY);
+				gPlayer.getPlayer().getInventory().setHeldItemSlot(4);
 				if(gPlayer.getState() != GamePlayerState.SPECTATOR){
 					this.getArena().teleportAboveFloor(gPlayer);
 					Particles.HEART.display(0f,0f,0f,0f,1,gPlayer.getPlayer().getEyeLocation().add(0f,0.5f,0f),64);
 				}
 			}
+			if(round%2 != 0) this.placePickup();
 		} else {
 			this.setState(GameState.ENDING);
 		}
 	}
 
 	public void clearFloor(){
+		if(pickup != null) pickup.remove();
 		this.getArena().clearFloor();
 		for(GamePlayer gPlayer : this.getPlayers()){
 			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,1f);
-			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,0.7f);
-			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ENDERDRAGON_FLAP,1f,1f);
+			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,0.5f);
+			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ENDERDRAGON_FLAP,1f,0.8f);
 		}
+	}
+
+	private void placePickup(){
+		pickup = this.getRandomPickup();
+		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+			@Override
+			public void run(){
+				pickup.place();
+			}
+		},20);
+	}
+
+	private BlockPartyPickup getRandomPickup(){
+		switch(BlockPartyPickupType.getRandomType()){
+			case JUMP: return new BlockPartyPickupJump(this);
+			case BLINDNESS: return new BlockPartyPickupBlindness(this);
+			case COLORBLINDNESS: return new BlockPartyPickupColorBlindness(this);
+			case SNOWBALLS: return new BlockPartyPickupSnowballs(this);
+			case SHOVELS: return new BlockPartyPickupShovels(this);
+			case SILVERFISH: return new BlockPartyPickupSilverfish(this);
+			case BABYZOMBIE: return new BlockPartyPickupBabyzombie(this);
+			case ACID: return new BlockPartyPickupAcid(this);
+			case THUNDERSTORM: return new BlockPartyPickupThunderstorm(this);
+		}
+		return null;
 	}
 
 	public class BlockPartyScoreboard extends GameScoreboard {
@@ -247,9 +300,8 @@ public class BlockParty extends Game {
 			return "";
 		}
 
-		@SuppressWarnings("deprecation")
 		private String getRandomBlockChatColor(){
-			Block block = this.getGame().getArena().getCurrentBlock();
+			BlockPartyBlock block = this.getGame().getArena().getCurrentBlock();
 			switch(block.getData()){
 				case 0: return "§f";
 				case 1: return "§6";
@@ -271,9 +323,8 @@ public class BlockParty extends Game {
 			return "§f";
 		}
 
-		@SuppressWarnings("deprecation")
 		private String getRandomBlockColor(){
-			Block block = this.getGame().getArena().getCurrentBlock();
+			BlockPartyBlock block = this.getGame().getArena().getCurrentBlock();
 			switch(block.getData()){
 				case 0: return "WHITE";
 				case 1: return "ORANGE";

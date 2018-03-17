@@ -39,7 +39,8 @@ import com.games.utils.Particles;
 import com.games.utils.RandomUtil;
 import com.games.utils.Title;
 import com.paintball.PaintballTeam.PaintballTeamType;
-import com.realcraft.playermanazer.PlayerManazer;
+
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class PaintballListeners implements Listener {
 

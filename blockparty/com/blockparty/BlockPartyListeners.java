@@ -6,13 +6,24 @@ import org.bukkit.Bukkit;
 import org.bukkit.FireworkEffect;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.ItemStack;
 
 import com.games.Games;
 import com.games.events.GameCycleEvent;
@@ -27,8 +38,10 @@ import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.FireworkUtil;
 import com.games.utils.Particles;
+import com.games.utils.Particles.BlockData;
 import com.games.utils.Title;
-import com.realcraft.playermanazer.PlayerManazer;
+
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class BlockPartyListeners implements Listener {
 
@@ -52,10 +65,12 @@ public class BlockPartyListeners implements Listener {
 	public void GameStartEvent(GameStartEvent event){
 		game.reset();
 		game.getArena().getWorld().setFullTime(1000);
+		int idx = 0;
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
-			gPlayer.getPlayer().teleport(game.getArena().getGameLocation());
+			gPlayer.getPlayer().teleport(game.getArena().getStartLocation(idx++,game.getPlayersCount()));
 			gPlayer.getPlayer().setGameMode(GameMode.SURVIVAL);
+			gPlayer.getPlayer().getInventory().setHeldItemSlot(4);
 			game.getScoreboard().updateForPlayer(gPlayer);
 			game.getBossBar().updateForPlayer(gPlayer);
 		}
@@ -66,7 +81,7 @@ public class BlockPartyListeners implements Listener {
 				public void run(){
 					game.getArena().getWorld().setFullTime((25000-(index*50))%24000);
 				}
-			},40+i);
+			},60+i);
 		}
 	}
 
@@ -111,6 +126,7 @@ public class BlockPartyListeners implements Listener {
 						@Override
 						public void run(){
 							FireworkUtil.spawnFirework(randomLoc,null,true);
+							randomLoc.getWorld().playSound(randomLoc,Sound.ENTITY_FIREWORK_LAUNCH,1f,1f);
 						}
 					},i);
 				}
@@ -133,6 +149,7 @@ public class BlockPartyListeners implements Listener {
 					Title.showSubTitle(gPlayer.getPlayer(),"§fVyhral jsi tuto hru",0.5,8,0.5);
 
 					Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+						@Override
 						public void run(){
 							PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).runCoinsEffect("§a§lVitezstvi!",reward);
 						}
@@ -149,7 +166,7 @@ public class BlockPartyListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getPlayersCount() < 2) game.setState(GameState.ENDING);
+			if(game.getPlayersCount() < 2) game.setState(GameState.ENDING);//TODO: uncomment
 			Particles.FIREWORKS_SPARK.display(10f,4f,10f,0f,26,game.getArena().getGameLocation().clone().add(0,8,0),64);
 			if(game.getRoundState() == BlockPartyState.WAITING){
 				if(game.getCountdown() > 0){
@@ -167,7 +184,7 @@ public class BlockPartyListeners implements Listener {
 					game.playRoundSound(game.getCountdown()+1);
 				} else {
 					game.setRoundState(BlockPartyState.FALLING);
-					game.setCountdown(3);
+					game.setCountdown(4);
 					game.clearFloor();
 				}
 			}
@@ -176,7 +193,7 @@ public class BlockPartyListeners implements Listener {
 					game.setCountdown(game.getCountdown()-1);
 				} else {
 					game.setRoundState(BlockPartyState.WAITING);
-					game.setCountdown(3);
+					game.setCountdown(4);
 					game.nextRound();
 				}
 			}
@@ -193,7 +210,7 @@ public class BlockPartyListeners implements Listener {
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityDamageEvent(EntityDamageEvent event){
-		if(event.getEntity() instanceof Player){
+		if(event.getEntity() instanceof Player && event.getCause() != DamageCause.ENTITY_ATTACK && event.getCause() != DamageCause.PROJECTILE && event.getCause() != DamageCause.LIGHTNING){
 			event.setCancelled(true);
 			event.getEntity().setFireTicks(0);
 		}
@@ -203,6 +220,13 @@ public class BlockPartyListeners implements Listener {
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
 		if(event.getEntity() instanceof Player && event.getDamager() instanceof Player){
 			event.setCancelled(true);
+		}
+		else if(event.getDamager().getType() == EntityType.SILVERFISH || event.getDamager().getType() == EntityType.ZOMBIE){
+			event.setCancelled(false);
+			event.setDamage(0);
+		}
+		else if(event.getCause() == DamageCause.LIGHTNING){
+			event.setDamage(0);
 		}
 	}
 
@@ -218,5 +242,59 @@ public class BlockPartyListeners implements Listener {
 				game.getGamePlayer(event.getPlayer()).toggleSpectator();
 			}
 		}
+	}
+
+	@SuppressWarnings("deprecation")
+	@EventHandler(ignoreCancelled = true)
+	public void PlayerInteractEvent(PlayerInteractEvent event){
+		Block block = event.getClickedBlock();
+		if((event.getAction() == Action.LEFT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_BLOCK) && block != null && block.getType() == Material.BEACON){
+			event.getPlayer().getWorld().playSound(block.getLocation(),Sound.BLOCK_GLASS_BREAK,1f,1f);
+			game.getPickup().activate(game.getGamePlayer(event.getPlayer()));
+			game.getPickup().remove();
+			game.sendMessage("§b"+event.getPlayer().getName()+" "+game.getPickup().getType().getMessage());
+		}
+		else if(event.getAction() == Action.LEFT_CLICK_BLOCK && event.getItem() != null && event.getItem().getType() == Material.GOLD_SPADE && block != null && this.getGame().getArena().isBlockInArena(block.getLocation())){
+			Particles.BLOCK_CRACK.display(new BlockData(block.getType(),block.getData()),0.3f,0.3f,0.3f,0.0f,64,block.getLocation().add(0.5,0.7,0.5),64);
+			block.getWorld().playSound(block.getLocation(),Sound.BLOCK_STONE_PLACE,1f,1f);
+			block.setType(Material.AIR);
+			event.getItem().setDurability((short)(event.getItem().getDurability()+2));
+			if(event.getItem().getType().getMaxDurability() <= event.getItem().getDurability()){
+				event.getPlayer().getInventory().remove(event.getItem().getType());
+				block.getWorld().playSound(event.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
+			}
+		}
+	}
+
+	@EventHandler(ignoreCancelled=true)
+    public void EntityPickupItemEvent(EntityPickupItemEvent event){
+		if(event.getEntity() instanceof Player){
+			if(event.getItem().getItemStack().getType() == Material.SNOW_BALL){
+				((Player)event.getEntity()).getInventory().addItem(new ItemStack(Material.SNOW_BALL,1));
+				event.getItem().getWorld().playSound(event.getEntity().getLocation(),Sound.ENTITY_ITEM_PICKUP,0.5f,2f);
+				event.getItem().remove();
+			}
+			else if(event.getItem().getItemStack().getType() == Material.GOLD_SPADE){
+				if(!((Player)event.getEntity()).getInventory().contains(Material.GOLD_SPADE)){
+					((Player)event.getEntity()).getInventory().remove(Material.GOLD_SPADE);
+					((Player)event.getEntity()).getInventory().addItem(new ItemStack(Material.GOLD_SPADE,1));
+					event.getItem().getWorld().playSound(event.getEntity().getLocation(),Sound.ENTITY_ITEM_PICKUP,0.5f,2f);
+					event.getItem().remove();
+				}
+			} else {
+				event.getItem().remove();
+			}
+			event.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void InventoryClickEvent(InventoryClickEvent event){
+		event.setCancelled(true);
+	}
+
+	@EventHandler
+	public void EntityTargetEvent(EntityTargetEvent event){
+		event.setCancelled(true);
 	}
 }

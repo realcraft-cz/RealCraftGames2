@@ -31,11 +31,12 @@ import com.games.player.GamePlayerState;
 import com.games.utils.LocationUtil;
 import com.games.utils.StringUtil;
 import com.games.utils.Title;
-import com.realcraft.RealCraft;
-import com.realcraft.ServerType;
-import com.realcraft.lobby.LobbyAutoParkour;
-import com.realcraft.lobby.LobbyMenu;
-import com.realcraft.minihry.GamesReminder;
+
+import realcraft.bukkit.RealCraft;
+import realcraft.bukkit.ServerType;
+import realcraft.bukkit.lobby.LobbyAutoParkour;
+import realcraft.bukkit.lobby.LobbyMenu;
+import realcraft.bukkit.minihry.GamesReminder;
 
 public abstract class Game implements Runnable {
 
@@ -64,7 +65,7 @@ public abstract class Game implements Runnable {
 	private String prefix;
 	private int startPlayers;
 	private long lastReminder;
-	private static final String[] numbers = new String[]{"§c\u278A","§6\u278B","§6\u278C","§e\u278D","§e\u278E"};
+	private static final String[] numbers = new String[]{"§c\u278A","§6\u278B","§e\u278C","§e\u278D","§e\u278E"};
 
 	public Game(GameType type){
 		this.type = type;
@@ -341,11 +342,10 @@ public abstract class Game implements Runnable {
 				@Override
 				public void run(){
 					gPlayer.getPlayer().teleport(Game.this.getLobbyLocation());
+					Games.getEssentials().getUser(gPlayer.getPlayer()).setNickname(Games.getEssentials().getUser(gPlayer.getPlayer()).getName());
+					Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
 				}
 			},5);
-
-			Games.getEssentials().getUser(gPlayer.getPlayer()).setNickname(Games.getEssentials().getUser(gPlayer.getPlayer()).getName());
-			Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
 		} else {
 			gPlayer.setState(GamePlayerState.SPECTATOR);
 			Bukkit.getServer().getPluginManager().callEvent(new GamePlayerJoinEvent(this,gPlayer));

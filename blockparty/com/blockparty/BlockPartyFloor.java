@@ -2,7 +2,7 @@ package com.blockparty;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import org.bukkit.Material;
@@ -11,6 +11,7 @@ import org.bukkit.block.Block;
 
 import com.sk89q.worldedit.CuboidClipboard;
 import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.schematic.MCEditSchematicFormat;
 
 @SuppressWarnings("deprecation")
@@ -38,27 +39,19 @@ public class BlockPartyFloor {
 		this.used = used;
 	}
 
-	public Block getRandomBlock(World world,Vector locMin){
-		ArrayList<Integer> types = new ArrayList<Integer>();
+	public BlockPartyBlock getRandomBlock(World world,Vector locMin){
+		HashMap<Integer,BaseBlock> types = new HashMap<Integer,BaseBlock>();
 		for(int y=0;y<size.getBlockY();y++){
 			for(int x=0;x<size.getBlockX();x++){
 				for(int z=0;z<size.getBlockZ();z++){
-					if(!types.contains(floor.getBlock(new Vector(x,y,z)).getData()) && floor.getBlock(new Vector(x,y,z)).getId() == Material.STAINED_CLAY.getId()) types.add(floor.getBlock(new Vector(x,y,z)).getData());
-				}
-			}
-		}
-		Block block = null;
-		int randomdata = types.get(new Random().nextInt(types.size()));
-		for(int y=0;y<size.getBlockY();y++){
-			for(int x=0;x<size.getBlockX();x++){
-				for(int z=0;z<size.getBlockZ();z++){
-					if(world.getBlockAt(locMin.getBlockX() + x,locMin.getBlockY() + y,locMin.getBlockZ() + z).getType() == Material.STAINED_CLAY && world.getBlockAt(locMin.getBlockX() + x,locMin.getBlockY() + y,locMin.getBlockZ() + z).getData() == randomdata){
-						block = world.getBlockAt(locMin.getBlockX() + x,locMin.getBlockY() + y,locMin.getBlockZ() + z);
+					if(!types.containsKey(floor.getBlock(new Vector(x,y,z)).getData()) && floor.getBlock(new Vector(x,y,z)).getId() == Material.STAINED_CLAY.getId()){
+						types.put(floor.getBlock(new Vector(x,y,z)).getData(),floor.getBlock(new Vector(x,y,z)));
 					}
 				}
 			}
 		}
-		return block;
+		BaseBlock block = (BaseBlock)types.values().toArray()[new Random().nextInt(types.size())];
+		return new BlockPartyBlock(Material.getMaterial(block.getType()),(byte)block.getData());
 	}
 
 	public void paste(World world,Vector locMin){

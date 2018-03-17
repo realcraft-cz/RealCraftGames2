@@ -309,6 +309,7 @@ public class BedWarsShop {
 					meta = itemStack.getItemMeta();
 					meta.addEnchant(Enchantment.ARROW_INFINITE,1,false);
 					meta.addEnchant(Enchantment.ARROW_DAMAGE,2,false);
+					meta.addEnchant(Enchantment.DURABILITY,1,false);
 					itemStack.setItemMeta(meta);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,14));
 
@@ -316,6 +317,7 @@ public class BedWarsShop {
 					meta = itemStack.getItemMeta();
 					meta.addEnchant(Enchantment.ARROW_INFINITE,1,false);
 					meta.addEnchant(Enchantment.ARROW_FIRE,1,false);
+					meta.addEnchant(Enchantment.DURABILITY,2,false);
 					itemStack.setItemMeta(meta);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,18));
 
@@ -324,6 +326,7 @@ public class BedWarsShop {
 					meta.addEnchant(Enchantment.ARROW_INFINITE,1,false);
 					meta.addEnchant(Enchantment.ARROW_FIRE,1,false);
 					meta.addEnchant(Enchantment.ARROW_KNOCKBACK,1,false);
+					meta.addEnchant(Enchantment.DURABILITY,3,false);
 					itemStack.setItemMeta(meta);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,22));
 
@@ -418,7 +421,7 @@ public class BedWarsShop {
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,1));
 
 					itemStack = new ItemStack(Material.ENDER_PEARL,1);
-					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,6));
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,8));
 					break;
 				}
 			}

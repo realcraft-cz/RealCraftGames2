@@ -66,10 +66,10 @@ import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.LocationUtil;
 import com.games.utils.ReflectionUtils;
-import com.realcraft.lobby.LobbyMenu;
 
 import net.minecraft.server.v1_12_R1.EnumGamemode;
 import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo;
+import realcraft.bukkit.lobby.LobbyMenu;
 
 public class GameListeners implements Listener {
 
@@ -182,12 +182,6 @@ public class GameListeners implements Listener {
 					event.setCancelled(true);
 					event.getEntity().setFireTicks(0);
 					return;
-				}
-				if(event.getCause() == DamageCause.FIRE || event.getCause() == DamageCause.FIRE_TICK){
-					if(GameFlag.USE_FIRE == false){
-						event.setCancelled(true);
-						event.getEntity().setFireTicks(0);
-					}
 				}
 			}
 		}
@@ -331,6 +325,9 @@ public class GameListeners implements Listener {
 						else if(blockState.getType() == Material.ANVIL && GameFlag.USE_ANVIL == false){
 							event.setCancelled(true);
 						}
+						else if(blockState.getType() == Material.FLOWER_POT){
+							event.setCancelled(true);
+						}
 						else if(event.getAction() == Action.LEFT_CLICK_BLOCK && GameFlag.USE_FIRE == false){
 							if(block.getRelative(BlockFace.UP).getType() == Material.FIRE){
 								event.setCancelled(true);
@@ -410,6 +407,7 @@ public class GameListeners implements Listener {
 		game.setState(GameState.LOBBY);
 		game.getVoting().resetVoting();
 		game.getStats().addGame(game.getStartPlayers());
+		game.getArena().getRegion().reset();
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
 			gPlayer.getPlayer().teleport(game.getLobbyLocation());
@@ -417,12 +415,6 @@ public class GameListeners implements Listener {
 			game.getLobbyScoreboard().updateForPlayer(gPlayer);
 			game.getLobbyBossBar().updateForPlayer(gPlayer);
 		}
-		Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
-			@Override
-			public void run(){
-				game.getArena().getRegion().reset();
-			}
-		});
 	}
 
 	@EventHandler(priority=EventPriority.LOW)

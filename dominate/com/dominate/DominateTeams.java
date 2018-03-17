@@ -15,7 +15,7 @@ public class DominateTeams {
 
 	private Dominate game;
 	private HashMap<DominateTeamType,DominateTeam> teams = new HashMap<DominateTeamType,DominateTeam>();
-	public static final int WIN_SCORE = 200;
+	public static final int WIN_SCORE = 3000;
 
 	public DominateTeams(Dominate game){
 		this.game = game;

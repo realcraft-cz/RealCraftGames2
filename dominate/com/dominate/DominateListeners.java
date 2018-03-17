@@ -6,6 +6,8 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,6 +26,11 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
 import com.dominate.DominateTeam.DominateTeamType;
 import com.games.Games;
 import com.games.events.GameCycleEvent;
@@ -38,7 +45,8 @@ import com.games.game.GameState;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Title;
-import com.realcraft.playermanazer.PlayerManazer;
+
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class DominateListeners implements Listener {
 
@@ -47,6 +55,23 @@ public class DominateListeners implements Listener {
 	public DominateListeners(Dominate game){
 		this.game = game;
 		Bukkit.getPluginManager().registerEvents(this,Games.getInstance());
+		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(Games.getInstance(),ListenerPriority.HIGH,PacketType.Play.Server.SPAWN_ENTITY){
+			@Override
+			public void onPacketSending(PacketEvent event){
+				if(game.getState().isGame() && event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY){
+					Entity entity = event.getPacket().getEntityModifier(event).read(0);
+					if(entity != null && entity.getType() == EntityType.ARMOR_STAND){
+						for(DominateKit kit : game.getArena().getKits()){
+							if(kit.getStand() != null && kit.getStand().getEntityId() == entity.getEntityId()){
+								GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
+								if(!kit.isSpawnedForPlayer(gPlayer)) event.setCancelled(true);
+								break;
+							}
+						}
+					}
+				}
+			}
+		});
 	}
 
 	public Dominate getGame(){
@@ -147,6 +172,13 @@ public class DominateListeners implements Listener {
 			for(DominateKit kit : game.getArena().getKits()){
 				kit.run();
 			}
+			for(GamePlayer gPlayer : game.getPlayers()){
+				for(DominateKit kit : game.getArena().getKits()){
+					if(kit.getStand() == null) continue;
+					if(gPlayer.getPlayer().getLocation().distanceSquared(kit.getStand().getLocation()) > 16*16) kit.despawnForPlayer(gPlayer);
+					else kit.spawnForPlayer(gPlayer);
+				}
+			}
 		}
 	}
 
@@ -172,6 +204,7 @@ public class DominateListeners implements Listener {
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		event.setRespawnLocation(game.getTeams().getPlayerTeam(gPlayer).getSpawnLocation());
 		gPlayer.resetPlayer();
+		game.getUser(gPlayer).respawn();
 	}
 
 	@EventHandler(ignoreCancelled=true)
@@ -185,6 +218,12 @@ public class DominateListeners implements Listener {
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
 		if(event.getDamager() instanceof Firework){
 			event.setCancelled(true);
+		}
+		else if(event.getEntity() instanceof Player){
+			DominateTeam team = game.getTeams().getPlayerTeam(game.getGamePlayer((Player)event.getEntity()));
+			if(team != null && team.isLocationInSpawn(event.getEntity().getLocation())){
+				event.setCancelled(true);
+			}
 		}
 	}
 

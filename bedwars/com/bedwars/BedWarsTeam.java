@@ -53,6 +53,8 @@ public class BedWarsTeam {
 
 	public void resetTeam(){
 		players.clear();
+		this.resetChests();
+		this.resetInventory();
 	}
 
 	public ArrayList<GamePlayer> getPlayers(){
@@ -90,7 +92,6 @@ public class BedWarsTeam {
 
 	public void addChest(Block chest){
 		chests.add(chest);
-		if(inventory == null) this.resetInventory();
 	}
 
 	public void removeChest(Block chest){
