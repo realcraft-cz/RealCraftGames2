@@ -22,9 +22,13 @@ import com.games.game.GameFlag;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
 import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
 import com.games.utils.FormatUtil;
 import com.games.utils.StringUtil;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
@@ -171,6 +175,22 @@ public class HidenSeek extends Game {
 		}
 	}
 
+	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
+		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
+		int row = 0;
+		int column = 0;
+		HidenSeekTeam team = this.getTeams().getTeam(HidenSeekTeamType.SEEKERS);
+		for(GamePlayer gPlayer : team.getPlayers()){
+			int index = (row*9)+(column++);
+			items.put(index,new SpectatorMenuItemPlayer(index,team.getType().getChatColor()+gPlayer.getPlayer().getName(),gPlayer));
+			if(column == 8){
+				column = 0;
+				row ++;
+			}
+		}
+		return items;
+	}
+
 	public class HidenSeekScoreboard extends GameScoreboard {
 		private Team teamHiders;
 		private Team teamSeekers;
@@ -219,7 +239,11 @@ public class HidenSeek extends Game {
 					if(this.getGame().getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.HIDERS) teamHiders.addEntry(gPlayer.getPlayer().getName());
 					else if(this.getGame().getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.SEEKERS) teamSeekers.addEntry(gPlayer.getPlayer().getName());
 				}
+				else if(gPlayer.getState() == GamePlayerState.SPECTATOR){
+					this.addSpectator(gPlayer);
+				}
 			} else {
+				this.removeSpectator(gPlayer);
 				this.removePlayer(gPlayer);
 				teamHiders.removeEntry(gPlayer.getPlayer().getName());
 				teamSeekers.removeEntry(gPlayer.getPlayer().getName());
@@ -288,12 +312,13 @@ public class HidenSeek extends Game {
 
 		@Override
 		public void update(){
-			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(this.getType().getId());
+			GameStatsType type = GameStatsType.WINS;
+			if(this.getType() == GamePodiumType.RIGHT) type = GameStatsType.KILLS;
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type);
 			int index = 0;
 			for(GamePodiumStand stand : this.getStands()){
 				if(scores.size() <= index) continue;
-				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
-				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" zabiti");
+				stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" "+type.getName());
 				index ++;
 			}
 		}

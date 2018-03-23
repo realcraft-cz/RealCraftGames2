@@ -21,9 +21,14 @@ import com.games.game.GameFlag;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemLocation;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
 import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
 import com.games.utils.FormatUtil;
 import com.games.utils.Glow;
 
@@ -109,6 +114,30 @@ public class BedWars extends Game {
 		if(pTeam != null) pTeam.setPlayerInventory(gPlayer);
 	}
 
+	@SuppressWarnings("deprecation")
+	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
+		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
+		int row = 0;
+		int index = 0;
+		for(BedWarsTeam team : this.getTeams().getTeams()){
+			int column = 0;
+			index = (row*9)+(column++);
+			ItemStack item = new ItemStack(Material.WOOL,1,team.getType().getDyeColor().getWoolData());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
+			item.setItemMeta(meta);
+			items.put(index,new SpectatorMenuItemLocation(index,item,team.getSpawnLocation()));
+			for(GamePlayer gPlayer : team.getPlayers()){
+				if(column < 8){
+					index = (row*9)+(column++);
+					items.put(index,new SpectatorMenuItemPlayer(index,team.getType().getChatColor()+gPlayer.getPlayer().getName(),gPlayer));
+				}
+			}
+			row ++;
+		}
+		return items;
+	}
+
 	public class BedWarsScoreboard extends GameScoreboard {
 		private HashMap<BedWarsTeamType,Team> teams = null;
 
@@ -171,7 +200,11 @@ public class BedWars extends Game {
 						if(entry.getKey() == this.getGame().getTeams().getPlayerTeam(gPlayer).getType()) entry.getValue().addEntry(gPlayer.getPlayer().getName());
 					}
 				}
+				else if(gPlayer.getState() == GamePlayerState.SPECTATOR){
+					this.addSpectator(gPlayer);
+				}
 			} else {
+				this.removeSpectator(gPlayer);
 				this.removePlayer(gPlayer);
 				for(Team team : teams.values()){
 					team.removeEntry(gPlayer.getPlayer().getName());
@@ -187,12 +220,13 @@ public class BedWars extends Game {
 
 		@Override
 		public void update(){
-			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(this.getType().getId());
+			GameStatsType type = GameStatsType.WINS;
+			if(this.getType() == GamePodiumType.RIGHT) type = GameStatsType.KILLS;
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type);
 			int index = 0;
 			for(GamePodiumStand stand : this.getStands()){
 				if(scores.size() <= index) continue;
-				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
-				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" zabiti");
+				stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" "+type.getName());
 				index ++;
 			}
 		}

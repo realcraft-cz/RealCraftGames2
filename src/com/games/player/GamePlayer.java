@@ -4,9 +4,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import com.games.Games;
+import com.games.events.GamePlayerStateChangeEvent;
 import com.games.game.Game;
+import com.games.game.GameFlag;
 import com.games.utils.BorderUtil;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -49,7 +52,9 @@ public class GamePlayer {
 	}
 
 	public void setState(GamePlayerState state){
+		GamePlayerState oldState = this.state;
 		this.state = state;
+		Bukkit.getServer().getPluginManager().callEvent(new GamePlayerStateChangeEvent(game,this,oldState));
 	}
 
 	public void teleportToLobby(){
@@ -60,7 +65,7 @@ public class GamePlayer {
 		player.teleport(game.getArena().getSpectatorLocation());
 	}
 
-	public void toggleSpectator(){
+	/*public void toggleSpectator(){
 		player.getInventory().clear();
 		player.setAllowFlight(true);
 		player.setFlying(true);
@@ -75,6 +80,31 @@ public class GamePlayer {
 				BorderUtil.setBorder(player,game.getArena().getSpectatorLocation(),game.getArena().getSpectatorRadius()*2);
 			}
 		},2);
+	}*/
+
+	public void toggleSpectator(){
+		player.getInventory().clear();
+		player.setGameMode(GameMode.ADVENTURE);
+		player.setAllowFlight(true);
+		player.setFlying(true);
+		player.setFlySpeed(0.2f);
+		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,Integer.MAX_VALUE,Integer.MAX_VALUE,false,false));
+		player.setCollidable(false);
+		if(GameFlag.SPECTATOR) player.getInventory().setItem(0,game.getSpectator().getItem());
+		for(GamePlayer gPlayer2 : game.getGamePlayers()){
+			gPlayer2.getPlayer().hidePlayer(player);
+		}
+		for(GamePlayer gPlayer2 : game.getPlayers()){
+			if(gPlayer2.getState() == GamePlayerState.SPECTATOR) player.showPlayer(gPlayer2.getPlayer());
+		}
+		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+			@Override
+			public void run(){
+				player.setGameMode(GameMode.ADVENTURE);
+				player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,Integer.MAX_VALUE,Integer.MAX_VALUE,false,false));
+				BorderUtil.setBorder(player,game.getArena().getSpectatorLocation(),game.getArena().getSpectatorRadius()*2);
+			}
+		},2);
 	}
 
 	public void resetPlayer(){
@@ -82,6 +112,7 @@ public class GamePlayer {
 		player.setGameMode(GameMode.SURVIVAL);
 		player.setAllowFlight(false);
 		player.setFlying(false);
+		player.setCollidable(true);
 		player.setHealth(20);
 		player.setFoodLevel(20);
 		player.setSaturation(20);
@@ -91,6 +122,7 @@ public class GamePlayer {
 		player.setExp(0);
 		player.setTotalExperience(0);
 		player.resetPlayerTime();
+		player.closeInventory();
 		player.getInventory().clear();
 		player.getInventory().setHeldItemSlot(0);
 		player.getInventory().setHelmet(null);

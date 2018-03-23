@@ -5,38 +5,52 @@ import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Bed;
 
+import com.bedwars.BedWarsResource.BedWarsResourceType;
+import com.bedwars.specials.BedWarsSpecialSheep;
+import com.bedwars.specials.BedWarsSpecialStray;
 import com.games.Games;
 import com.games.events.GameCycleEvent;
 import com.games.events.GameEndEvent;
 import com.games.events.GamePlayerJoinEvent;
 import com.games.events.GamePlayerLeaveEvent;
+import com.games.events.GamePlayerStateChangeEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
-import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.ItemUtil;
@@ -45,6 +59,7 @@ import com.games.utils.Title;
 
 import net.citizensnpcs.api.event.NPCLeftClickEvent;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
+import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public class BedWarsListeners implements Listener {
@@ -71,6 +86,13 @@ public class BedWarsListeners implements Listener {
 		if(game.getTeams().getPlayerTeam(event.getPlayer()) != null){
 			game.getTeams().getPlayerTeam(event.getPlayer()).removePlayer(event.getPlayer());
 		}
+		if(event.getPlayer().getSettings().getInt("kills") > 0) game.getStats().addScore(event.getPlayer(),GameStatsType.KILLS,event.getPlayer().getSettings().getInt("kills"));
+		if(event.getPlayer().getSettings().getInt("deaths") > 0) game.getStats().addScore(event.getPlayer(),GameStatsType.DEATHS,event.getPlayer().getSettings().getInt("deaths"));
+	}
+
+	@EventHandler
+	public void GamePlayerStateChangeEvent(GamePlayerStateChangeEvent event){
+		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
 	}
 
 	@EventHandler
@@ -121,8 +143,9 @@ public class BedWarsListeners implements Listener {
 								(game.getConfig().getInt("reward.bed",0)*gPlayer.getSettings().getInt("beds"))
 							);
 
-							game.getStats().addScore(gPlayer,1,GamePodiumType.LEFT.getId());
-							if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+							game.getStats().addScore(gPlayer,GameStatsType.WINS,1);
+							if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
+							if(gPlayer.getSettings().getInt("deaths") > 0) game.getStats().addScore(gPlayer,GameStatsType.DEATHS,gPlayer.getSettings().getInt("deaths"));
 
 							Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 								public void run(){
@@ -133,10 +156,13 @@ public class BedWarsListeners implements Listener {
 						Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 						Title.showSubTitle(gPlayer.getPlayer(),"§fTvuj tym vyhral tuto hru",0.5,8,0.5);
 					} else {
-						if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+						if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
 						Title.showTitle(gPlayer.getPlayer(),"§c§lProhra",0.5,8,0.5);
 						Title.showSubTitle(gPlayer.getPlayer(),winner.getType().getChatColor()+winner.getType().toName()+" §fvyhrali tuto hru",0.5,8,0.5);
 					}
+					gPlayer.getSettings().setInt("kills",0);
+					gPlayer.getSettings().setInt("deaths",0);
+					gPlayer.getSettings().setInt("beds",0);
 				}
 			}
 		}
@@ -267,7 +293,7 @@ public class BedWarsListeners implements Listener {
 		else event.setCancelled(true);
 	}
 
-	/*@EventHandler(ignoreCancelled=true)
+	@EventHandler(ignoreCancelled=true)
 	public void EntityShootBowEvent(EntityShootBowEvent event){
 		int level = event.getBow().getEnchantmentLevel(Enchantment.DURABILITY);
 		int damage = 9;
@@ -275,7 +301,7 @@ public class BedWarsListeners implements Listener {
 		else if(level == 2) damage = 7;
 		else if(level == 3) damage = 6;
 		event.getBow().setDurability((short)(event.getBow().getDurability()+damage));
-	}*/
+	}
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityExplodeEvent(EntityExplodeEvent event){
@@ -290,14 +316,44 @@ public class BedWarsListeners implements Listener {
 	}
 
 	@EventHandler(ignoreCancelled=true)
+	public void EntityDamageEvent(EntityDamageEvent event){
+		if(event.getEntityType() == EntityType.STRAY && (event.getCause() == DamageCause.FIRE_TICK)){
+			event.setCancelled(true);
+			event.getEntity().setFireTicks(0);
+		}
+	}
+
+	@EventHandler(ignoreCancelled=true)
+	public void EntityDeathEvent(EntityDeathEvent event){
+		if(event.getEntityType() == EntityType.STRAY){
+			event.setDroppedExp(0);
+			event.getDrops().clear();
+		}
+	}
+
+	@EventHandler
+	public void EntityTargetEvent(EntityTargetEvent event){
+		if(event.getEntityType() == EntityType.STRAY) event.setCancelled(true);
+	}
+
+	@EventHandler(ignoreCancelled=true)
     public void EntityPickupItemEvent(EntityPickupItemEvent event){
 		if(event.getEntity() instanceof Player){
 			GamePlayer gPlayer = game.getGamePlayer((Player)event.getEntity());
-			if(gPlayer.getSettings().getLong("pickup") < System.currentTimeMillis()-50){
+			if(gPlayer.getSettings().getLong("pickup") < System.currentTimeMillis()-40){
 				gPlayer.getSettings().setLong("pickup",System.currentTimeMillis());
 			} else {
 				event.setCancelled(true);
 			}
+		}
+	}
+
+	@EventHandler
+	public void ItemMergeEvent(ItemMergeEvent event){
+		if(event.getEntity().getItemStack().getType() == BedWarsResourceType.BRONZE.toMaterial()
+			|| event.getEntity().getItemStack().getType() == BedWarsResourceType.IRON.toMaterial()
+			|| event.getEntity().getItemStack().getType() == BedWarsResourceType.GOLD.toMaterial()){
+			event.setCancelled(true);
 		}
 	}
 
@@ -336,10 +392,17 @@ public class BedWarsListeners implements Listener {
 					}
 				}
 			}
-			else if(item.getType() == Material.MONSTER_EGG && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
+			else if(item.getType() == Material.MONSTER_EGG && ItemUtil.spawnEggFromItemStack(item) == EntityType.SHEEP && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
 				event.setCancelled(true);
 				ItemUtil.removeItems(gPlayer.getPlayer().getInventory(),item,1);
-				game.getTeams().getPlayerTeam(gPlayer).spawnSheep(gPlayer.getPlayer().getLocation());
+				BedWarsSpecialSheep sheep = new BedWarsSpecialSheep(game,game.getTeams().getPlayerTeam(gPlayer));
+				sheep.activate(gPlayer);
+			}
+			else if(item.getType() == Material.MONSTER_EGG && ItemUtil.spawnEggFromItemStack(item) == EntityType.STRAY && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
+				event.setCancelled(true);
+				ItemUtil.removeItems(gPlayer.getPlayer().getInventory(),item,1);
+				BedWarsSpecialStray stray = new BedWarsSpecialStray(game,game.getTeams().getPlayerTeam(gPlayer));
+				stray.activate(gPlayer);
 			}
 		}
 	}
@@ -377,6 +440,30 @@ public class BedWarsListeners implements Listener {
 		if(gPlayer.getState() != GamePlayerState.SPECTATOR){
 			if(event.getNPC().getEntity().getType() == EntityType.VILLAGER){
 				game.getShop().open(gPlayer);
+			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.HIGH,ignoreCancelled=true)
+	public void AsyncPlayerChatEvent(AsyncPlayerChatEvent event){
+		String message = event.getMessage();
+		boolean forTeam = true;
+		if(message.startsWith("!") || message.startsWith("@")){
+			message = message.substring(1,message.length());
+			event.setMessage(message.trim());
+			forTeam = false;
+		}
+		if(forTeam){
+			if(game.getState() == GameState.INGAME){
+				GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
+				if(gPlayer.getState() != GamePlayerState.SPECTATOR){
+					event.setCancelled(true);
+					RealCraft.getInstance().chatlog.onPlayerChat(event.getPlayer(),message);
+					message = game.getTeams().getPlayerTeam(gPlayer).getType().getChatColor()+"[Team] "+gPlayer.getPlayer().getDisplayName()+": "+ChatColor.GRAY+message;
+					for(GamePlayer gPlayer2 : game.getTeams().getPlayerTeam(gPlayer).getPlayers()){
+						gPlayer2.getPlayer().sendMessage(message);
+					}
+				}
 			}
 		}
 	}

@@ -10,24 +10,13 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftEntity;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import com.games.Games;
-import com.games.game.GameState;
 import com.games.player.GamePlayer;
-import com.games.utils.EntityUtil;
-
-import net.minecraft.server.v1_12_R1.EntityInsentient;
-import net.minecraft.server.v1_12_R1.GenericAttributes;
 
 public class BedWarsTeam {
 
@@ -158,62 +147,6 @@ public class BedWarsTeam {
 			game.sendMessage("§c\u2623 §b"+gPlayer.getPlayer().getName()+" §7znicil postel tymu "+this.getType().getChatColor()+this.getType().toName());
 			gPlayer.getSettings().addInt("beds",1);
 		}
-	}
-
-	public void spawnSheep(Location location){
-		Entity sheep = location.getWorld().spawnEntity(location,EntityType.SHEEP);
-    	((Sheep)sheep).setAdult();
-    	((Sheep)sheep).setAgeLock(true);
-    	((Sheep)sheep).setInvulnerable(true);
-    	((Sheep)sheep).setRemoveWhenFarAway(false);
-    	((Sheep)sheep).setColor(this.getType().getDyeColor());
-
-    	Entity tnt = location.getWorld().spawnEntity(location,EntityType.PRIMED_TNT);
-    	((TNTPrimed)tnt).setFuseTicks(8*20);
-    	((TNTPrimed)tnt).setIsIncendiary(false);
-    	sheep.addPassenger(tnt);
-
-    	EntityUtil.clearPathfinders(sheep);
-    	new BukkitRunnable(){
-    		@Override
-    		public void run(){
-    			GamePlayer gPlayer = BedWarsTeam.this.getNearestEnemy(sheep.getLocation());
-    			if(gPlayer != null && !sheep.isDead()){
-    				((EntityInsentient) ((CraftEntity)sheep).getHandle()).getAttributeInstance(GenericAttributes.FOLLOW_RANGE).setValue(128);
-    				((EntityInsentient) ((CraftEntity)sheep).getHandle()).getNavigation().a(((CraftEntity)gPlayer.getPlayer()).getHandle(),2);
-    			}
-    			if(game.getState() != GameState.INGAME || sheep.isDead() || tnt.isDead()){
-    				this.cancel();
-    			}
-    		}
-    	}.runTaskTimer(Games.getInstance(),1,10);
-
-    	new BukkitRunnable(){
-    		@Override
-    		public void run(){
-    			if(game.getState() != GameState.INGAME || sheep.isDead() || tnt.isDead()){
-    				sheep.remove();
-    				tnt.remove();
-    				this.cancel();
-    			}
-    		}
-    	}.runTaskTimer(Games.getInstance(),2,2);
-	}
-
-	public GamePlayer getNearestEnemy(Location location){
-		double distance = Double.MAX_VALUE;
-		GamePlayer nearest = null;
-		for(BedWarsTeam team : game.getTeams().getTeams()){
-			if(team.getType() == this.getType()) continue;
-			for(GamePlayer gPlayer : team.getPlayers()){
-				double tmpDistance = gPlayer.getPlayer().getLocation().distanceSquared(location);
-				if(tmpDistance < distance){
-					distance = tmpDistance;
-					nearest = gPlayer;
-				}
-			}
-		}
-		return nearest;
 	}
 
 	public enum BedWarsTeamType {

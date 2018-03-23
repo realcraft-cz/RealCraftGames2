@@ -35,11 +35,13 @@ import org.bukkit.util.Vector;
 import com.games.Games;
 import com.games.events.GameCycleEvent;
 import com.games.events.GamePlayerJoinEvent;
+import com.games.events.GamePlayerLeaveEvent;
+import com.games.events.GamePlayerStateChangeEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
-import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Particles;
@@ -62,6 +64,17 @@ public class RageModeListeners implements Listener {
 
 	@EventHandler
 	public void GamePlayerJoinEvent(GamePlayerJoinEvent event){
+		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
+	}
+
+	@EventHandler
+	public void GamePlayerLeaveEvent(GamePlayerLeaveEvent event){
+		if(event.getPlayer().getSettings().getInt("kills") > 0) game.getStats().addScore(event.getPlayer(),GameStatsType.KILLS,event.getPlayer().getSettings().getInt("kills"));
+		if(event.getPlayer().getSettings().getInt("deaths") > 0) game.getStats().addScore(event.getPlayer(),GameStatsType.DEATHS,event.getPlayer().getSettings().getInt("deaths"));
+	}
+
+	@EventHandler
+	public void GamePlayerStateChangeEvent(GamePlayerStateChangeEvent event){
 		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
 	}
 
@@ -100,8 +113,10 @@ public class RageModeListeners implements Listener {
 
 					game.sendMessage("§b"+gPlayer.getPlayer().getName()+" §fvyhral a ziskava §a+"+reward+" coins");
 
-					game.getStats().addScore(gPlayer,1,GamePodiumType.LEFT.getId());
-					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+					game.getStats().addScore(gPlayer,GameStatsType.WINS,1);
+					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
+					if(gPlayer.getSettings().getInt("deaths") > 0) game.getStats().addScore(gPlayer,GameStatsType.DEATHS,gPlayer.getSettings().getInt("deaths"));
+
 					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§fVyhral jsi tuto hru",0.5,8,0.5);
 
@@ -111,10 +126,12 @@ public class RageModeListeners implements Listener {
 						}
 					},10*20);
 				} else {
-					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
 					Title.showTitle(gPlayer.getPlayer(),"§c§lProhra",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§b"+winner.getPlayer().getName()+" §fvyhral tuto hru",0.5,8,0.5);
 				}
+				gPlayer.getSettings().setInt("kills",0);
+				gPlayer.getSettings().setInt("deaths",0);
 			}
 		}
 	}

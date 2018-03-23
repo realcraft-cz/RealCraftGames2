@@ -29,11 +29,12 @@ import com.games.Games;
 import com.games.events.GameCycleEvent;
 import com.games.events.GameEndEvent;
 import com.games.events.GamePlayerJoinEvent;
+import com.games.events.GamePlayerStateChangeEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
-import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.FireworkUtil;
@@ -58,6 +59,11 @@ public class BlockPartyListeners implements Listener {
 
 	@EventHandler
 	public void GamePlayerJoinEvent(GamePlayerJoinEvent event){
+		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
+	}
+
+	@EventHandler
+	public void GamePlayerStateChangeEvent(GamePlayerStateChangeEvent event){
 		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
 	}
 
@@ -144,7 +150,8 @@ public class BlockPartyListeners implements Listener {
 
 					game.sendMessage("§b"+gPlayer.getPlayer().getName()+" §fvyhral a ziskava §a+"+reward+" coins");
 
-					game.getStats().addScore(gPlayer,1,GamePodiumType.LEFT.getId());
+					game.getStats().addScore(gPlayer,GameStatsType.WINS,1);
+
 					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§fVyhral jsi tuto hru",0.5,8,0.5);
 

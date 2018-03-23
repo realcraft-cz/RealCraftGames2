@@ -1,9 +1,8 @@
 package com.games.game;
 
-import java.util.List;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -19,6 +18,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockCanBuildEvent;
 import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.block.BlockGrowEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -44,12 +44,14 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.material.Door;
 import org.bukkit.material.Gate;
 import org.bukkit.material.TrapDoor;
+import org.bukkit.util.Vector;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import com.comphenix.protocol.PacketType;
@@ -65,10 +67,7 @@ import com.games.exceptions.GameMaxPlayersException;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.LocationUtil;
-import com.games.utils.ReflectionUtils;
 
-import net.minecraft.server.v1_12_R1.EnumGamemode;
-import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo;
 import realcraft.bukkit.lobby.LobbyMenu;
 
 public class GameListeners implements Listener {
@@ -78,38 +77,12 @@ public class GameListeners implements Listener {
 	public GameListeners(Game game){
 		this.game = game;
 		Bukkit.getPluginManager().registerEvents(this,Games.getInstance());
-		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(Games.getInstance(),PacketType.Play.Server.PLAYER_INFO,PacketType.Play.Server.GAME_STATE_CHANGE,PacketType.Play.Server.CAMERA){
+		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(Games.getInstance(),PacketType.Play.Client.USE_ENTITY){
 			@Override
-			public void onPacketSending(PacketEvent event){
-				Player player = event.getPlayer();
-				GamePlayer gPlayer = game.getGamePlayer(player);
+			public void onPacketReceiving(PacketEvent event){
+				GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 				if(gPlayer != null && gPlayer.getState() == GamePlayerState.SPECTATOR){
-					try {
-						if(event.getPacketType() == PacketType.Play.Server.PLAYER_INFO){
-							String name = event.getPacket().getPlayerInfoDataLists().read(0).get(0).getProfile().getName();
-							if(player.getName().equalsIgnoreCase(name)){
-								PacketPlayOutPlayerInfo packet = (PacketPlayOutPlayerInfo) event.getPacket().getHandle();
-								PacketPlayOutPlayerInfo.EnumPlayerInfoAction action = (PacketPlayOutPlayerInfo.EnumPlayerInfoAction) ReflectionUtils.getField(packet.getClass(),true,"a").get(packet);
-								if(action == PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_GAME_MODE){
-									@SuppressWarnings("unchecked")
-									List<PacketPlayOutPlayerInfo.PlayerInfoData> infoList = (List<PacketPlayOutPlayerInfo.PlayerInfoData>) ReflectionUtils.getField(packet.getClass(),true,"b").get(packet);
-									for(PacketPlayOutPlayerInfo.PlayerInfoData infoData : infoList){
-										if(infoData.c() == EnumGamemode.SPECTATOR){
-											ReflectionUtils.setValue(infoData,true,"c",EnumGamemode.ADVENTURE);
-										}
-									}
-								}
-							}
-						}
-						else if(event.getPacketType() == PacketType.Play.Server.GAME_STATE_CHANGE){
-							event.setCancelled(true);
-						}
-						else if(event.getPacketType() == PacketType.Play.Server.CAMERA){
-							event.setCancelled(true);
-						}
-					} catch (Exception e){
-						e.printStackTrace();
-					}
+					event.setCancelled(true);
 				}
 			}
 		});
@@ -189,7 +162,8 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
-		if(game.getState() != GameState.INGAME && (!(event.getDamager() instanceof Player) || ((Player)event.getDamager()).getGameMode() != GameMode.CREATIVE || game.getGamePlayer((Player)event.getDamager()).getState() == GamePlayerState.SPECTATOR)) event.setCancelled(true);
+		if(game.getState() != GameState.INGAME && (!(event.getDamager() instanceof Player) || ((Player)event.getDamager()).getGameMode() != GameMode.CREATIVE)) event.setCancelled(true);
+		if(event.getDamager() instanceof Player && game.getGamePlayer((Player)event.getDamager()).getState() == GamePlayerState.SPECTATOR) event.setCancelled(true);
 		if(event.getEntity() instanceof ItemFrame){
 			if(event.getDamager() instanceof Player){
 				Player player = (Player) event.getDamager();
@@ -210,6 +184,32 @@ public class GameListeners implements Listener {
 	@EventHandler(priority=EventPriority.LOW)
 	public void BlockPlaceEvent(BlockPlaceEvent event){
 		if((game.getState().isLobby() || game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR || GameFlag.BUILD == false) && event.getPlayer().getGameMode() != GameMode.CREATIVE) event.setCancelled(true);
+	}
+
+	@EventHandler(priority=EventPriority.LOW)
+	public void BlockCanBuildEvent(BlockCanBuildEvent event){
+		if(!event.isBuildable()){
+			for(GamePlayer gPlayer : game.getPlayers()){
+				if(gPlayer.getState() != GamePlayerState.SPECTATOR) continue;
+				Location location = gPlayer.getPlayer().getLocation();
+				Location blockLocation = event.getBlock().getLocation();
+				if (location.getX() > blockLocation.getBlockX()-1 && location.getX() < blockLocation.getBlockX()+1){
+					if (location.getZ() > blockLocation.getBlockZ()-1 && location.getZ() < blockLocation.getBlockZ()+1){
+						if (location.getY() > blockLocation.getBlockY()-2 && location.getY() < blockLocation.getBlockY()+1){
+							event.setBuildable(true);
+							gPlayer.getPlayer().setVelocity(new Vector(0,1,0));
+							Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+								@Override
+								public void run(){
+									gPlayer.getPlayer().setAllowFlight(true);
+									gPlayer.getPlayer().setFlying(true);
+								}
+							},10);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
@@ -340,6 +340,17 @@ public class GameListeners implements Listener {
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
+	public void PlayerMoveEvent(PlayerMoveEvent event){
+		if(game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR){
+			if(event.getPlayer().getLocation().getBlockY() < 0){
+				event.getPlayer().setAllowFlight(true);
+				event.getPlayer().setFlying(true);
+				event.getPlayer().setVelocity(event.getPlayer().getVelocity().setY(2.0));
+			}
+		}
+	}
+
+	@EventHandler(priority=EventPriority.LOW)
 	public void PlayerBedEnterEvent(PlayerBedEnterEvent event){
 		if(game.getState().isLobby() || GameFlag.USE_BED == false || game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR) event.setCancelled(true);
 	}
@@ -406,6 +417,7 @@ public class GameListeners implements Listener {
 	public void GameEndEvent(GameEndEvent event){
 		game.setState(GameState.LOBBY);
 		game.getVoting().resetVoting();
+		game.getLeaderboard().update();
 		game.getStats().addGame(game.getStartPlayers());
 		game.getArena().getRegion().reset();
 		for(GamePlayer gPlayer : game.getPlayers()){
@@ -414,7 +426,14 @@ public class GameListeners implements Listener {
 			gPlayer.getPlayer().getInventory().setItem(0,LobbyMenu.getItem());
 			game.getLobbyScoreboard().updateForPlayer(gPlayer);
 			game.getLobbyBossBar().updateForPlayer(gPlayer);
+			game.sendPremiumOffer(gPlayer);
 		}
+		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+			@Override
+			public void run(){
+				game.getArena().getRegion().clearEntites();
+			}
+		},20);
 	}
 
 	@EventHandler(priority=EventPriority.LOW)

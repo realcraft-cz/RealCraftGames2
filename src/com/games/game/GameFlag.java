@@ -1,6 +1,7 @@
 package com.games.game;
 
 public class GameFlag {
+	public static boolean SPECTATOR = true;
 	public static boolean BUILD = false;
 	public static boolean DESTROY = false;
 	public static boolean CRAFT = false;

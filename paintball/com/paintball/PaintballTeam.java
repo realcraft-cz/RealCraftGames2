@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
+import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -129,6 +130,14 @@ public class PaintballTeam {
 				case BLUE: return Color.BLUE;
 			}
 			return Color.WHITE;
+		}
+
+		public DyeColor getDyeColor(){
+			switch(this){
+				case RED: return DyeColor.RED;
+				case BLUE: return DyeColor.BLUE;
+			}
+			return DyeColor.WHITE;
 		}
 	}
 }

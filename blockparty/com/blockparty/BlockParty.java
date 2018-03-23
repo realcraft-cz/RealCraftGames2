@@ -1,6 +1,7 @@
 package com.blockparty;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -27,8 +28,10 @@ import com.games.game.GameFlag;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
+import com.games.game.GameSpectator.SpectatorMenuItem;
 import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
@@ -50,6 +53,7 @@ public class BlockParty extends Game {
 	public BlockParty(){
 		super(GameType.BLOCKPARTY);
 		if(this.isMaintenance()) return;
+		GameFlag.SPECTATOR = false;
 		GameFlag.PICKUP = true;
 		new BlockPartyListeners(this);
 		this.scoreboard = new BlockPartyScoreboard(this);
@@ -103,6 +107,7 @@ public class BlockParty extends Game {
 		GamePlayer winner = null;
 		for(GamePlayer gPlayer : this.getPlayers()){
 			if(gPlayer.getState() == GamePlayerState.SPECTATOR) continue;
+			if(gPlayer.getPlayer().getLocation().getY() < 0) continue;
 			if(winner == null) winner = gPlayer;
 			else if(winner != null) return null;
 		}
@@ -232,6 +237,10 @@ public class BlockParty extends Game {
 		return null;
 	}
 
+	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
+		return new HashMap<Integer,SpectatorMenuItem>();
+	}
+
 	public class BlockPartyScoreboard extends GameScoreboard {
 		public BlockPartyScoreboard(Game game){
 			super(game,GameScoreboardType.GAME);
@@ -253,8 +262,15 @@ public class BlockParty extends Game {
 		}
 
 		public void updateForPlayer(GamePlayer gPlayer){
-			if(this.getGame().getState().isGame()) this.addPlayer(gPlayer);
-			else this.removePlayer(gPlayer);
+			if(this.getGame().getState().isGame()){
+				this.addPlayer(gPlayer);
+				if(gPlayer.getState() == GamePlayerState.SPECTATOR){
+					this.addSpectator(gPlayer);
+				}
+			} else {
+				this.removeSpectator(gPlayer);
+				this.removePlayer(gPlayer);
+			}
 		}
 	}
 
@@ -354,12 +370,12 @@ public class BlockParty extends Game {
 
 		@Override
 		public void update(){
-			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(GamePodiumType.LEFT.getId());
+			GameStatsType type = GameStatsType.WINS;
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type);
 			int index = 0;
 			for(GamePodiumStand stand : this.getStands()){
 				if(scores.size() <= index) continue;
-				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
-				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
+				stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" "+type.getName());
 				index ++;
 			}
 		}

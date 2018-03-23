@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -201,7 +202,6 @@ public class BedWarsShop {
 			return null;
 		}
 
-		@SuppressWarnings("deprecation")
 		public ArrayList<BedWarsCategoryItem> getItems(){
 			if(items != null) return items;
 			ArrayList<BedWarsCategoryItem> shopItems = new ArrayList<BedWarsCategoryItem>();
@@ -251,6 +251,12 @@ public class BedWarsShop {
 					itemStack.setItemMeta(meta);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.IRON,7));
 
+					itemStack = new ItemStack(Material.IRON_HELMET,1);
+					meta = itemStack.getItemMeta();
+					meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
+					itemStack.setItemMeta(meta);
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,8));
+
 					itemStack = new ItemStack(Material.SHIELD,1);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.IRON,7));
 					break;
@@ -296,14 +302,14 @@ public class BedWarsShop {
 					meta = itemStack.getItemMeta();
 					meta.addEnchant(Enchantment.ARROW_INFINITE,1,false);
 					itemStack.setItemMeta(meta);
-					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,5));
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,8));
 
 					itemStack = new ItemStack(Material.BOW,1);
 					meta = itemStack.getItemMeta();
 					meta.addEnchant(Enchantment.ARROW_INFINITE,1,false);
 					meta.addEnchant(Enchantment.ARROW_DAMAGE,1,false);
 					itemStack.setItemMeta(meta);
-					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,8));
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,12));
 
 					itemStack = new ItemStack(Material.BOW,1);
 					meta = itemStack.getItemMeta();
@@ -311,7 +317,7 @@ public class BedWarsShop {
 					meta.addEnchant(Enchantment.ARROW_DAMAGE,2,false);
 					meta.addEnchant(Enchantment.DURABILITY,1,false);
 					itemStack.setItemMeta(meta);
-					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,14));
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,16));
 
 					itemStack = new ItemStack(Material.BOW,1);
 					meta = itemStack.getItemMeta();
@@ -319,7 +325,7 @@ public class BedWarsShop {
 					meta.addEnchant(Enchantment.ARROW_FIRE,1,false);
 					meta.addEnchant(Enchantment.DURABILITY,2,false);
 					itemStack.setItemMeta(meta);
-					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,18));
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,24));
 
 					itemStack = new ItemStack(Material.BOW,1);
 					meta = itemStack.getItemMeta();
@@ -328,13 +334,10 @@ public class BedWarsShop {
 					meta.addEnchant(Enchantment.ARROW_KNOCKBACK,1,false);
 					meta.addEnchant(Enchantment.DURABILITY,3,false);
 					itemStack.setItemMeta(meta);
-					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,22));
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,28));
 
 					itemStack = new ItemStack(Material.ARROW,1);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,1));
-
-					itemStack = new ItemStack(Material.SPECTRAL_ARROW,1);
-					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,3));
 					break;
 				}
 				case FOOD:{
@@ -402,7 +405,7 @@ public class BedWarsShop {
 					break;
 				}
 				case SPECIAL:{
-					itemStack = new ItemStack(Material.WEB,1);
+					itemStack = new ItemStack(Material.WEB,3);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.BRONZE,16));
 
 					itemStack = new ItemStack(Material.TNT,1);
@@ -411,7 +414,10 @@ public class BedWarsShop {
 					itemStack = new ItemStack(Material.FLINT_AND_STEEL,1);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.GOLD,2));
 
-					itemStack = new ItemStack(Material.MONSTER_EGG,1,(short)0,(byte)91);
+					itemStack = ItemUtil.spawnEggToItemStack(EntityType.SHEEP);
+					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.BRONZE,64));
+
+					itemStack = ItemUtil.spawnEggToItemStack(EntityType.STRAY);
 					shopItems.add(new BedWarsCategoryItem(itemStack,BedWarsResourceType.BRONZE,64));
 
 					itemStack = new ItemStack(Material.CHEST,1);

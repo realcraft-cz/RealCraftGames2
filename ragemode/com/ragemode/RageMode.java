@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -17,7 +18,10 @@ import com.games.game.GameFlag;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
 import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
@@ -84,6 +88,21 @@ public class RageMode extends Game {
 		return winner;
 	}
 
+	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
+		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
+		int row = 0;
+		int column = 0;
+		for(GamePlayer gPlayer : this.getGamePlayers()){
+			int index = (row*9)+(column++);
+			items.put(index,new SpectatorMenuItemPlayer(index,gPlayer.getPlayer().getName(),gPlayer));
+			if(column == 8){
+				column = 0;
+				row ++;
+			}
+		}
+		return items;
+	}
+
 	public class RageModeScoreboard extends GameScoreboard {
 		private static final int PLAYERS = 7;
 
@@ -130,7 +149,11 @@ public class RageMode extends Game {
 			if(this.getGame().getState().isGame()){
 				this.addPlayer(gPlayer);
 				this.getScoreboard().getTeam("team").addEntry(gPlayer.getPlayer().getName());
+				if(gPlayer.getState() == GamePlayerState.SPECTATOR){
+					this.addSpectator(gPlayer);
+				}
 			} else {
+				this.removeSpectator(gPlayer);
 				this.removePlayer(gPlayer);
 				this.getScoreboard().getTeam("team").removeEntry(gPlayer.getPlayer().getName());
 			}
@@ -144,12 +167,13 @@ public class RageMode extends Game {
 
 		@Override
 		public void update(){
-			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(this.getType().getId());
+			GameStatsType type = GameStatsType.WINS;
+			if(this.getType() == GamePodiumType.RIGHT) type = GameStatsType.KILLS;
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type);
 			int index = 0;
 			for(GamePodiumStand stand : this.getStands()){
 				if(scores.size() <= index) continue;
-				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
-				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" zabiti");
+				stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" "+type.getName());
 				index ++;
 			}
 		}

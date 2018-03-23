@@ -17,9 +17,14 @@ import com.games.game.Game;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemLocation;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
 import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
 import com.games.utils.FormatUtil;
 import com.games.utils.Glow;
 import com.games.utils.StringUtil;
@@ -119,6 +124,32 @@ public class Paintball extends Game {
 		gPlayer.getPlayer().getInventory().setItem(0,new ItemStack(Material.SNOW_BALL,user.getPistols()));
 	}
 
+	@SuppressWarnings("deprecation")
+	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
+		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
+		int row = 0;
+		int index = 0;
+		for(PaintballTeam team : this.getTeams().getActiveTeams()){
+			int column = 0;
+			index = (row*9)+(column++);
+			ItemStack item = new ItemStack(Material.WOOL,1,team.getType().getDyeColor().getWoolData());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
+			item.setItemMeta(meta);
+			items.put(index,new SpectatorMenuItemLocation(index,item,team.getSpawnLocation()));
+			for(GamePlayer gPlayer : team.getPlayers()){
+				index = (row*9)+(column++);
+				items.put(index,new SpectatorMenuItemPlayer(index,team.getType().getChatColor()+gPlayer.getPlayer().getName(),gPlayer));
+				if(column == 8){
+					column = 0;
+					row ++;
+				}
+			}
+			row ++;
+		}
+		return items;
+	}
+
 	public class PaintballScoreboard extends GameScoreboard {
 		private Team teamRed;
 		private Team teamBlue;
@@ -164,7 +195,11 @@ public class Paintball extends Game {
 					if(this.getGame().getTeams().getPlayerTeam(gPlayer).getType() == PaintballTeamType.RED) teamRed.addEntry(gPlayer.getPlayer().getName());
 					else if(this.getGame().getTeams().getPlayerTeam(gPlayer).getType() == PaintballTeamType.BLUE) teamBlue.addEntry(gPlayer.getPlayer().getName());
 				}
+				else if(gPlayer.getState() == GamePlayerState.SPECTATOR){
+					this.addSpectator(gPlayer);
+				}
 			} else {
+				this.removeSpectator(gPlayer);
 				this.removePlayer(gPlayer);
 				teamRed.removeEntry(gPlayer.getPlayer().getName());
 				teamBlue.removeEntry(gPlayer.getPlayer().getName());
@@ -179,12 +214,13 @@ public class Paintball extends Game {
 
 		@Override
 		public void update(){
-			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(this.getType().getId());
+			GameStatsType type = GameStatsType.WINS;
+			if(this.getType() == GamePodiumType.RIGHT) type = GameStatsType.KILLS;
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type);
 			int index = 0;
 			for(GamePodiumStand stand : this.getStands()){
 				if(scores.size() <= index) continue;
-				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
-				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" zabiti");
+				stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" "+type.getName());
 				index ++;
 			}
 		}

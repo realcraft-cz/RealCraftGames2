@@ -12,12 +12,10 @@ public enum GameState {
 	}
 
 	public boolean isLobby(){
-		if(this == LOBBY || this == STARTING) return true;
-		return false;
+		return (this == LOBBY || this == STARTING);
 	}
 
 	public boolean isGame(){
-		if(this == INGAME || this == ENDING) return true;
-		return false;
+		return (this == INGAME || this == ENDING);
 	}
 }

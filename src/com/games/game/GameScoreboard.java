@@ -4,10 +4,14 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.Team.Option;
+import org.bukkit.scoreboard.Team.OptionStatus;
 
 import com.games.player.GamePlayer;
 
@@ -18,6 +22,7 @@ public abstract class GameScoreboard {
 
 	private Scoreboard scoreboard;
 	private Objective objective;
+	private Team spectatorTeam;
 
 	private String title;
 	private HashMap<Integer,String> lines = new HashMap<Integer,String>();
@@ -27,6 +32,11 @@ public abstract class GameScoreboard {
 		this.type = type;
 		scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 		objective = scoreboard.getObjective(DisplaySlot.SIDEBAR);
+		spectatorTeam = scoreboard.registerNewTeam("xSpectator");
+		spectatorTeam.setAllowFriendlyFire(false);
+		spectatorTeam.setColor(ChatColor.GRAY);
+		spectatorTeam.setCanSeeFriendlyInvisibles(true);
+		spectatorTeam.setOption(Option.COLLISION_RULE,OptionStatus.NEVER);
 	}
 
 	public Game getGame(){
@@ -97,6 +107,14 @@ public abstract class GameScoreboard {
 
 	public void removePlayer(GamePlayer gPlayer){
 		if(gPlayer.getPlayer().getScoreboard() == scoreboard) gPlayer.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+	}
+
+	public void addSpectator(GamePlayer gPlayer){
+		spectatorTeam.addEntry(gPlayer.getPlayer().getName());
+	}
+
+	public void removeSpectator(GamePlayer gPlayer){
+		spectatorTeam.removeEntry(gPlayer.getPlayer().getName());
 	}
 
 	public enum GameScoreboardType {

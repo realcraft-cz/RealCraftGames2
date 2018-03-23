@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
@@ -21,6 +23,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+
+import net.minecraft.server.v1_12_R1.NBTTagCompound;
 
 public class ItemUtil {
 
@@ -120,5 +124,33 @@ public class ItemUtil {
 		LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
 		meta.setColor(Color.fromRGB(Integer.valueOf(color.substring(1,3),16),Integer.valueOf(color.substring(3,5),16),Integer.valueOf(color.substring(5,7),16)));
 		item.setItemMeta(meta);
+	}
+
+	public static ItemStack spawnEggToItemStack(EntityType type){
+		ItemStack item = new ItemStack(Material.MONSTER_EGG);
+		net.minecraft.server.v1_12_R1.ItemStack stack = CraftItemStack.asNMSCopy(item);
+		NBTTagCompound tagCompound = stack.getTag();
+		if(tagCompound == null){
+			tagCompound = new NBTTagCompound();
+		}
+		NBTTagCompound id = new NBTTagCompound();
+		id.setString("id", "minecraft:" + type.toString().toLowerCase());
+		tagCompound.set("EntityTag", id);
+		stack.setTag(tagCompound);
+		return CraftItemStack.asBukkitCopy(stack);
+	}
+
+	@SuppressWarnings("deprecation")
+	public static EntityType spawnEggFromItemStack(ItemStack item){
+		if(item != null){
+			net.minecraft.server.v1_12_R1.ItemStack stack = CraftItemStack.asNMSCopy(item);
+			NBTTagCompound tagCompound = stack.getTag();
+			if(tagCompound != null){
+				String id = tagCompound.getCompound("EntityTag").getString("id");
+				if(id.startsWith("minecraft:")) id = id.substring(10,id.length());
+				return EntityType.fromName(id);
+			}
+		}
+		return null;
 	}
 }

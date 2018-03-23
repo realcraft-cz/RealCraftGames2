@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -26,19 +27,28 @@ import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
 import com.games.exceptions.GameMaintenanceException;
 import com.games.exceptions.GameMaxPlayersException;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.LocationUtil;
 import com.games.utils.StringUtil;
 import com.games.utils.Title;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.ServerType;
 import realcraft.bukkit.lobby.LobbyAutoParkour;
 import realcraft.bukkit.lobby.LobbyMenu;
 import realcraft.bukkit.minihry.GamesReminder;
+import realcraft.bukkit.playermanazer.PlayerManazer;
 
 public abstract class Game implements Runnable {
+
+	private static final int PREMIUM_OFFER_TIMEOUT = 3600;
 
 	private GameType type;
 	private GameState state = GameState.LOBBY;
@@ -47,11 +57,14 @@ public abstract class Game implements Runnable {
 
 	private HashMap<String,GamePlayer> players = new HashMap<String,GamePlayer>();
 	private HashMap<String,GameArena> arenas = new HashMap<String,GameArena>();
+	private HashMap<String,Long> playersPremiumOffers = new HashMap<String,Long>();
 	private Location lobbyLocation;
 	private LobbyScoreboard lobbyScoreboard;
 	private LobbyBossBar lobbyBossBar;
+	private GameLeaderboard gameLeaderboard;
 	private GameVoting gameVoting;
 	private GameStats gameStats;
+	private GameSpectator gameSpectator;
 
 	private boolean maintenance;
 	private int lobbyTimeDefault;
@@ -81,8 +94,10 @@ public abstract class Game implements Runnable {
 		this.endTime = endTimeDefault;
 		this.lobbyScoreboard = new LobbyScoreboard(this);
 		this.lobbyBossBar = new LobbyBossBar(this);
+		this.gameLeaderboard = new GameLeaderboard(this);
 		this.gameVoting = new GameVoting(this);
 		this.gameStats = new GameStats(this);
+		this.gameSpectator = new GameSpectator(this);
 		new GameListeners(this);
 		for(World world : Bukkit.getWorlds()){
 			world.setGameRuleValue("doDaylightCycle","false");
@@ -95,6 +110,7 @@ public abstract class Game implements Runnable {
 				@Override
 				public void run(){
 					gameVoting.resetVoting();
+					gameLeaderboard.update();
 				}
 			});
 			Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
@@ -109,6 +125,8 @@ public abstract class Game implements Runnable {
 		new LobbyMenu(RealCraft.getInstance());
 		new LobbyAutoParkour(RealCraft.getInstance());
 	}
+
+	public abstract HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems();
 
 	@Override
 	public void run(){
@@ -132,9 +150,11 @@ public abstract class Game implements Runnable {
 				this.setArena(gameVoting.getWinningArena());
 				this.setState(GameState.INGAME);
 				this.setStartPlayers(this.getPlayersCount());
+				this.getArena().getRegion().clearEntites();
 				for(GamePlayer gPlayer : this.getPlayers()){
 					lobbyScoreboard.updateForPlayer(gPlayer);
 					lobbyBossBar.updateForPlayer(gPlayer);
+					this.getStats().addScore(gPlayer,GameStatsType.GAMES,1);
 				}
 				Bukkit.getServer().getPluginManager().callEvent(new GameStartEvent(this));
 			}
@@ -260,12 +280,20 @@ public abstract class Game implements Runnable {
 		return lobbyBossBar;
 	}
 
+	public GameLeaderboard getLeaderboard(){
+		return gameLeaderboard;
+	}
+
 	public GameVoting getVoting(){
 		return gameVoting;
 	}
 
 	public GameStats getStats(){
 		return gameStats;
+	}
+
+	public GameSpectator getSpectator(){
+		return gameSpectator;
 	}
 
 	public boolean isMaintenance(){
@@ -354,6 +382,8 @@ public abstract class Game implements Runnable {
 				public void run(){
 					gPlayer.teleportToSpectatorLocation();
 					gPlayer.toggleSpectator();
+					Games.getEssentials().getUser(gPlayer.getPlayer()).setNickname(Games.getEssentials().getUser(gPlayer.getPlayer()).getName());
+					Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
 				}
 			},5);
 		}
@@ -449,5 +479,36 @@ public abstract class Game implements Runnable {
 				}
 			}
 		},(lobbyTimeDefault/3)*20);
+	}
+
+	public long getLastPlayerPremiumOffer(GamePlayer gPlayer){
+		if(!playersPremiumOffers.containsKey(gPlayer.getPlayer().getName())) playersPremiumOffers.put(gPlayer.getPlayer().getName(),0L);
+		return playersPremiumOffers.get(gPlayer.getPlayer().getName());
+	}
+
+	public void sendPremiumOffer(GamePlayer gPlayer){
+		Player player = gPlayer.getPlayer();
+		if(PlayerManazer.getPlayerInfo(player).getRank() == 0 && this.getLastPlayerPremiumOffer(gPlayer)+(PREMIUM_OFFER_TIMEOUT*1000) < System.currentTimeMillis()){
+			Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+				@Override
+				public void run(){
+					playersPremiumOffers.put(gPlayer.getPlayer().getName(),System.currentTimeMillis());
+					player.sendMessage(ChatColor.LIGHT_PURPLE+""+ChatColor.STRIKETHROUGH+StringUtils.repeat(" ",60));
+					player.sendMessage("");
+					player.sendMessage("      "+ChatColor.BOLD+"FreeWall, stale nemas VIP ucet?");
+					player.sendMessage("    "+ChatColor.GRAY+"Ziskej zdarma "+ChatColor.LIGHT_PURPLE+"doplnky"+ChatColor.GRAY+" a vyuzivej "+ChatColor.YELLOW+"vyhody,");
+					player.sendMessage("  "+ChatColor.GRAY+"o kterych se ostatnim hracum muze jen zdat!");
+					player.sendMessage("");
+					player.sendMessage("          Podpor nas a kup si "+ChatColor.AQUA+"VIP ucet");
+					TextComponent message = new TextComponent("            ");
+					TextComponent website = new TextComponent(ChatColor.GREEN+""+ChatColor.BOLD+">> www.realcraft.cz <<");
+					website.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,"https://www.realcraft.cz/shop/vip"));
+					website.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new ComponentBuilder("§7Klikni pro otevreni").create()));
+					message.addExtra(website);
+					player.spigot().sendMessage(message);
+					player.sendMessage(ChatColor.LIGHT_PURPLE+""+ChatColor.STRIKETHROUGH+StringUtils.repeat(" ",60));
+				}
+			},4*20);
+		}
 	}
 }

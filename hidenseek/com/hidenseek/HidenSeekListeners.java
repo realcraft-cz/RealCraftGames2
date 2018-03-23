@@ -47,11 +47,12 @@ import com.games.events.GameCycleEvent;
 import com.games.events.GameEndEvent;
 import com.games.events.GamePlayerJoinEvent;
 import com.games.events.GamePlayerLeaveEvent;
+import com.games.events.GamePlayerStateChangeEvent;
 import com.games.events.GameStartEvent;
 import com.games.events.GameStateChangeEvent;
 import com.games.events.GameTimeoutEvent;
-import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Particles;
@@ -155,6 +156,13 @@ public class HidenSeekListeners implements Listener {
 		}
 		game.getUser(event.getPlayer()).cancelDisguise();
 		if(game.getState().isGame()) game.getTeams().autoBalancingAfterLeft();
+		if(event.getPlayer().getSettings().getInt("kills") > 0) game.getStats().addScore(event.getPlayer(),GameStatsType.KILLS,event.getPlayer().getSettings().getInt("kills"));
+		if(event.getPlayer().getSettings().getInt("deaths") > 0) game.getStats().addScore(event.getPlayer(),GameStatsType.DEATHS,event.getPlayer().getSettings().getInt("deaths"));
+	}
+
+	@EventHandler
+	public void GamePlayerStateChangeEvent(GamePlayerStateChangeEvent event){
+		if(game.getState().isGame()) game.getScoreboard().updateForPlayer(event.getPlayer());
 	}
 
 	@EventHandler
@@ -163,6 +171,7 @@ public class HidenSeekListeners implements Listener {
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
 			gPlayer.getSettings().setInt("kills",0);
+			gPlayer.getSettings().setInt("deaths",0);
 			gPlayer.getPlayer().setGameMode(GameMode.SURVIVAL);
 			HidenSeekTeam team = game.getTeams().getPlayerTeam(gPlayer);
 			gPlayer.getPlayer().teleport(team.getSpawnLocation());
@@ -204,8 +213,9 @@ public class HidenSeekListeners implements Listener {
 							(winner.getType() == HidenSeekTeamType.HIDERS ? game.getConfig().getInt("reward.player",0)*(game.getStartPlayers()-winner.getPlayers().size()) : 0)
 						);
 
-						game.getStats().addScore(gPlayer,1,GamePodiumType.LEFT.getId());
-						if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+						game.getStats().addScore(gPlayer,GameStatsType.WINS,1);
+						if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
+						if(gPlayer.getSettings().getInt("deaths") > 0) game.getStats().addScore(gPlayer,GameStatsType.DEATHS,gPlayer.getSettings().getInt("deaths"));
 
 						Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 							public void run(){
@@ -216,10 +226,12 @@ public class HidenSeekListeners implements Listener {
 					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§fTvuj tym vyhral tuto hru",0.5,8,0.5);
 				} else {
-					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,gPlayer.getSettings().getInt("kills"),GamePodiumType.RIGHT.getId());
+					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
 					Title.showTitle(gPlayer.getPlayer(),"§c§lProhra",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),winner.getType().getChatColor()+winner.getType().toName()+" §fvyhrali tuto hru",0.5,8,0.5);
 				}
+				gPlayer.getSettings().setInt("kills",0);
+				gPlayer.getSettings().setInt("deaths",0);
 			}
 		}
 	}
@@ -294,6 +306,7 @@ public class HidenSeekListeners implements Listener {
 		GamePlayer gPlayer = game.getGamePlayer(player);
 
 		player.getInventory().clear();
+		gPlayer.getSettings().addInt("deaths",1);
 
 		if(killer != null && killer != player){
 			game.getGamePlayer(killer).getSettings().addInt("kills",1);

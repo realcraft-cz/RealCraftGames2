@@ -35,7 +35,6 @@ public class GameArenaRegion {
 
 	private GameArena arena;
 	private Schema schema;
-	private boolean toReset = true;
 
 	public GameArenaRegion(GameArena arena){
 		this.arena = arena;
@@ -48,20 +47,16 @@ public class GameArenaRegion {
 		return arena;
 	}
 
-	public boolean isToReset(){
-		return toReset;
-	}
-
-	public void setToReset(boolean toReset){
-		this.toReset = toReset;
-	}
-
 	public void reset(){
 		if(schema != null){
 			schema.clearEntities();
 			schema.pasteBlocks();
 			schema.pasteEntities();
 		}
+	}
+
+	public void clearEntites(){
+		if(schema != null) schema.clearEntities();
 	}
 
 	public class Schema {

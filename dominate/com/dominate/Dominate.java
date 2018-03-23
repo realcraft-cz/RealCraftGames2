@@ -18,10 +18,15 @@ import com.games.game.GameFlag;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameScoreboard;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemLocation;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
 import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
 import com.games.game.GameType;
 import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
 import com.games.utils.Glow;
 
 public class Dominate extends Game {
@@ -135,6 +140,32 @@ public class Dominate extends Game {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
+	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
+		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
+		int row = 0;
+		int index = 0;
+		for(DominateTeam team : this.getTeams().getTeams()){
+			int column = 0;
+			index = (row*9)+(column++);
+			ItemStack item = new ItemStack(Material.WOOL,1,team.getType().getDyeColor().getWoolData());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
+			item.setItemMeta(meta);
+			items.put(index,new SpectatorMenuItemLocation(index,item,team.getSpawnLocation()));
+			for(GamePlayer gPlayer : team.getPlayers()){
+				index = (row*9)+(column++);
+				items.put(index,new SpectatorMenuItemPlayer(index,team.getType().getChatColor()+gPlayer.getPlayer().getName(),gPlayer));
+				if(column == 8){
+					column = 0;
+					row ++;
+				}
+			}
+			row ++;
+		}
+		return items;
+	}
+
 	public class DominateScoreboard extends GameScoreboard {
 		private Team teamRed;
 		private Team teamBlue;
@@ -189,7 +220,11 @@ public class Dominate extends Game {
 					if(this.getGame().getTeams().getPlayerTeam(gPlayer).getType() == DominateTeamType.RED) teamRed.addEntry(gPlayer.getPlayer().getName());
 					else if(this.getGame().getTeams().getPlayerTeam(gPlayer).getType() == DominateTeamType.BLUE) teamBlue.addEntry(gPlayer.getPlayer().getName());
 				}
+				else if(gPlayer.getState() == GamePlayerState.SPECTATOR){
+					this.addSpectator(gPlayer);
+				}
 			} else {
+				this.removeSpectator(gPlayer);
 				this.removePlayer(gPlayer);
 				teamRed.removeEntry(gPlayer.getPlayer().getName());
 				teamBlue.removeEntry(gPlayer.getPlayer().getName());
@@ -204,12 +239,13 @@ public class Dominate extends Game {
 
 		@Override
 		public void update(){
-			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(this.getType().getId());
+			GameStatsType type = GameStatsType.WINS;
+			if(this.getType() == GamePodiumType.RIGHT) type = GameStatsType.KILLS;
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type);
 			int index = 0;
 			for(GamePodiumStand stand : this.getStands()){
 				if(scores.size() <= index) continue;
-				if(this.getType() == GamePodiumType.LEFT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" vyher");
-				else if(this.getType() == GamePodiumType.RIGHT) stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" zabiti");
+				stand.setData(scores.get(index).getName(),scores.get(index).getValue()+" "+type.getName());
 				index ++;
 			}
 		}
