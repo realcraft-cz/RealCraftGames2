@@ -7,9 +7,11 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -40,8 +42,10 @@ import com.games.utils.Particles;
 import com.games.utils.RandomUtil;
 import com.games.utils.Title;
 import com.paintball.PaintballTeam.PaintballTeamType;
+import com.paintball.specials.PaintballSpecial;
 
-import realcraft.bukkit.playermanazer.PlayerManazer;
+import realcraft.bukkit.coins.Coins;
+import realcraft.bukkit.users.Users;
 
 public class PaintballListeners implements Listener {
 
@@ -86,18 +90,26 @@ public class PaintballListeners implements Listener {
 			gPlayer.getPlayer().setGameMode(GameMode.ADVENTURE);
 			PaintballTeam team = game.getTeams().getPlayerTeam(gPlayer);
 			team.setPlayerInventory(gPlayer);
+			game.getUser(gPlayer).reset();
 			game.setPlayerWeapons(gPlayer,true);
 			gPlayer.getPlayer().teleport(team.getSpawnLocation());
 			game.getScoreboard().updateForPlayer(gPlayer);
+		}
+		for(PaintballSpecial special : game.getArena().getSpecials()){
+			special.setEnabled(true);
 		}
 	}
 
 	@EventHandler
 	public void GameEndEvent(GameEndEvent event){
 		game.getTeams().resetTeams();
+		game.getDrops().clear();
 		for(GamePlayer gPlayer : game.getPlayers()){
 			game.getScoreboard().updateForPlayer(gPlayer);
 			game.loadLobbyInventory(gPlayer);
+		}
+		for(PaintballSpecial special : game.getArena().getSpecials()){
+			special.setEnabled(false);
 		}
 	}
 
@@ -117,7 +129,7 @@ public class PaintballListeners implements Listener {
 					if(game.getGameTime() < game.getGameTimeDefault()-60){
 						int kdreward = (game.getConfig().getInt("reward.kill",0)*gPlayer.getSettings().getInt("kills"))-(game.getConfig().getInt("reward.death",0)*gPlayer.getSettings().getInt("deaths"));
 						if(kdreward < 0) kdreward = 0;
-						final int reward = PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).giveCoins(
+						final int reward = Users.getUser(gPlayer.getPlayer()).giveCoins(
 							(game.getConfig().getInt("reward.base",0))+kdreward
 						);
 
@@ -127,7 +139,7 @@ public class PaintballListeners implements Listener {
 
 						Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 							public void run(){
-								PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).runCoinsEffect("§a§lVitezstvi!",reward);
+								Coins.runCoinsEffect(gPlayer.getPlayer(),"§a§lVitezstvi!",reward);
 							}
 						},10*20);
 					}
@@ -153,6 +165,9 @@ public class PaintballListeners implements Listener {
 				PaintballUser user = game.getUser(gPlayer);
 				user.addPistols(1);
 				game.setPlayerWeapons(gPlayer);
+			}
+			if(game.getGameTime()%30 == 0){
+				game.getDrops().addDrop();
 			}
 		}
 		game.getScoreboard().update();
@@ -203,7 +218,10 @@ public class PaintballListeners implements Listener {
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
-		if(event.getEntity() instanceof Player && event.getDamager() instanceof Snowball){
+		if(event.getDamager() instanceof Firework){
+			event.setCancelled(true);
+		}
+		else if(event.getEntity() instanceof Player && event.getDamager() instanceof Snowball){
 			Player player = (Player)event.getEntity();
 			Player attacker = (Player)((Snowball)event.getDamager()).getShooter();
 			if(game.getTeams().getPlayerTeam(game.getGamePlayer(player)) != game.getTeams().getPlayerTeam(game.getGamePlayer(attacker))){
@@ -246,11 +264,30 @@ public class PaintballListeners implements Listener {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
-	@EventHandler
+	@EventHandler(priority=EventPriority.HIGH,ignoreCancelled=true)
 	public void PlayerInteractEvent(PlayerInteractEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
-		if(game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR) return;
+		if(gPlayer.getState() == GamePlayerState.SPECTATOR) return;
+		if(game.getState().isGame()){
+			ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
+			if(itemStack.getType() == Material.SNOW_BALL){
+				if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
+					event.setCancelled(true);
+					Snowball snowball = (Snowball) gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getEyeLocation(),EntityType.SNOWBALL);
+			        snowball.setShooter(gPlayer.getPlayer());
+			        snowball.setVelocity(gPlayer.getPlayer().getLocation().getDirection().multiply(1.5));
+			        game.getUser(gPlayer).addPistols(-1);
+			        game.setPlayerWeapons(gPlayer,false);
+				}
+			}
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	@EventHandler
+	public void PlayerInteractEvent2(PlayerInteractEvent event){
+		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
+		if(gPlayer.getState() == GamePlayerState.SPECTATOR) return;
 		if(game.getState().isLobby()){
 			ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
 			if(itemStack.getType() == Material.WOOL){
@@ -279,18 +316,6 @@ public class PaintballListeners implements Listener {
 							}
 						}
 					}
-				}
-			}
-		} else {
-			ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-			if(itemStack.getType() == Material.SNOW_BALL){
-				if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
-					event.setCancelled(true);
-					Snowball snowball = (Snowball) gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getEyeLocation(),EntityType.SNOWBALL);
-			        snowball.setShooter(gPlayer.getPlayer());
-			        snowball.setVelocity(gPlayer.getPlayer().getLocation().getDirection().multiply(1.5));
-			        game.getUser(gPlayer).addPistols(-1);
-			        game.setPlayerWeapons(gPlayer,false,true);
 				}
 			}
 		}

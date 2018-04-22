@@ -9,13 +9,13 @@ import org.bukkit.potion.PotionEffectType;
 import com.games.Games;
 import com.games.events.GamePlayerStateChangeEvent;
 import com.games.game.Game;
-import com.games.game.GameFlag;
+import com.games.game.GameSpectator.SpectatorHotbarItem;
 import com.games.utils.BorderUtil;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
 import realcraft.bukkit.RealCraft;
-import realcraft.bukkit.ServerType;
+import realcraft.share.ServerType;
 
 public class GamePlayer {
 
@@ -23,6 +23,7 @@ public class GamePlayer {
 	private Game game;
 	private GamePlayerState state;
 	private GamePlayerSettings settings;
+	private boolean leaving = false;
 
 	public GamePlayer(Player player,Game game){
 		this.player = player;
@@ -57,6 +58,14 @@ public class GamePlayer {
 		Bukkit.getServer().getPluginManager().callEvent(new GamePlayerStateChangeEvent(game,this,oldState));
 	}
 
+	public void setLeaving(){
+		this.leaving = true;
+	}
+
+	public boolean isLeaving(){
+		return leaving;
+	}
+
 	public void teleportToLobby(){
 		player.teleport(game.getLobbyLocation());
 	}
@@ -64,23 +73,6 @@ public class GamePlayer {
 	public void teleportToSpectatorLocation(){
 		player.teleport(game.getArena().getSpectatorLocation());
 	}
-
-	/*public void toggleSpectator(){
-		player.getInventory().clear();
-		player.setAllowFlight(true);
-		player.setFlying(true);
-		player.setGameMode(GameMode.SPECTATOR);
-		player.setFlySpeed(0.2f);
-		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
-			@Override
-			public void run(){
-				player.setAllowFlight(true);
-				player.setFlying(true);
-				player.setGameMode(GameMode.SPECTATOR);
-				BorderUtil.setBorder(player,game.getArena().getSpectatorLocation(),game.getArena().getSpectatorRadius()*2);
-			}
-		},2);
-	}*/
 
 	public void toggleSpectator(){
 		player.getInventory().clear();
@@ -90,7 +82,9 @@ public class GamePlayer {
 		player.setFlySpeed(0.2f);
 		player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,Integer.MAX_VALUE,Integer.MAX_VALUE,false,false));
 		player.setCollidable(false);
-		if(GameFlag.SPECTATOR) player.getInventory().setItem(0,game.getSpectator().getItem());
+		for(SpectatorHotbarItem item : game.getSpectator().getItems()){
+			player.getInventory().setItem(item.getIndex(),item.getItemStack());
+		}
 		for(GamePlayer gPlayer2 : game.getGamePlayers()){
 			gPlayer2.getPlayer().hidePlayer(player);
 		}
@@ -121,7 +115,6 @@ public class GamePlayer {
 		player.setLevel(0);
 		player.setExp(0);
 		player.setTotalExperience(0);
-		player.resetPlayerTime();
 		player.closeInventory();
 		player.getInventory().clear();
 		player.getInventory().setHeldItemSlot(0);

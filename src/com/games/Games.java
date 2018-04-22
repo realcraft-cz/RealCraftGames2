@@ -18,8 +18,8 @@ import com.paintball.Paintball;
 import com.ragemode.RageMode;
 
 import realcraft.bukkit.RealCraft;
-import realcraft.bukkit.ServerType;
 import realcraft.bukkit.database.DB;
+import realcraft.share.ServerType;
 
 public class Games extends JavaPlugin {
 

@@ -34,6 +34,7 @@ public class Paintball extends Game {
 
 	private PaintballScoreboard scoreboard;
 	private PaintballTeams teams;
+	private PaintballDrops drops;
 	private HashMap<GamePlayer,PaintballUser> users = new HashMap<GamePlayer,PaintballUser>();
 
 	public Paintball(){
@@ -42,6 +43,7 @@ public class Paintball extends Game {
 		new PaintballListeners(this);
 		this.scoreboard = new PaintballScoreboard(this);
 		this.teams = new PaintballTeams(this);
+		this.drops = new PaintballDrops(this);
 		new PaintballPodium(this,GamePodiumType.LEFT);
 		new PaintballPodium(this,GamePodiumType.RIGHT);
 		this.loadArenas();
@@ -61,6 +63,11 @@ public class Paintball extends Game {
 		}
 	}
 
+	@Override
+	public void onDisable(){
+		this.getDrops().clear();
+	}
+
 	public PaintballArena getArena(){
 		return (PaintballArena) super.getArena();
 	}
@@ -71,6 +78,10 @@ public class Paintball extends Game {
 
 	public PaintballTeams getTeams(){
 		return teams;
+	}
+
+	public PaintballDrops getDrops(){
+		return drops;
 	}
 
 	public PaintballUser getUser(GamePlayer gPlayer){
@@ -115,13 +126,10 @@ public class Paintball extends Game {
 	}
 
 	public void setPlayerWeapons(GamePlayer gPlayer,boolean respawn){
-		this.setPlayerWeapons(gPlayer,respawn,false);
-	}
-
-	public void setPlayerWeapons(GamePlayer gPlayer,boolean respawn,boolean fire){
 		if(respawn) gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
 		PaintballUser user = this.getUser(gPlayer);
 		gPlayer.getPlayer().getInventory().setItem(0,new ItemStack(Material.SNOW_BALL,user.getPistols()));
+		gPlayer.getPlayer().getInventory().setItem(1,new ItemStack(Material.EGG,user.getGrenades()));
 	}
 
 	@SuppressWarnings("deprecation")

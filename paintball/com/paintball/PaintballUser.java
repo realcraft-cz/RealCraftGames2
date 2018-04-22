@@ -3,6 +3,8 @@ package com.paintball;
 public class PaintballUser {
 
 	private int pistols = 64;
+	private int grenades = 0;
+	private long lastJump = 0;
 
 	public PaintballUser(){
 	}
@@ -17,6 +19,29 @@ public class PaintballUser {
 	}
 
 	public void resetPistols(){
-		this.pistols = 64;
+		pistols = 64;
+	}
+
+	public int getGrenades(){
+		return grenades;
+	}
+
+	public void addGrenades(int grenades){
+		this.grenades += grenades;
+		if(this.grenades > 16) this.grenades = 16;
+	}
+
+	public long getLastJump(){
+		return lastJump;
+	}
+
+	public void updateLastJump(){
+		lastJump = System.currentTimeMillis();
+	}
+
+	public void reset(){
+		pistols = 64;
+		grenades = 0;
+		lastJump = 0;
 	}
 }

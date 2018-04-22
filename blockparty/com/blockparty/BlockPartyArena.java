@@ -4,10 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
@@ -22,7 +20,6 @@ import com.sk89q.worldedit.bukkit.BukkitWorld;
 
 public class BlockPartyArena extends GameArena {
 
-	private World world;
 	private Vector locMin;
 	private Vector locMax;
 	private BlockPartyBlock currentBlock;
@@ -52,11 +49,6 @@ public class BlockPartyArena extends GameArena {
 
 	public BlockParty getGame(){
 		return (BlockParty) super.getGame();
-	}
-
-	public World getWorld(){
-		if(world == null) world = Bukkit.getWorld(this.getConfig().getString("custom.world"));
-		return world;
 	}
 
 	public Vector getLocMin(){
@@ -129,11 +121,11 @@ public class BlockPartyArena extends GameArena {
 		for(int y=locMin.getBlockY();y<=locMax.getBlockY();y++){
 			for(int x=locMin.getBlockX();x<=locMax.getBlockX();x++){
 				for(int z=locMin.getBlockZ();z<=locMax.getBlockZ();z++){
-					Block block = world.getBlockAt(x,y,z);
+					Block block = this.getWorld().getBlockAt(x,y,z);
 					if(force || block.getType() != this.getCurrentBlock().getType() || block.getData() != this.getCurrentBlock().getData()){
 						block.setType(Material.AIR);
 					}
-					List<Entity> entities = (List<Entity>) world.getNearbyEntities(this.getGameLocation(),20,10,20);
+					List<Entity> entities = (List<Entity>) this.getWorld().getNearbyEntities(this.getGameLocation(),20,10,20);
 					for(Entity entity : entities){
 	                    if(!(entity instanceof Item)) continue;
 	                    entity.remove();

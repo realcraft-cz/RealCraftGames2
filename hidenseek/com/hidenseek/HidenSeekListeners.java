@@ -60,7 +60,8 @@ import com.games.utils.RandomUtil;
 import com.games.utils.Title;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
 
-import realcraft.bukkit.playermanazer.PlayerManazer;
+import realcraft.bukkit.coins.Coins;
+import realcraft.bukkit.users.Users;
 
 public class HidenSeekListeners implements Listener {
 
@@ -172,6 +173,7 @@ public class HidenSeekListeners implements Listener {
 			gPlayer.resetPlayer();
 			gPlayer.getSettings().setInt("kills",0);
 			gPlayer.getSettings().setInt("deaths",0);
+			gPlayer.getSettings().setLong("died",0);
 			gPlayer.getPlayer().setGameMode(GameMode.SURVIVAL);
 			HidenSeekTeam team = game.getTeams().getPlayerTeam(gPlayer);
 			gPlayer.getPlayer().teleport(team.getSpawnLocation());
@@ -207,7 +209,7 @@ public class HidenSeekListeners implements Listener {
 					if(game.getGameTime() < game.getGameTimeDefault()-60){
 						int kdreward = (game.getConfig().getInt("reward.kill",0)*gPlayer.getSettings().getInt("kills"))-(game.getConfig().getInt("reward.death",0)*gPlayer.getSettings().getInt("deaths"));
 						if(kdreward < 0) kdreward = 0;
-						final int reward = PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).giveCoins(
+						final int reward = Users.getUser(gPlayer.getPlayer()).giveCoins(
 							(game.getConfig().getInt("reward.base",0))+
 							kdreward+
 							(winner.getType() == HidenSeekTeamType.HIDERS ? game.getConfig().getInt("reward.player",0)*(game.getStartPlayers()-winner.getPlayers().size()) : 0)
@@ -219,7 +221,7 @@ public class HidenSeekListeners implements Listener {
 
 						Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 							public void run(){
-								PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).runCoinsEffect("§a§lVitezstvi!",reward);
+								Coins.runCoinsEffect(gPlayer.getPlayer(),"§a§lVitezstvi!",reward);
 							}
 						},10*20);
 					}
@@ -241,10 +243,9 @@ public class HidenSeekListeners implements Listener {
 		if(game.getState() == GameState.INGAME){
 			if(game.getTeams().getActiveTeams().size() < 2) game.setState(GameState.ENDING);
 			for(GamePlayer gPlayer : game.getPlayers()){
-				if(gPlayer.getState() == GamePlayerState.SPECTATOR) continue;
+				if(gPlayer.getState() == GamePlayerState.SPECTATOR || gPlayer.getSettings().getLong("died")+(20*1000) >= System.currentTimeMillis()) continue;
 				ItemStack item = gPlayer.getPlayer().getInventory().getItem(0);
 				if(item != null && item.getType() != Material.AIR && item.getType() != Material.IRON_AXE && item.getDurability() != (byte)0){
-					//item.setDurability((short)0);
 					gPlayer.getPlayer().updateInventory();
 				}
 				gPlayer.getPlayer().setFoodLevel(20);
@@ -318,6 +319,7 @@ public class HidenSeekListeners implements Listener {
 		if(game.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.HIDERS){
 			game.getUser(gPlayer).cancelDisguise();
 			game.getTeams().setPlayerTeam(gPlayer,game.getTeams().getTeam(HidenSeekTeamType.SEEKERS));
+			gPlayer.getSettings().setLong("died",System.currentTimeMillis());
 		}
 	}
 
@@ -453,7 +455,7 @@ public class HidenSeekListeners implements Listener {
 							itemStack.setAmount(game.getUser(gPlayer).getFireworks());
 							gPlayer.getPlayer().getInventory().setItem(5,itemStack);
 							if(game.getUser(gPlayer).getFireworks() == 0){
-								int coins = PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).giveCoins(20);
+								int coins = Users.getUser(gPlayer.getPlayer()).giveCoins(20);
 								game.sendMessage(gPlayer,"§eZiskal jsi §a+"+coins+" coins §eza vypusteni ohnostroju");
 							} else {
 								Title.showActionTitle(event.getPlayer(),"§fVypust vsech §e5 ohnostroju§f a ziskej §a+20 coins",6*20);

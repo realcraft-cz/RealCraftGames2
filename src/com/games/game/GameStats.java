@@ -11,7 +11,7 @@ import com.games.player.GamePlayer;
 
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.database.DB;
-import realcraft.bukkit.playermanazer.PlayerManazer;
+import realcraft.bukkit.users.Users;
 
 public class GameStats {
 
@@ -46,7 +46,7 @@ public class GameStats {
 	}
 
 	public void addScore(GamePlayer gPlayer,GameStatsType type,int value){
-		this.addScore(PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).getId(),type,value);
+		this.addScore(Users.getUser(gPlayer.getPlayer()).getId(),type,value);
 	}
 
 	public void addScore(int userid,GameStatsType type,int value){

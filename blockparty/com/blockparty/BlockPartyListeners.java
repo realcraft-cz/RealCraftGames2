@@ -42,7 +42,8 @@ import com.games.utils.Particles;
 import com.games.utils.Particles.BlockData;
 import com.games.utils.Title;
 
-import realcraft.bukkit.playermanazer.PlayerManazer;
+import realcraft.bukkit.coins.Coins;
+import realcraft.bukkit.users.Users;
 
 public class BlockPartyListeners implements Listener {
 
@@ -94,6 +95,7 @@ public class BlockPartyListeners implements Listener {
 	@EventHandler
 	public void GameEndEvent(GameEndEvent event){
 		for(GamePlayer gPlayer : game.getPlayers()){
+			game.getScoreboard().updateForPlayer(gPlayer);
 			game.getBossBar().updateForPlayer(gPlayer);
 		}
 	}
@@ -143,7 +145,7 @@ public class BlockPartyListeners implements Listener {
 				if(gPlayer == winner){
 					gPlayer.getPlayer().teleport(game.getArena().getGameLocation());
 
-					final int reward = PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).giveCoins(
+					final int reward = Users.getUser(gPlayer.getPlayer()).giveCoins(
 						(game.getConfig().getInt("reward.base",0))+
 						(game.getConfig().getInt("reward.player",0)*game.getStartPlayers())
 					);
@@ -158,7 +160,7 @@ public class BlockPartyListeners implements Listener {
 					Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 						@Override
 						public void run(){
-							PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).runCoinsEffect("§a§lVitezstvi!",reward);
+							Coins.runCoinsEffect(gPlayer.getPlayer(),"§a§lVitezstvi!",reward);
 						}
 					},10*20);
 				} else {

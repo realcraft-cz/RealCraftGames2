@@ -156,7 +156,6 @@ public class DominateUser {
 		gPlayer.getPlayer().setFlying(false);
 		gPlayer.getPlayer().setAllowFlight(false);
 		gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
-		gPlayer.getPlayer().setPlayerTime(game.getArena().getTime(),false);
 		this.setKitInventory();
 		this.showBossBar();
 		this.loadSkills();

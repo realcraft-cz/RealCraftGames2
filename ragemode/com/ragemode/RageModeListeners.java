@@ -34,6 +34,7 @@ import org.bukkit.util.Vector;
 
 import com.games.Games;
 import com.games.events.GameCycleEvent;
+import com.games.events.GameEndEvent;
 import com.games.events.GamePlayerJoinEvent;
 import com.games.events.GamePlayerLeaveEvent;
 import com.games.events.GamePlayerStateChangeEvent;
@@ -47,7 +48,8 @@ import com.games.player.GamePlayerState;
 import com.games.utils.Particles;
 import com.games.utils.Title;
 
-import realcraft.bukkit.playermanazer.PlayerManazer;
+import realcraft.bukkit.coins.Coins;
+import realcraft.bukkit.users.Users;
 
 public class RageModeListeners implements Listener {
 
@@ -92,6 +94,13 @@ public class RageModeListeners implements Listener {
 	}
 
 	@EventHandler
+	public void GameEndEvent(GameEndEvent event){
+		for(GamePlayer gPlayer : game.getPlayers()){
+			game.getScoreboard().updateForPlayer(gPlayer);
+		}
+	}
+
+	@EventHandler
 	public void GameTimeoutEvent(GameTimeoutEvent event){
 		game.setState(GameState.ENDING);
 	}
@@ -105,31 +114,28 @@ public class RageModeListeners implements Listener {
 				if(gPlayer == winner){
 					int kdreward = (game.getConfig().getInt("reward.kill",0)*gPlayer.getSettings().getInt("kills"))-(game.getConfig().getInt("reward.death",0)*gPlayer.getSettings().getInt("deaths"));
 					if(kdreward < 0) kdreward = 0;
-					final int reward = PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).giveCoins(
+					final int reward = Users.getUser(gPlayer.getPlayer()).giveCoins(
 						(game.getConfig().getInt("reward.base",0))+
 						kdreward+
 						(game.getConfig().getInt("reward.player",0)*game.getStartPlayers())
 					);
 
 					game.sendMessage("§b"+gPlayer.getPlayer().getName()+" §fvyhral a ziskava §a+"+reward+" coins");
-
 					game.getStats().addScore(gPlayer,GameStatsType.WINS,1);
-					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
-					if(gPlayer.getSettings().getInt("deaths") > 0) game.getStats().addScore(gPlayer,GameStatsType.DEATHS,gPlayer.getSettings().getInt("deaths"));
 
 					Title.showTitle(gPlayer.getPlayer(),"§a§lVitezstvi!",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§fVyhral jsi tuto hru",0.5,8,0.5);
-
 					Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 						public void run(){
-							PlayerManazer.getPlayerInfo(gPlayer.getPlayer()).runCoinsEffect("§a§lVitezstvi!",reward);
+							Coins.runCoinsEffect(gPlayer.getPlayer(),"§a§lVitezstvi!",reward);
 						}
 					},10*20);
 				} else {
-					if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
 					Title.showTitle(gPlayer.getPlayer(),"§c§lProhra",0.5,8,0.5);
 					Title.showSubTitle(gPlayer.getPlayer(),"§b"+winner.getPlayer().getName()+" §fvyhral tuto hru",0.5,8,0.5);
 				}
+				if(gPlayer.getSettings().getInt("kills") > 0) game.getStats().addScore(gPlayer,GameStatsType.KILLS,gPlayer.getSettings().getInt("kills"));
+				if(gPlayer.getSettings().getInt("deaths") > 0) game.getStats().addScore(gPlayer,GameStatsType.DEATHS,gPlayer.getSettings().getInt("deaths"));
 				gPlayer.getSettings().setInt("kills",0);
 				gPlayer.getSettings().setInt("deaths",0);
 			}

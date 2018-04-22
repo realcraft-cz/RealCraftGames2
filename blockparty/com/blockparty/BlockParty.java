@@ -348,7 +348,7 @@ public class BlockParty extends Game {
 				case 3: return "LIGHT BLUE";
 				case 4: return "YELLOW";
 				case 5: return "LIME";
-				case 6: return "PING";
+				case 6: return "PINK";
 				case 7: return "GRAY";
 				case 8: return "LIGHT GRAY";
 				case 9: return "CYAN";

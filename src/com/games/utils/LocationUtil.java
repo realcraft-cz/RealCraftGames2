@@ -13,6 +13,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -115,6 +116,16 @@ public class LocationUtil {
 		float yaw = (float)(config.getDouble(path+".yaw",0));
 		float pitch = (float)(config.getDouble(path+".pitch",0));
 		World world = Bukkit.getServer().getWorld(config.getString(path+".world"));
+		return new Location(world,x,y,z,yaw,pitch);
+	}
+
+	public static Location getConfigLocation(ConfigurationSection section,String path){
+		double x = (section.getDouble(path+".x"));
+		double y = (section.getDouble(path+".y"));
+		double z = (section.getDouble(path+".z"));
+		float yaw = (float)(section.getDouble(path+".yaw",0));
+		float pitch = (float)(section.getDouble(path+".pitch",0));
+		World world = Bukkit.getServer().getWorld(section.getString(path+".world"));
 		return new Location(world,x,y,z,yaw,pitch);
 	}
 

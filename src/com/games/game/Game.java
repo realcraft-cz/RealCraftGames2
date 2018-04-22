@@ -14,6 +14,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import com.games.Games;
@@ -39,12 +40,15 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
 import realcraft.bukkit.RealCraft;
-import realcraft.bukkit.ServerType;
 import realcraft.bukkit.lobby.LobbyAutoParkour;
 import realcraft.bukkit.lobby.LobbyMenu;
 import realcraft.bukkit.minihry.GamesReminder;
-import realcraft.bukkit.playermanazer.PlayerManazer;
+import realcraft.bukkit.users.Users;
+import realcraft.share.ServerType;
+import realcraft.share.users.UserRank;
 
 public abstract class Game implements Runnable {
 
@@ -151,6 +155,7 @@ public abstract class Game implements Runnable {
 				this.setState(GameState.INGAME);
 				this.setStartPlayers(this.getPlayersCount());
 				this.getArena().getRegion().clearEntites();
+				this.getArena().getWorld().setFullTime(this.getArena().getTime());
 				for(GamePlayer gPlayer : this.getPlayers()){
 					lobbyScoreboard.updateForPlayer(gPlayer);
 					lobbyBossBar.updateForPlayer(gPlayer);
@@ -382,8 +387,6 @@ public abstract class Game implements Runnable {
 				public void run(){
 					gPlayer.teleportToSpectatorLocation();
 					gPlayer.toggleSpectator();
-					Games.getEssentials().getUser(gPlayer.getPlayer()).setNickname(Games.getEssentials().getUser(gPlayer.getPlayer()).getName());
-					Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
 				}
 			},5);
 		}
@@ -398,6 +401,10 @@ public abstract class Game implements Runnable {
 		gameVoting.removePlayer(gPlayer);
 		if(this.getState() == GameState.STARTING && this.getPlayers().size() < this.getMinPlayers()){
 			this.setState(GameState.LOBBY);
+		}
+		for(GamePlayer gPlayer2 : this.getPlayers()){
+			PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.REMOVE_PLAYER,((CraftPlayer)gPlayer.getPlayer()).getHandle());
+			((CraftPlayer)gPlayer2.getPlayer()).getHandle().playerConnection.sendPacket(packet);
 		}
 		Bukkit.getServer().getPluginManager().callEvent(new GamePlayerLeaveEvent(this,gPlayer));
 	}
@@ -488,14 +495,14 @@ public abstract class Game implements Runnable {
 
 	public void sendPremiumOffer(GamePlayer gPlayer){
 		Player player = gPlayer.getPlayer();
-		if(PlayerManazer.getPlayerInfo(player).getRank() == 0 && this.getLastPlayerPremiumOffer(gPlayer)+(PREMIUM_OFFER_TIMEOUT*1000) < System.currentTimeMillis()){
+		if(Users.getUser(player).getRank().isMaximum(UserRank.HRAC) && this.getLastPlayerPremiumOffer(gPlayer)+(PREMIUM_OFFER_TIMEOUT*1000) < System.currentTimeMillis()){
 			Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 				@Override
 				public void run(){
 					playersPremiumOffers.put(gPlayer.getPlayer().getName(),System.currentTimeMillis());
 					player.sendMessage(ChatColor.LIGHT_PURPLE+""+ChatColor.STRIKETHROUGH+StringUtils.repeat(" ",60));
 					player.sendMessage("");
-					player.sendMessage("      "+ChatColor.BOLD+"FreeWall, stale nemas VIP ucet?");
+					player.sendMessage("      "+ChatColor.BOLD+gPlayer.getPlayer().getName()+", stale nemas VIP ucet?");
 					player.sendMessage("    "+ChatColor.GRAY+"Ziskej zdarma "+ChatColor.LIGHT_PURPLE+"doplnky"+ChatColor.GRAY+" a vyuzivej "+ChatColor.YELLOW+"vyhody,");
 					player.sendMessage("  "+ChatColor.GRAY+"o kterych se ostatnim hracum muze jen zdat!");
 					player.sendMessage("");

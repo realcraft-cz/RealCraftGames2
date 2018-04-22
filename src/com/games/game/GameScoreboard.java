@@ -13,6 +13,7 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
 
+import com.games.Games;
 import com.games.player.GamePlayer;
 
 public abstract class GameScoreboard {
@@ -35,6 +36,7 @@ public abstract class GameScoreboard {
 		spectatorTeam = scoreboard.registerNewTeam("xSpectator");
 		spectatorTeam.setAllowFriendlyFire(false);
 		spectatorTeam.setColor(ChatColor.GRAY);
+		spectatorTeam.setPrefix(ChatColor.GRAY.toString());
 		spectatorTeam.setCanSeeFriendlyInvisibles(true);
 		spectatorTeam.setOption(Option.COLLISION_RULE,OptionStatus.NEVER);
 	}
@@ -111,10 +113,14 @@ public abstract class GameScoreboard {
 
 	public void addSpectator(GamePlayer gPlayer){
 		spectatorTeam.addEntry(gPlayer.getPlayer().getName());
+		Games.getEssentials().getUser(gPlayer.getPlayer()).setNickname(ChatColor.GRAY+gPlayer.getPlayer().getName()+"§r");
+		Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
 	}
 
 	public void removeSpectator(GamePlayer gPlayer){
 		spectatorTeam.removeEntry(gPlayer.getPlayer().getName());
+		Games.getEssentials().getUser(gPlayer.getPlayer()).setNickname(Games.getEssentials().getUser(gPlayer.getPlayer()).getName());
+		Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
 	}
 
 	public enum GameScoreboardType {

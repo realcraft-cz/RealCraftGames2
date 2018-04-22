@@ -147,12 +147,14 @@ public abstract class GamePodium implements Listener {
 				Bukkit.getScheduler().runTaskAsynchronously(Games.getInstance(),new Runnable(){
 					@Override
 					public void run(){
+						Skin skin = new Skin("steve","","","");
 						String skinName = SkinUtil.getPlayerSkin(name);
-						Skin skin = SkinUtil.getSkin(skinName);
+						if(skinName != null) skin = SkinUtil.getSkin(skinName);
+						final Skin skinFinal = skin;
 						Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
 							@Override
 							public void run(){
-								head = ItemUtil.getHead(skin.getValue());
+								head = ItemUtil.getHead(skinFinal.getValue());
 								if(stand != null) stand.getEquipment().setHelmet(head);
 							}
 						});

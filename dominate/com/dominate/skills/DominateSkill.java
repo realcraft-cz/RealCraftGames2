@@ -28,7 +28,6 @@ public abstract class DominateSkill implements Listener, Runnable {
 	private DominateSkillType type;
 	private DominateUser dPlayer;
 	private GamePlayer gPlayer;
-	private boolean enabled = false;
 	private boolean running = false;
 	private int cooldown = -1;
 	private int power = 100;
@@ -63,13 +62,8 @@ public abstract class DominateSkill implements Listener, Runnable {
 		return game;
 	}
 
-	public boolean isEnabled(){
-		return enabled;
-	}
-
 	public void setEnabled(boolean enabled){
-		this.enabled = enabled;
-		if(this.isEnabled()){
+		if(enabled){
 			Bukkit.getPluginManager().registerEvents(this,Games.getInstance());
 			if(this.getType().getRunningSpeed() > 0){
 				task = Bukkit.getScheduler().runTaskTimer(Games.getInstance(),this,this.getType().getRunningSpeed(),this.getType().getRunningSpeed());

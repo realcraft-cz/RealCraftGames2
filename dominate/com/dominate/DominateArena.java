@@ -32,11 +32,8 @@ public class DominateArena extends GameArena {
 	private Vector minVector;
 	private Vector maxVector;
 
-	private int time;
-
 	public DominateArena(Dominate game,String name){
 		super(game,name);
-		this.time = this.getConfig().getInt("time",6000);
 		this.loadSpawns();
 		this.loadSpawnAreas();
 		this.loadEmeralds();
@@ -50,10 +47,6 @@ public class DominateArena extends GameArena {
 
 	public Dominate getGame(){
 		return (Dominate) super.getGame();
-	}
-
-	public int getTime(){
-		return time;
 	}
 
 	public Location getTeamSpawn(DominateTeamType type){

@@ -2,7 +2,9 @@ package com.games.arena;
 
 import java.io.File;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -14,12 +16,14 @@ public abstract class GameArena {
 
 	private Game game;
 	private String name;
+	private World world;
 
 	private GameArenaImage image;
 	private GameArenaRegion region;
 
 	private FileConfiguration config;
 
+	private int time = -1;
 	private int spectatorRadius;
 	private Location spectatorLocation;
 
@@ -37,6 +41,11 @@ public abstract class GameArena {
 
 	public String getName(){
 		return name;
+	}
+
+	public World getWorld(){
+		if(world == null) world = Bukkit.getWorld(this.getConfig().getString("world"));
+		return world;
 	}
 
 	public GameArenaImage getImage(){
@@ -60,6 +69,11 @@ public abstract class GameArena {
 			}
 		}
 		return config;
+	}
+
+	public int getTime(){
+		if(time == -1) time = this.getConfig().getInt("time",6000);
+		return time;
 	}
 
 	public int getSpectatorRadius(){
