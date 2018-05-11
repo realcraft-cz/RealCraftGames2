@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 
 import com.games.Games;
 import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
 import com.games.utils.FireworkUtil;
 import com.games.utils.Particles;
 import com.games.utils.Title;
@@ -117,7 +118,7 @@ public class DominateEmerald implements Listener {
 			Item item = event.getItem();
 			if(this.getItem() != null && item.getItemStack().getType() == Material.EMERALD){
 				GamePlayer gPlayer = arena.getGame().getGamePlayer((Player)event.getEntity());
-				if(item.getEntityId() == this.getItem().getEntityId()){
+				if(gPlayer.getState() != GamePlayerState.SPECTATOR && item.getEntityId() == this.getItem().getEntityId()){
 					this.pickup(gPlayer);
 				}
 				event.setCancelled(true);

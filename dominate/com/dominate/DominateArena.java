@@ -20,9 +20,6 @@ public class DominateArena extends GameArena {
 	private Location redSpawn;
 	private Location blueSpawn;
 
-	private DominateSpawnArea redSpawnArea = new DominateSpawnArea();
-	private DominateSpawnArea blueSpawnArea = new DominateSpawnArea();
-
 	private ArrayList<DominateEmerald> emeralds = new ArrayList<DominateEmerald>();
 	private ArrayList<DominatePoint> points = new ArrayList<DominatePoint>();
 	private ArrayList<DominateKit> kits = new ArrayList<DominateKit>();
@@ -35,7 +32,6 @@ public class DominateArena extends GameArena {
 	public DominateArena(Dominate game,String name){
 		super(game,name);
 		this.loadSpawns();
-		this.loadSpawnAreas();
 		this.loadEmeralds();
 		this.loadPoints();
 		this.loadKits();
@@ -55,11 +51,11 @@ public class DominateArena extends GameArena {
 		return null;
 	}
 
-	public DominateSpawnArea getSpawnArea(DominateTeamType type){
+	/*public DominateSpawnArea getSpawnArea(DominateTeamType type){
 		if(type == DominateTeamType.RED) return redSpawnArea;
 		else if(type == DominateTeamType.BLUE) return blueSpawnArea;
 		return null;
-	}
+	}*/
 
 	public Location getMinLocation(){
 		return minLocation;
@@ -98,7 +94,7 @@ public class DominateArena extends GameArena {
 		this.blueSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.spawns."+DominateTeamType.BLUE.toString()+".spawn");
 	}
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	private void loadSpawnAreas(){
 		List<Map<String, Object>> tempPoints;
 		tempPoints = (List<Map<String, Object>>) this.getConfig().get("custom.spawns."+DominateTeamType.RED.toString()+".area");
@@ -117,16 +113,16 @@ public class DominateArena extends GameArena {
 				blueSpawnArea.addPoint(x,z);
 			}
 		}
-	}
+	}*/
 
 	@SuppressWarnings("unchecked")
 	private void loadEmeralds(){
 		List<Map<String, Object>> tempPoints = (List<Map<String, Object>>) this.getConfig().get("custom.emeralds");
 		if(tempPoints != null && !tempPoints.isEmpty()){
 			for(Map<String, Object> point : tempPoints){
-				double x = Math.round(Double.valueOf(point.get("x").toString()))+0.5;
-				double y = Math.round(Double.valueOf(point.get("y").toString()))+1.0;
-				double z = Math.round(Double.valueOf(point.get("z").toString()))+0.5;
+				double x = Math.floor(Double.valueOf(point.get("x").toString()))+0.5;
+				double y = Math.floor(Double.valueOf(point.get("y").toString()))+1.0;
+				double z = Math.floor(Double.valueOf(point.get("z").toString()))+0.5;
 				float yaw = Float.valueOf(point.get("yaw").toString());
 				float pitch = Float.valueOf(point.get("pitch").toString());
 				World world = Bukkit.getWorld(point.get("world").toString());
@@ -148,9 +144,9 @@ public class DominateArena extends GameArena {
 		if(tempPoints != null && !tempPoints.isEmpty()){
 			for(Map<String, Object> point : tempPoints){
 				String name = point.get("name").toString();
-				double x = Math.round(Double.valueOf(point.get("x").toString()))+0.5;
-				double y = Math.round(Double.valueOf(point.get("y").toString()))+0.5;
-				double z = Math.round(Double.valueOf(point.get("z").toString()))+0.5;
+				double x = Math.floor(Double.valueOf(point.get("x").toString()))+0.5;
+				double y = Math.floor(Double.valueOf(point.get("y").toString()))+0.5;
+				double z = Math.floor(Double.valueOf(point.get("z").toString()))+0.5;
 				float yaw = Float.valueOf(point.get("yaw").toString());
 				float pitch = Float.valueOf(point.get("pitch").toString());
 				World world = Bukkit.getWorld(point.get("world").toString());
@@ -170,11 +166,13 @@ public class DominateArena extends GameArena {
 	private void loadKits(){
 		List<Map<String, Object>> tempPoints = (List<Map<String, Object>>) this.getConfig().get("custom.kits");
 		if(tempPoints != null && !tempPoints.isEmpty()){
+			int index = 0;
 			for(Map<String, Object> point : tempPoints){
-				DominateKitType type = DominateKitType.getByName(point.get("type").toString());
-				double x = Math.round(Double.valueOf(point.get("x").toString()))+0.5;
+				DominateKitType type = DominateKitType.values()[index++];
+				if(index >= 5) index = 0;
+				double x = Math.floor(Double.valueOf(point.get("x").toString()))+0.5;
 				double y = Math.round(Double.valueOf(point.get("y").toString()));
-				double z = Math.round(Double.valueOf(point.get("z").toString()))+0.5;
+				double z = Math.floor(Double.valueOf(point.get("z").toString()))+0.5;
 				float yaw = Float.valueOf(point.get("yaw").toString());
 				float pitch = Float.valueOf(point.get("pitch").toString());
 				World world = Bukkit.getWorld(point.get("world").toString());
@@ -192,7 +190,7 @@ public class DominateArena extends GameArena {
 		}
 	}
 
-	public class DominateSpawnArea {
+	/*public class DominateSpawnArea {
 		ArrayList<Double> pointsX = new ArrayList<Double>();
 		ArrayList<Double> pointsZ = new ArrayList<Double>();
 
@@ -210,5 +208,5 @@ public class DominateArena extends GameArena {
 		    }
 		    return result;
 		}
-	}
+	}*/
 }

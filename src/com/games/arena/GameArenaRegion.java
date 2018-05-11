@@ -21,6 +21,7 @@ import com.games.events.GameRegionLoadEvent;
 import com.games.utils.LocationUtil;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
 import com.sk89q.worldedit.blocks.BaseBlock;
@@ -184,7 +185,15 @@ public class GameArenaRegion {
 					@Override
 					public Void call(){
 						for(Entry<Vector,BaseBlock> map : blocks.entrySet()){
-							location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setTypeIdAndData(map.getValue().getId(),(byte)map.getValue().getData(),false);
+							if(!map.getValue().hasNbtData()){
+								location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setTypeIdAndData(map.getValue().getId(),(byte)map.getValue().getData(),false);
+							} else {
+								try {
+									editSession.setBlock(map.getKey(),map.getValue());
+								} catch (MaxChangedBlocksException e){
+									e.printStackTrace();
+								}
+							}
 						}
 						blocks.clear();
 						build = false;

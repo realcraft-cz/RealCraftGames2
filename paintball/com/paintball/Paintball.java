@@ -65,6 +65,7 @@ public class Paintball extends Game {
 
 	@Override
 	public void onDisable(){
+		super.onDisable();
 		this.getDrops().clear();
 	}
 

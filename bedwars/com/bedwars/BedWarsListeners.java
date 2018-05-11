@@ -33,6 +33,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Bed;
@@ -64,6 +65,8 @@ import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
 
 public class BedWarsListeners implements Listener {
+
+	private static final int SPAWN_PROTECTION_DELAY = 20*1000;
 
 	private BedWars game;
 
@@ -105,6 +108,7 @@ public class BedWarsListeners implements Listener {
 			gPlayer.getSettings().setInt("deaths",0);
 			gPlayer.getSettings().setInt("beds",0);
 			gPlayer.getSettings().setLong("pickup",0);
+			gPlayer.getSettings().setLong("spawned",0);
 			gPlayer.getPlayer().setGameMode(GameMode.SURVIVAL);
 			BedWarsTeam team = game.getTeams().getPlayerTeam(gPlayer);
 			gPlayer.getPlayer().teleport(team.getSpawnLocation());
@@ -219,6 +223,7 @@ public class BedWarsListeners implements Listener {
 		if(game.getTeams().getPlayerTeam(gPlayer) != null){
 			event.setRespawnLocation(game.getTeams().getPlayerTeam(gPlayer).getSpawnLocation());
 			gPlayer.resetPlayer();
+			gPlayer.getSettings().setLong("spawned",System.currentTimeMillis());
 		}
 		else if(gPlayer.getState() == GamePlayerState.SPECTATOR){
 			gPlayer.resetPlayer();
@@ -315,6 +320,12 @@ public class BedWarsListeners implements Listener {
 		else if(level == 2) damage = 7;
 		else if(level == 3) damage = 6;
 		event.getBow().setDurability((short)(event.getBow().getDurability()+damage));
+		if(event.getEntityType() == EntityType.PLAYER){
+			GamePlayer gPlayer = game.getGamePlayer((Player)event.getEntity());
+			if(game.getState().isGame() && gPlayer.getSettings().getLong("spawned") != 0){
+				gPlayer.getSettings().setLong("spawned",0);
+			}
+		}
 	}
 
 	@EventHandler(ignoreCancelled=true)
@@ -334,6 +345,28 @@ public class BedWarsListeners implements Listener {
 		if(event.getEntityType() == EntityType.STRAY && (event.getCause() == DamageCause.FIRE_TICK)){
 			event.setCancelled(true);
 			event.getEntity().setFireTicks(0);
+		}
+		else if(event.getEntityType() == EntityType.PLAYER &&
+				(event.getCause() == DamageCause.ENTITY_ATTACK ||
+				event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK ||
+				event.getCause() == DamageCause.PROJECTILE ||
+				event.getCause() == DamageCause.FIRE ||
+				event.getCause() == DamageCause.FIRE_TICK)){
+			GamePlayer gPlayer = game.getGamePlayer((Player)event.getEntity());
+			if(gPlayer.getState() != GamePlayerState.SPECTATOR && gPlayer.getSettings().getLong("spawned")+SPAWN_PROTECTION_DELAY > System.currentTimeMillis()){
+				event.setCancelled(true);
+				event.getEntity().setFireTicks(0);
+			}
+		}
+	}
+
+	@EventHandler(ignoreCancelled=true)
+	public void PlayerMoveEvent(PlayerMoveEvent event){
+		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
+		if(event.getFrom().getBlockX() != event.getTo().getBlockX() || event.getFrom().getBlockY() != event.getTo().getBlockY() || event.getFrom().getBlockZ() != event.getTo().getBlockZ()){
+			if(game.getState().isGame() && gPlayer.getState() != GamePlayerState.SPECTATOR && gPlayer.getSettings().getLong("spawned") != 0 && System.currentTimeMillis()-gPlayer.getSettings().getLong("spawned") > 500){
+				gPlayer.getSettings().setLong("spawned",0);
+			}
 		}
 	}
 
@@ -418,6 +451,7 @@ public class BedWarsListeners implements Listener {
 				BedWarsSpecialStray stray = new BedWarsSpecialStray(game,game.getTeams().getPlayerTeam(gPlayer));
 				stray.activate(gPlayer);
 			}
+			if(gPlayer.getSettings().getLong("spawned") != 0) gPlayer.getSettings().setLong("spawned",0);
 		}
 	}
 

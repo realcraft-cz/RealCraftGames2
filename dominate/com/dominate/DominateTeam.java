@@ -73,7 +73,7 @@ public class DominateTeam {
 	}
 
 	public boolean isLocationInSpawn(Location location){
-		return (game.getArena().getSpawnArea(type).contains(location.getX(),location.getZ()));
+		return (game.getArena().getTeamSpawn(type).distanceSquared(location) < 25);
 	}
 
 	public void addPlayer(GamePlayer gPlayer){

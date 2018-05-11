@@ -257,7 +257,9 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void HangingBreakByEntityEvent(HangingBreakByEntityEvent event){
-		if(event.getRemover() instanceof Player && ((Player)event.getRemover()).getGameMode() != GameMode.CREATIVE) event.setCancelled(true);
+		if(event.getRemover() instanceof Player){
+			if(((Player)event.getRemover()).getGameMode() != GameMode.CREATIVE) event.setCancelled(true);
+		}
 		else event.setCancelled(true);
 	}
 

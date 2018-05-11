@@ -52,7 +52,7 @@ import realcraft.share.users.UserRank;
 
 public abstract class Game implements Runnable {
 
-	private static final int PREMIUM_OFFER_TIMEOUT = 3600;
+	private static final int PREMIUM_OFFER_TIMEOUT = 7200;
 
 	private GameType type;
 	private GameState state = GameState.LOBBY;
@@ -187,6 +187,27 @@ public abstract class Game implements Runnable {
 	}
 
 	public void onDisable(){
+		new Thread(new Runnable(){
+			public void run(){
+				for(int i=0;i<5;i++){
+					try {
+						Thread.sleep(i*200);
+					} catch (InterruptedException e){
+						e.printStackTrace();
+					}
+					for(World world : Bukkit.getWorlds()){
+						File [] mapsFiles = new File(world.getWorldFolder()+"/data/").listFiles();
+						if(mapsFiles != null){
+							for(File file : mapsFiles){
+								if(!file.isDirectory() && (file.getName().startsWith("map_") || file.getName().startsWith("idcounts"))){
+									file.delete();
+								}
+							}
+						}
+					}
+				}
+			}
+		}).start();
 	}
 
 	public GameType getType(){
