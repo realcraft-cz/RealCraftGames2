@@ -1,13 +1,14 @@
 package com.blockparty;
 
-import java.util.Random;
-
-import org.bukkit.Bukkit;
-import org.bukkit.FireworkEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.games.Games;
+import com.games.events.*;
+import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.FireworkUtil;
+import com.games.utils.Title;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -24,26 +25,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-
-import com.games.Games;
-import com.games.events.GameCycleEvent;
-import com.games.events.GameEndEvent;
-import com.games.events.GamePlayerJoinEvent;
-import com.games.events.GamePlayerStateChangeEvent;
-import com.games.events.GameStartEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.events.GameTimeoutEvent;
-import com.games.game.GameState;
-import com.games.game.GameStats.GameStatsType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.FireworkUtil;
-import com.games.utils.Particles;
-import com.games.utils.Particles.BlockData;
-import com.games.utils.Title;
-
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.Particles;
+
+import java.util.Random;
 
 public class BlockPartyListeners implements Listener {
 
@@ -134,7 +120,7 @@ public class BlockPartyListeners implements Listener {
 						@Override
 						public void run(){
 							FireworkUtil.spawnFirework(randomLoc,null,true);
-							randomLoc.getWorld().playSound(randomLoc,Sound.ENTITY_FIREWORK_LAUNCH,1f,1f);
+							randomLoc.getWorld().playSound(randomLoc,Sound.ENTITY_FIREWORK_ROCKET_LAUNCH,1f,1f);
 						}
 					},i);
 				}
@@ -263,8 +249,8 @@ public class BlockPartyListeners implements Listener {
 			game.getPickup().remove();
 			game.sendMessage("§b"+event.getPlayer().getName()+" "+game.getPickup().getType().getMessage());
 		}
-		else if(event.getAction() == Action.LEFT_CLICK_BLOCK && event.getItem() != null && event.getItem().getType() == Material.GOLD_SPADE && block != null && this.getGame().getArena().isBlockInArena(block.getLocation())){
-			Particles.BLOCK_CRACK.display(new BlockData(block.getType(),block.getData()),0.3f,0.3f,0.3f,0.0f,64,block.getLocation().add(0.5,0.7,0.5),64);
+		else if(event.getAction() == Action.LEFT_CLICK_BLOCK && event.getItem() != null && event.getItem().getType() == Material.GOLDEN_SHOVEL && block != null && this.getGame().getArena().isBlockInArena(block.getLocation())){
+			Particles.BLOCK_CRACK.display(Bukkit.createBlockData(block.getType()),0.3f,0.3f,0.3f,0.0f,64,block.getLocation().add(0.5,0.7,0.5),64);
 			block.getWorld().playSound(block.getLocation(),Sound.BLOCK_STONE_PLACE,1f,1f);
 			block.setType(Material.AIR);
 			event.getItem().setDurability((short)(event.getItem().getDurability()+2));
@@ -278,15 +264,15 @@ public class BlockPartyListeners implements Listener {
 	@EventHandler(ignoreCancelled=true)
     public void EntityPickupItemEvent(EntityPickupItemEvent event){
 		if(event.getEntity() instanceof Player){
-			if(event.getItem().getItemStack().getType() == Material.SNOW_BALL){
-				((Player)event.getEntity()).getInventory().addItem(new ItemStack(Material.SNOW_BALL,1));
+			if(event.getItem().getItemStack().getType() == Material.SNOWBALL){
+				((Player)event.getEntity()).getInventory().addItem(new ItemStack(Material.SNOWBALL));
 				event.getItem().getWorld().playSound(event.getEntity().getLocation(),Sound.ENTITY_ITEM_PICKUP,0.5f,2f);
 				event.getItem().remove();
 			}
-			else if(event.getItem().getItemStack().getType() == Material.GOLD_SPADE){
-				if(!((Player)event.getEntity()).getInventory().contains(Material.GOLD_SPADE)){
-					((Player)event.getEntity()).getInventory().remove(Material.GOLD_SPADE);
-					((Player)event.getEntity()).getInventory().addItem(new ItemStack(Material.GOLD_SPADE,1));
+			else if(event.getItem().getItemStack().getType() == Material.GOLDEN_SHOVEL){
+				if(!((Player)event.getEntity()).getInventory().contains(Material.GOLDEN_SHOVEL)){
+					((Player)event.getEntity()).getInventory().remove(Material.GOLDEN_SHOVEL);
+					((Player)event.getEntity()).getInventory().addItem(new ItemStack(Material.GOLDEN_SHOVEL));
 					event.getItem().getWorld().playSound(event.getEntity().getLocation(),Sound.ENTITY_ITEM_PICKUP,0.5f,2f);
 					event.getItem().remove();
 				}

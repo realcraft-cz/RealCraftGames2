@@ -1,5 +1,6 @@
 package com.games.game;
 
+import com.games.exceptions.GameNotLoadedException;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -63,10 +64,11 @@ import com.games.exceptions.GameMaintenanceException;
 import com.games.exceptions.GameMaxPlayersException;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.LocationUtil;
 
 import realcraft.bukkit.anticheat.AntiCheat;
 import realcraft.bukkit.lobby.LobbyMenu;
+import realcraft.bukkit.utils.LocationUtil;
+import realcraft.bukkit.utils.MaterialUtil;
 
 public class GameListeners implements Listener {
 
@@ -87,6 +89,9 @@ public class GameListeners implements Listener {
 		} catch (GameMaintenanceException e){
 			event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
 			event.setKickMessage(game.getPrefix()+"§cTato hra je docasne nedostupna, zkuste to prosim pozdeji.");
+		} catch (GameNotLoadedException e){
+			event.setResult(PlayerLoginEvent.Result.KICK_OTHER);
+			event.setKickMessage(game.getPrefix()+"§cTato hra se teprve nacita, vyckejte prosim.");
 		}
 	}
 
@@ -98,6 +103,8 @@ public class GameListeners implements Listener {
 			event.getPlayer().kickPlayer(game.getPrefix()+"§cTato hra je jiz plna.");
 		} catch (GameMaintenanceException e){
 			event.getPlayer().kickPlayer(game.getPrefix()+"§cTato hra je docasne nedostupna, zkuste to prosim pozdeji.");
+		} catch (GameNotLoadedException e){
+			event.getPlayer().kickPlayer(game.getPrefix()+"§cTato hra se teprve nacita, vyckejte prosim.");
 		}
 	}
 
@@ -209,7 +216,7 @@ public class GameListeners implements Listener {
 	@EventHandler(priority=EventPriority.LOW)
 	public void BlockFadeEvent(BlockFadeEvent event){
 		Block block = event.getBlock();
-		if(block != null && block.getType() == Material.SOIL){
+		if(block != null && block.getType() == Material.FARMLAND){
 			event.setCancelled(true);
 		}
 	}
@@ -223,7 +230,7 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void BlockGrowEvent(BlockGrowEvent event){
-		if(event.getNewState().getType() == Material.SUGAR_CANE_BLOCK){
+		if(event.getNewState().getType() == Material.SUGAR_CANE){
 			event.setCancelled(true);
 		}
 	}
@@ -242,7 +249,7 @@ public class GameListeners implements Listener {
 	public void EntityInteractEvent(EntityInteractEvent event){
 		if(event.getEntity() instanceof Animals){
 			Block block = event.getBlock();
-			if(block != null && block.getType() == Material.SOIL){
+			if(block != null && block.getType() == Material.FARMLAND){
 				event.setCancelled(true);
 			}
 		}
@@ -288,12 +295,12 @@ public class GameListeners implements Listener {
 	public void PlayerInteractEvent(PlayerInteractEvent event){
 		if(game.getState().isLobby()){
 			Block block = event.getClickedBlock();
-			if(event.getPlayer().getGameMode() != GameMode.CREATIVE && (block == null || block.getType() != Material.WOOD_PLATE)) event.setCancelled(true);
-			if(event.getAction() == Action.PHYSICAL && block != null && block.getType() == Material.SOIL){
+			if(event.getPlayer().getGameMode() != GameMode.CREATIVE && (block == null || block.getType() != Material.LEGACY_WOOD_PLATE)) event.setCancelled(true);
+			if(event.getAction() == Action.PHYSICAL && block != null && block.getType() == Material.FARMLAND){
 				event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
 				event.setCancelled(true);
 			}
-			if(block != null && block.getType() == Material.CONCRETE && event.getHand() == EquipmentSlot.HAND){
+			if(block != null && MaterialUtil.isConcrete(block.getType()) && event.getHand() == EquipmentSlot.HAND){
 				Entity entities[] = block.getLocation().getChunk().getEntities();
 				for(Entity entity : entities){
 					if(!(entity instanceof ItemFrame)) continue;
@@ -313,7 +320,7 @@ public class GameListeners implements Listener {
 				if(block != null){
 					BlockState blockState = block.getState();
 					if(blockState != null){
-						if(event.getAction() == Action.PHYSICAL && blockState != null && blockState.getType() == Material.SOIL){
+						if(event.getAction() == Action.PHYSICAL && blockState != null && blockState.getType() == Material.FARMLAND){
 							event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
 							event.setCancelled(true);
 						}
@@ -323,10 +330,10 @@ public class GameListeners implements Listener {
 						else if((blockState.getType() == Material.CHEST || blockState.getType() == Material.ENDER_CHEST || blockState.getType() == Material.TRAPPED_CHEST) && GameFlag.USE_CONTAINER == false){
 							event.setCancelled(true);
 						}
-						else if((blockState.getType() == Material.LEVER || blockState.getType() == Material.REDSTONE_COMPARATOR || blockState.getType() == Material.DIODE) && GameFlag.USE_REDSTONE == false){
+						else if((blockState.getType() == Material.LEVER || blockState.getType() == Material.COMPARATOR || blockState.getType() == Material.REPEATER) && GameFlag.USE_REDSTONE == false){
 							event.setCancelled(true);
 						}
-						else if(blockState.getType() == Material.WORKBENCH && GameFlag.CRAFT == false){
+						else if(blockState.getType() == Material.CRAFTING_TABLE && GameFlag.CRAFT == false){
 							event.setCancelled(true);
 						}
 						else if(blockState instanceof Furnace && GameFlag.USE_FURNACE == false){
@@ -436,6 +443,7 @@ public class GameListeners implements Listener {
 		game.getLeaderboard().update();
 		game.getStats().addGame(game.getStartPlayers());
 		game.getArena().getRegion().reset();
+		game.sendGamePartyEnd();
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
 			gPlayer.getPlayer().resetPlayerTime();
@@ -455,6 +463,6 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void GameRegionLoadEvent(GameRegionLoadEvent event){
-		Games.DEBUG("Region "+event.getArena().getName()+" loaded");
+		game.resetArenas();
 	}
 }

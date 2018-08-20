@@ -15,6 +15,7 @@ import com.earth2me.essentials.Essentials;
 import com.games.utils.Glow;
 import com.hidenseek.HidenSeek;
 import com.paintball.Paintball;
+import com.races.Races;
 import com.ragemode.RageMode;
 
 import realcraft.bukkit.RealCraft;
@@ -34,6 +35,7 @@ public class Games extends JavaPlugin {
 	private RageMode ragemode;
 	private Paintball paintball;
 	private Dominate dominate;
+	private Races races;
 
 	public static Games getInstance(){
 		return instance;
@@ -62,6 +64,7 @@ public class Games extends JavaPlugin {
 		if(ragemode != null) ragemode.onDisable();
 		if(paintball != null) paintball.onDisable();
 		if(dominate != null) dominate.onDisable();
+		if(races != null) races.onDisable();
 	}
 
 	public void init(){
@@ -76,6 +79,7 @@ public class Games extends JavaPlugin {
 		if(RealCraft.getServerType() == ServerType.RAGEMODE) ragemode = new RageMode();
 		if(RealCraft.getServerType() == ServerType.PAINTBALL) paintball = new Paintball();
 		if(RealCraft.getServerType() == ServerType.DOMINATE) dominate = new Dominate();
+		if(RealCraft.getServerType() == ServerType.RACES) races = new Races();
 	}
 
 	public static String[] getCommands(){

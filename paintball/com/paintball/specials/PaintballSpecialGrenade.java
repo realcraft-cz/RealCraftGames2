@@ -1,7 +1,10 @@
 package com.paintball.specials;
 
-import java.util.ArrayList;
-
+import com.games.Games;
+import com.games.game.GameState;
+import com.games.player.GamePlayer;
+import com.games.utils.RandomUtil;
+import com.paintball.Paintball;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -15,13 +18,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
+import realcraft.bukkit.utils.Particles;
 
-import com.games.Games;
-import com.games.game.GameState;
-import com.games.player.GamePlayer;
-import com.games.utils.Particles;
-import com.games.utils.RandomUtil;
-import com.paintball.Paintball;
+import java.util.ArrayList;
 
 public class PaintballSpecialGrenade extends PaintballSpecial {
 

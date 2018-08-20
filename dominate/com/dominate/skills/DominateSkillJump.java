@@ -1,5 +1,9 @@
 package com.dominate.skills;
 
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.games.Games;
+import com.games.game.GameState;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -10,14 +14,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
-
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.games.Games;
-import com.games.game.GameState;
-import com.games.utils.Particles;
-
 import realcraft.bukkit.anticheat.AntiCheat;
+import realcraft.bukkit.utils.Particles;
 
 public class DominateSkillJump extends DominateSkill {
 

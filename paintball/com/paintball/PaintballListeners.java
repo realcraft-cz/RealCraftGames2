@@ -1,11 +1,16 @@
 package com.paintball;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.games.Games;
+import com.games.events.*;
+import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.RandomUtil;
+import com.games.utils.Title;
+import com.paintball.PaintballTeam.PaintballTeamType;
+import com.paintball.specials.PaintballSpecial;
+import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
@@ -14,38 +19,18 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-
-import com.games.Games;
-import com.games.events.GameCycleEvent;
-import com.games.events.GameEndEvent;
-import com.games.events.GamePlayerJoinEvent;
-import com.games.events.GamePlayerLeaveEvent;
-import com.games.events.GamePlayerStateChangeEvent;
-import com.games.events.GameStartEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.events.GameTimeoutEvent;
-import com.games.game.GameState;
-import com.games.game.GameStats.GameStatsType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.Particles;
-import com.games.utils.RandomUtil;
-import com.games.utils.Title;
-import com.paintball.PaintballTeam.PaintballTeamType;
-import com.paintball.specials.PaintballSpecial;
-
+import org.bukkit.util.Vector;
+import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.MaterialUtil;
+import realcraft.bukkit.utils.Particles;
 
 public class PaintballListeners implements Listener {
 
@@ -159,7 +144,7 @@ public class PaintballListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getTeams().getActiveTeams().size() < 2) game.setState(GameState.ENDING);
+			if(game.getTeams().getActiveTeams().size() < 2 && !RealCraft.isTestServer()) game.setState(GameState.ENDING);
 			for(GamePlayer gPlayer : game.getPlayers()){
 				if(gPlayer.getState() == GamePlayerState.SPECTATOR) continue;
 				PaintballUser user = game.getUser(gPlayer);
@@ -252,10 +237,10 @@ public class PaintballListeners implements Listener {
 				PaintballTeam team = game.getTeams().getPlayerTeam(gPlayer);
 				if(team != null){
 					if(team.getType() == PaintballTeamType.RED){
-						for(int i=0;i<2;i++) Particles.REDSTONE.display(new Particles.OrdinaryColor(255,0,0),snowball.getLocation().add(RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2)),64);
+						for(int i=0;i<2;i++) Particles.REDSTONE.display(new Particle.DustOptions(Color.RED,1f),new Vector(0,0,0),0f,snowball.getLocation().add(RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2)),64);
 					}
 					else if(team.getType() == PaintballTeamType.BLUE){
-						for(int i=0;i<2;i++) Particles.REDSTONE.display(new Particles.OrdinaryColor(0,0,255),snowball.getLocation().add(RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2)),64);
+						for(int i=0;i<2;i++) Particles.REDSTONE.display(new Particle.DustOptions(Color.BLUE,1f),new Vector(0,0,0),0f,snowball.getLocation().add(RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2)),64);
 					}
 				}
 				snowball.getWorld().playSound(snowball.getLocation(),Sound.BLOCK_STONE_PLACE,1f,2f);
@@ -270,7 +255,7 @@ public class PaintballListeners implements Listener {
 		if(gPlayer.getState() == GamePlayerState.SPECTATOR) return;
 		if(game.getState().isGame()){
 			ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-			if(itemStack.getType() == Material.SNOW_BALL){
+			if(itemStack.getType() == Material.SNOWBALL){
 				if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 					event.setCancelled(true);
 					Snowball snowball = (Snowball) gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getEyeLocation(),EntityType.SNOWBALL);
@@ -283,17 +268,16 @@ public class PaintballListeners implements Listener {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void PlayerInteractEvent2(PlayerInteractEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		if(gPlayer.getState() == GamePlayerState.SPECTATOR) return;
 		if(game.getState().isLobby()){
 			ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-			if(itemStack.getType() == Material.WOOL){
+			if(MaterialUtil.isWool(itemStack.getType())){
 				if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 					event.setCancelled(true);
-					if(itemStack.getDurability() == DyeColor.RED.getWoolData()){
+					if(MaterialUtil.getDyeColor(itemStack.getType()) == DyeColor.RED){
 						if(game.getTeams().getPlayerTeam(gPlayer) != game.getTeams().getTeam(PaintballTeamType.RED)){
 							if(!game.getTeams().isTeamFull(PaintballTeamType.RED)){
 								game.getTeams().setPlayerTeam(gPlayer,game.getTeams().getTeam(PaintballTeamType.RED));

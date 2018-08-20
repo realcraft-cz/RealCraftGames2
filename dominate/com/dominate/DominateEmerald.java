@@ -1,11 +1,11 @@
 package com.dominate;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.games.Games;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.FireworkUtil;
+import com.games.utils.Title;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -15,13 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-
-import com.games.Games;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.FireworkUtil;
-import com.games.utils.Particles;
-import com.games.utils.Title;
+import realcraft.bukkit.utils.Particles;
 
 public class DominateEmerald implements Listener {
 

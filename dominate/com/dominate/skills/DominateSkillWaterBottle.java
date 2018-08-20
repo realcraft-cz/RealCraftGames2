@@ -41,6 +41,7 @@ public class DominateSkillWaterBottle extends DominateSkill {
 	@EventHandler
 	public void PlayerInteractEvent(PlayerInteractEvent event){
 		if(event.getPlayer().equals(this.getPlayer()) && this.getGame().getState() == GameState.INGAME){
+			event.setCancelled(true);
 			Player player = event.getPlayer();
 			Action action = event.getAction();
 			ItemStack item = player.getInventory().getItemInMainHand();

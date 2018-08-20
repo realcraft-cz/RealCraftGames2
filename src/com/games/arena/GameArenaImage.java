@@ -1,23 +1,21 @@
 package com.games.arena;
 
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-
-import javax.imageio.ImageIO;
-
+import com.games.Games;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
 
-import com.games.Games;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 public class GameArenaImage {
 
@@ -36,7 +34,6 @@ public class GameArenaImage {
 		return arena;
 	}
 
-	@SuppressWarnings("deprecation")
 	public ItemStack[] getImages(){
 		if(images == null){
 			World world = Bukkit.getWorld("world");
@@ -74,8 +71,10 @@ public class GameArenaImage {
 						MapView map = Bukkit.getServer().createMap(world);
 						map.getRenderers().clear();
 						map.addRenderer(new CustomMapRenderer(image));
-						ItemStack item = new ItemStack(Material.MAP);
-						item.setDurability(map.getId());
+						ItemStack item = new ItemStack(Material.FILLED_MAP);
+						MapMeta meta = (MapMeta)item.getItemMeta();
+						meta.setMapId(map.getId());
+						item.setItemMeta(meta);
 						items[index++] = item;
 					}
 					images = items;
@@ -88,8 +87,6 @@ public class GameArenaImage {
 	private BufferedImage loadImage(File file){
 		try {
 			return ImageIO.read(file);
-		} catch (MalformedURLException e){
-			e.printStackTrace();
 		} catch (IOException e){
 			e.printStackTrace();
 		}

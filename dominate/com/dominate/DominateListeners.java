@@ -1,11 +1,19 @@
 package com.dominate;
 
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+import com.dominate.DominateTeam.DominateTeamType;
+import com.games.Games;
+import com.games.events.*;
+import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.Title;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
@@ -25,30 +33,10 @@ import org.bukkit.event.player.PlayerPickupArrowEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
-
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketEvent;
-import com.dominate.DominateTeam.DominateTeamType;
-import com.games.Games;
-import com.games.events.GameCycleEvent;
-import com.games.events.GameEndEvent;
-import com.games.events.GamePlayerJoinEvent;
-import com.games.events.GamePlayerLeaveEvent;
-import com.games.events.GamePlayerStateChangeEvent;
-import com.games.events.GameStartEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.events.GameTimeoutEvent;
-import com.games.game.GameState;
-import com.games.game.GameStats.GameStatsType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.Title;
-
+import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.MaterialUtil;
 
 public class DominateListeners implements Listener {
 
@@ -184,7 +172,7 @@ public class DominateListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getTeams().getActiveTeams().size() < 2 || game.getTeams().getTeam(DominateTeamType.RED).getPoints() >= DominateTeams.WIN_SCORE || game.getTeams().getTeam(DominateTeamType.BLUE).getPoints() >= DominateTeams.WIN_SCORE) game.setState(GameState.ENDING);
+			if((game.getTeams().getActiveTeams().size() < 2 && !RealCraft.isTestServer()) || game.getTeams().getTeam(DominateTeamType.RED).getPoints() >= DominateTeams.WIN_SCORE || game.getTeams().getTeam(DominateTeamType.BLUE).getPoints() >= DominateTeams.WIN_SCORE) game.setState(GameState.ENDING);
 			for(DominateEmerald emerald : game.getArena().getEmeralds()){
 				emerald.run();
 			}
@@ -259,17 +247,16 @@ public class DominateListeners implements Listener {
 		event.setCancelled(true);
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void PlayerInteractEvent(PlayerInteractEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		if(game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR) return;
 		if(game.getState().isLobby()){
 			ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-			if(itemStack.getType() == Material.WOOL){
+			if(MaterialUtil.isWool(itemStack.getType())){
 				if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 					event.setCancelled(true);
-					if(itemStack.getDurability() == DyeColor.RED.getWoolData()){
+					if(MaterialUtil.getDyeColor(itemStack.getType()) == DyeColor.RED){
 						if(game.getTeams().getPlayerTeam(gPlayer) != game.getTeams().getTeam(DominateTeamType.RED)){
 							if(!game.getTeams().isTeamFull(DominateTeamType.RED)){
 								game.getTeams().setPlayerTeam(gPlayer,game.getTeams().getTeam(DominateTeamType.RED));

@@ -1,16 +1,15 @@
 package com.games.arena;
 
-import java.io.File;
-
+import com.games.Games;
+import com.games.game.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import realcraft.bukkit.utils.LocationUtil;
 
-import com.games.Games;
-import com.games.game.Game;
-import com.games.utils.LocationUtil;
+import java.io.File;
 
 public abstract class GameArena {
 
@@ -26,6 +25,8 @@ public abstract class GameArena {
 	private int time = -1;
 	private int spectatorRadius;
 	private Location spectatorLocation;
+
+	private boolean loaded = false;
 
 	public GameArena(Game game,String name){
 		this.game = game;
@@ -84,5 +85,13 @@ public abstract class GameArena {
 	public Location getSpectatorLocation(){
 		if(spectatorLocation == null) spectatorLocation = LocationUtil.getConfigLocation(this.getConfig(),"spectator");
 		return spectatorLocation;
+	}
+
+	public boolean isLoaded(){
+		return loaded;
+	}
+
+	public void setLoaded(boolean loaded){
+		this.loaded = loaded;
 	}
 }

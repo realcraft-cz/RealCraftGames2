@@ -1,22 +1,14 @@
 package com.ragemode;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Effect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.entity.Arrow;
-import org.bukkit.entity.Egg;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowball;
+import com.games.Games;
+import com.games.events.*;
+import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.Title;
+import org.bukkit.*;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -31,25 +23,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-
-import com.games.Games;
-import com.games.events.GameCycleEvent;
-import com.games.events.GameEndEvent;
-import com.games.events.GamePlayerJoinEvent;
-import com.games.events.GamePlayerLeaveEvent;
-import com.games.events.GamePlayerStateChangeEvent;
-import com.games.events.GameStartEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.events.GameTimeoutEvent;
-import com.games.game.GameState;
-import com.games.game.GameStats.GameStatsType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.Particles;
-import com.games.utils.Title;
-
+import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.Particles;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RageModeListeners implements Listener {
 
@@ -145,7 +125,7 @@ public class RageModeListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getPlayersCount() < 2) game.setState(GameState.ENDING);
+			if(game.getPlayersCount() < 2 && !RealCraft.isTestServer()) game.setState(GameState.ENDING);
 		}
 		game.getScoreboard().update();
 	}

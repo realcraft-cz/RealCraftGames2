@@ -1,7 +1,8 @@
 package com.dominate.skills;
 
-import java.util.LinkedList;
-
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.games.game.GameState;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
@@ -12,11 +13,9 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+import realcraft.bukkit.utils.Particles;
 
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.games.game.GameState;
-import com.games.utils.Particles;
+import java.util.LinkedList;
 
 public class DominateSkillRecall extends DominateSkill {
 

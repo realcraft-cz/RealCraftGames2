@@ -1,10 +1,10 @@
 package com.hidenseek;
 
-import java.util.ArrayList;
-import java.util.Random;
-
 import com.games.player.GamePlayer;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class HidenSeekTeams {
 
@@ -70,7 +70,7 @@ public class HidenSeekTeams {
 		}
 		for(GamePlayer gPlayer : game.getGamePlayers()){
 			if(randomSeekers.contains(gPlayer.getPlayer().getName())){
-				this.setPlayerTeam(gPlayer,seekersTeam);
+				this.setPlayerTeam(gPlayer,hidersTeam);//TODO: seekersTeam
 			} else {
 				this.setPlayerTeam(gPlayer,hidersTeam);
 			}

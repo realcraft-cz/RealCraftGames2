@@ -26,12 +26,12 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.ItemUtil;
 import com.games.utils.ReflectionUtils;
 import com.games.utils.SkinUtil;
 import com.games.utils.SkinUtil.Skin;
 
-import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_13_R1.PacketPlayOutPlayerInfo;
+import realcraft.bukkit.utils.ItemUtil;
 
 public class GameSpectator implements Listener {
 

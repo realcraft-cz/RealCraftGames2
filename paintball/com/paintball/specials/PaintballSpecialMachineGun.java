@@ -19,10 +19,11 @@ import org.spigotmc.event.entity.EntityDismountEvent;
 import com.games.Games;
 import com.games.game.GameState;
 import com.games.player.GamePlayer;
-import com.games.utils.LocationUtil;
 import com.paintball.Paintball;
 
 import realcraft.bukkit.RealCraft;
+import realcraft.bukkit.utils.LocationUtil;
+import realcraft.bukkit.utils.MaterialUtil;
 import realcraft.bukkit.utils.RandomUtil;
 
 public class PaintballSpecialMachineGun extends PaintballSpecial implements Runnable {
@@ -103,16 +104,7 @@ public class PaintballSpecialMachineGun extends PaintballSpecial implements Runn
 	public void PlayerInteractEvent(PlayerInteractEvent event){
 		GamePlayer gPlayer = this.getGame().getGamePlayer(event.getPlayer());
 		if(event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock() != null &&
-			(event.getClickedBlock().getType() == Material.WOOD_STAIRS ||
-			event.getClickedBlock().getType() == Material.BIRCH_WOOD_STAIRS ||
-			event.getClickedBlock().getType() == Material.JUNGLE_WOOD_STAIRS ||
-			event.getClickedBlock().getType() == Material.SPRUCE_WOOD_STAIRS ||
-			event.getClickedBlock().getType() == Material.DARK_OAK_STAIRS ||
-			event.getClickedBlock().getType() == Material.BRICK_STAIRS ||
-			event.getClickedBlock().getType() == Material.SMOOTH_STAIRS ||
-			event.getClickedBlock().getType() == Material.COBBLESTONE_STAIRS ||
-			event.getClickedBlock().getType() == Material.WOOD_BUTTON ||
-			event.getClickedBlock().getType() == Material.STONE_BUTTON)){
+			(MaterialUtil.isStairs(event.getClickedBlock().getType()) || MaterialUtil.isButton(event.getClickedBlock().getType()) )){
 			if(event.getClickedBlock().getLocation().distanceSquared(location) < 4){
 				event.setCancelled(true);
 				this.activate(gPlayer);
@@ -122,7 +114,7 @@ public class PaintballSpecialMachineGun extends PaintballSpecial implements Runn
 		if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 			if(this.gPlayer == gPlayer){
 				ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-				if(itemStack.getType() == Material.SNOW_BALL){
+				if(itemStack.getType() == Material.SNOWBALL){
 					event.setCancelled(true);
 					if(active){
 						for(int i : new int[]{0,3}){

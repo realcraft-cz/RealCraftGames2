@@ -1,23 +1,18 @@
 package com.paintball;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import com.games.arena.GameArena;
+import com.paintball.PaintballTeam.PaintballTeamType;
+import com.paintball.specials.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.configuration.ConfigurationSection;
+import realcraft.bukkit.utils.LocationUtil;
 
-import com.games.arena.GameArena;
-import com.games.utils.LocationUtil;
-import com.paintball.PaintballTeam.PaintballTeamType;
-import com.paintball.specials.PaintballSpecial;
-import com.paintball.specials.PaintballSpecialGrenade;
-import com.paintball.specials.PaintballSpecialJump;
-import com.paintball.specials.PaintballSpecialMachineGun;
-import com.paintball.specials.PaintballSpecialSpeed;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class PaintballArena extends GameArena {
 

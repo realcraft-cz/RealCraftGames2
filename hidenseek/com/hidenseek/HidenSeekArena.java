@@ -1,15 +1,14 @@
 package com.hidenseek;
 
-import java.util.HashMap;
-import java.util.Random;
-
+import com.games.arena.GameArena;
+import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import realcraft.bukkit.utils.LocationUtil;
 
-import com.games.arena.GameArena;
-import com.games.utils.LocationUtil;
-import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
+import java.util.HashMap;
+import java.util.Random;
 
 public class HidenSeekArena extends GameArena {
 

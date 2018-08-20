@@ -1,36 +1,31 @@
 package com.bedwars;
 
+import com.bedwars.BedWarsTeam.BedWarsTeamType;
+import com.games.Games;
+import com.games.game.*;
+import com.games.game.GamePodium.GamePodiumType;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemLocation;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
+import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.FormatUtil;
+import com.games.utils.Glow;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.Team.Option;
+import org.bukkit.scoreboard.Team.OptionStatus;
+import realcraft.bukkit.utils.MaterialUtil;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map.Entry;
-
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scoreboard.Team;
-import org.bukkit.scoreboard.Team.Option;
-import org.bukkit.scoreboard.Team.OptionStatus;
-
-import com.bedwars.BedWarsTeam.BedWarsTeamType;
-import com.games.Games;
-import com.games.game.Game;
-import com.games.game.GameFlag;
-import com.games.game.GamePodium;
-import com.games.game.GamePodium.GamePodiumType;
-import com.games.game.GameScoreboard;
-import com.games.game.GameSpectator.SpectatorMenuItem;
-import com.games.game.GameSpectator.SpectatorMenuItemLocation;
-import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
-import com.games.game.GameStats.GameStatsScore;
-import com.games.game.GameStats.GameStatsType;
-import com.games.game.GameType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.FormatUtil;
-import com.games.utils.Glow;
 
 public class BedWars extends Game {
 
@@ -94,7 +89,6 @@ public class BedWars extends Game {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public void loadLobbyInventory(GamePlayer gPlayer){
 		BedWarsTeam pTeam = this.getTeams().getPlayerTeam(gPlayer);
 		ItemStack itemStack;
@@ -104,17 +98,16 @@ public class BedWars extends Game {
 		for(BedWarsTeam team : this.getTeams().getTeams()){
 			amount = team.getPlayers().size();
 			if(amount == 0) amount = 1;
-			itemStack = new ItemStack(Material.WOOL,1,team.getType().getDyeColor().getWoolData());
+			itemStack = new ItemStack(MaterialUtil.getWool(team.getType().getDyeColor()));
 			meta = itemStack.getItemMeta();
 			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
-			if(pTeam != null && pTeam.getType() == team.getType()) meta.addEnchant(new Glow(255),10,true);
+			if(pTeam != null && pTeam.getType() == team.getType()) meta.addEnchant(Glow.getGlow(),10,true);
 			itemStack.setItemMeta(meta);
 			gPlayer.getPlayer().getInventory().setItem(index++,itemStack);
 		}
 		if(pTeam != null) pTeam.setPlayerInventory(gPlayer);
 	}
 
-	@SuppressWarnings("deprecation")
 	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
 		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
 		int row = 0;
@@ -122,7 +115,7 @@ public class BedWars extends Game {
 		for(BedWarsTeam team : this.getTeams().getTeams()){
 			int column = 0;
 			index = (row*9)+(column++);
-			ItemStack item = new ItemStack(Material.WOOL,1,team.getType().getDyeColor().getWoolData());
+			ItemStack item = new ItemStack(MaterialUtil.getWool(team.getType().getDyeColor()));
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
 			item.setItemMeta(meta);

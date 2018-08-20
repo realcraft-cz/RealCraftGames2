@@ -1,13 +1,13 @@
 package com.games.utils;
 
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import net.minecraft.server.v1_12_R1.PacketPlayOutWorldBorder;
-import net.minecraft.server.v1_12_R1.PacketPlayOutWorldBorder.EnumWorldBorderAction;
-import net.minecraft.server.v1_12_R1.WorldBorder;
+import net.minecraft.server.v1_13_R1.PacketPlayOutWorldBorder;
+import net.minecraft.server.v1_13_R1.PacketPlayOutWorldBorder.EnumWorldBorderAction;
+import net.minecraft.server.v1_13_R1.WorldBorder;
 
 public class BorderUtil {
 

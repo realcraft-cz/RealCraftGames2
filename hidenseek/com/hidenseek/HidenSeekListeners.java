@@ -1,19 +1,24 @@
 package com.hidenseek;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.ListenerPriority;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
+import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType;
+import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
+import com.games.Games;
+import com.games.events.*;
+import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.Title;
+import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
+import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Snowball;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -22,7 +27,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -33,35 +37,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.ListenerPriority;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.EnumWrappers.EntityUseAction;
-import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType;
-import com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction;
-import com.games.Games;
-import com.games.events.GameCycleEvent;
-import com.games.events.GameEndEvent;
-import com.games.events.GamePlayerJoinEvent;
-import com.games.events.GamePlayerLeaveEvent;
-import com.games.events.GamePlayerStateChangeEvent;
-import com.games.events.GameStartEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.events.GameTimeoutEvent;
-import com.games.game.GameState;
-import com.games.game.GameStats.GameStatsType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.Particles;
-import com.games.utils.RandomUtil;
-import com.games.utils.Title;
-import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
-
+import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.Particles;
 
 public class HidenSeekListeners implements Listener {
 
@@ -241,7 +220,7 @@ public class HidenSeekListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getTeams().getActiveTeams().size() < 2) game.setState(GameState.ENDING);
+			if(game.getTeams().getActiveTeams().size() < 2 && !RealCraft.isTestServer()) game.setState(GameState.ENDING);
 			for(GamePlayer gPlayer : game.getPlayers()){
 				if(gPlayer.getState() == GamePlayerState.SPECTATOR || gPlayer.getSettings().getLong("died")+(20*1000) >= System.currentTimeMillis()) continue;
 				ItemStack item = gPlayer.getPlayer().getInventory().getItem(0);
@@ -257,13 +236,13 @@ public class HidenSeekListeners implements Listener {
 						gPlayer.getPlayer().teleport(game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getSpawnLocation());
 					}
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
-					if(block.getType() == Material.WATER || block.getType() == Material.STATIONARY_WATER){
+					if(block.getType() == Material.WATER){
 						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,1*25,1),true);
 					}
 				}
 				else if(game.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.HIDERS){
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
-					if(block.getType() == Material.WATER || block.getType() == Material.STATIONARY_WATER){
+					if(block.getType() == Material.WATER){
 						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,1*25,1),true);
 						gPlayer.getPlayer().damage(2);
 					}
@@ -285,7 +264,7 @@ public class HidenSeekListeners implements Listener {
 			else if(game.getGameTimeDefault()-game.getGameTime() >= 10 && game.getGameTimeDefault()-game.getGameTime() < 30){
 				for(GamePlayer gPlayer : game.getPlayers()){
 					Title.showActionTitle(gPlayer.getPlayer(),"§fZbyva §e"+(30-(game.getGameTimeDefault()-game.getGameTime()))+" sekund§f do vypusteni hledacu");
-					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_HAT,1,1);
+					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,1,1);
 				}
 			}
 			else if(game.getGameTime() == 60){
@@ -377,28 +356,6 @@ public class HidenSeekListeners implements Listener {
 		}
 	}
 
-	@EventHandler(ignoreCancelled=true)
-	public void ProjectileHitEvent(ProjectileHitEvent event){
-		if(event.getEntity() instanceof Snowball){
-			final Snowball snowball = (Snowball)event.getEntity();
-			if(snowball.getShooter() instanceof Player){
-				Player player = (Player)snowball.getShooter();
-				GamePlayer gPlayer = game.getGamePlayer(player);
-				HidenSeekTeam team = game.getTeams().getPlayerTeam(gPlayer);
-				if(team != null){
-					if(team.getType() == HidenSeekTeamType.HIDERS){
-						for(int i=0;i<2;i++) Particles.REDSTONE.display(new Particles.OrdinaryColor(255,0,0),snowball.getLocation().add(RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2)),64);
-					}
-					else if(team.getType() == HidenSeekTeamType.SEEKERS){
-						for(int i=0;i<2;i++) Particles.REDSTONE.display(new Particles.OrdinaryColor(0,0,255),snowball.getLocation().add(RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2),RandomUtil.getRandomDouble(-0.2,0.2)),64);
-					}
-				}
-				snowball.getWorld().playSound(snowball.getLocation(),Sound.BLOCK_STONE_PLACE,1f,2f);
-				snowball.remove();
-			}
-		}
-	}
-
 	@EventHandler
 	public void PlayerInteractEvent(PlayerInteractEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
@@ -436,7 +393,7 @@ public class HidenSeekListeners implements Listener {
 					}
 					event.setCancelled(true);
 				}
-				else if(itemStack.getType() == Material.FIREWORK){
+				else if(itemStack.getType() == Material.FIREWORK_ROCKET){
 					if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 						if(game.getUser(gPlayer).getFireworkTime() < System.currentTimeMillis()){
 							Firework firework = (Firework) gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getLocation(),EntityType.FIREWORK);
@@ -487,14 +444,13 @@ public class HidenSeekListeners implements Listener {
 				GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 				Entity entity = event.getRightClicked();
 				if(game.isEntityValid(entity.getType())){
-					if(game.getUser(gPlayer).getBlockTime() < System.currentTimeMillis()){
+					/*if(game.getUser(gPlayer).getBlockTime() < System.currentTimeMillis()){
 						game.getUser(gPlayer).disguiseEntity(entity);
 						gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_BAT_HURT,1f,1f);
 						game.getUser(gPlayer).setBlockTime(System.currentTimeMillis()+(10*1000));
-					} else {
-						gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
-						Title.showActionTitle(gPlayer.getPlayer(),"§c\u2716 §fZmenu bloku muzes pouzit za "+Math.round((game.getUser(gPlayer).getBlockTime()-System.currentTimeMillis())/1000)+" sekund §c\u2716");
-					}
+					} else {*/
+					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
+					//Title.showActionTitle(gPlayer.getPlayer(),"§c\u2716 §fZmenu bloku muzes pouzit za "+Math.round((game.getUser(gPlayer).getBlockTime()-System.currentTimeMillis())/1000)+" sekund §c\u2716");
 				}
 			}
 		}

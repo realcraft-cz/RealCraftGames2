@@ -1,54 +1,44 @@
 package com.games.game;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.boss.BarColor;
-import org.bukkit.boss.BarStyle;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
-import org.bukkit.entity.Player;
-
 import com.games.Games;
 import com.games.arena.GameArena;
-import com.games.events.GameCycleEvent;
-import com.games.events.GameEndEvent;
-import com.games.events.GamePlayerJoinEvent;
-import com.games.events.GamePlayerLeaveEvent;
-import com.games.events.GameStartEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.events.GameTimeoutEvent;
+import com.games.events.*;
 import com.games.exceptions.GameMaintenanceException;
 import com.games.exceptions.GameMaxPlayersException;
+import com.games.exceptions.GameNotLoadedException;
 import com.games.game.GameSpectator.SpectatorMenuItem;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.LocationUtil;
 import com.games.utils.StringUtil;
 import com.games.utils.Title;
-
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo;
-import net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
+import net.minecraft.server.v1_13_R1.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_13_R1.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.*;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 import realcraft.bukkit.RealCraft;
+import realcraft.bukkit.gameparty.GameParty;
 import realcraft.bukkit.lobby.LobbyAutoParkour;
 import realcraft.bukkit.lobby.LobbyMenu;
 import realcraft.bukkit.minihry.GamesReminder;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.LocationUtil;
 import realcraft.share.ServerType;
 import realcraft.share.users.UserRank;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public abstract class Game implements Runnable {
 
@@ -71,6 +61,7 @@ public abstract class Game implements Runnable {
 	private GameSpectator gameSpectator;
 
 	private boolean maintenance;
+	private boolean loaded = false;
 	private int lobbyTimeDefault;
 	private int lobbyTime;
 	private int gameTimeDefault;
@@ -120,9 +111,7 @@ public abstract class Game implements Runnable {
 			Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
 				@Override
 				public void run(){
-					for(GameArena arena : Game.this.getArenas()){
-						arena.getRegion().reset();
-					}
+					Game.this.resetArenas();
 				}
 			});
 		}
@@ -146,7 +135,7 @@ public abstract class Game implements Runnable {
 			if(lobbyTime > 0){
 				if(lobbyTime <= 10){
 					for(GamePlayer gPlayer : this.getPlayers()){
-						gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_HAT,1,1);
+						gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,1,1);
 						if(lobbyTime <= 5) Title.showTitle(gPlayer.getPlayer(),numbers[lobbyTime-1],0,1.2,0);
 					}
 				}
@@ -293,6 +282,21 @@ public abstract class Game implements Runnable {
 		arenas.put(arena.getName(),arena);
 	}
 
+	public void resetArenas(){
+		for(GameArena arena : Game.this.getArenas()){
+			if(!arena.isLoaded()){
+				Games.DEBUG("Reseting map: "+arena.getName());
+				if(arena.getRegion().isAvailable()){
+					arena.getRegion().reset();
+					return;
+				}
+				else arena.setLoaded(true);
+			}
+		}
+		Games.DEBUG("Reseting complete");
+		this.setLoaded(true);
+	}
+
 	public Location getLobbyLocation(){
 		if(lobbyLocation == null) lobbyLocation = LocationUtil.getConfigLocation(Games.getInstance().getConfig(),"lobby");
 		return lobbyLocation;
@@ -326,6 +330,14 @@ public abstract class Game implements Runnable {
 		return maintenance;
 	}
 
+	public boolean isLoaded(){
+		return loaded;
+	}
+
+	public void setLoaded(boolean loaded){
+		this.loaded = loaded;
+	}
+
 	public int getLobbyTime(){
 		return lobbyTime;
 	}
@@ -348,6 +360,10 @@ public abstract class Game implements Runnable {
 
 	public void resetGameTime(){
 		gameTime = gameTimeDefault;
+	}
+
+	public void setGameTime(int gameTime){
+		this.gameTime = gameTime;
 	}
 
 	public int getEndTime(){
@@ -374,12 +390,13 @@ public abstract class Game implements Runnable {
 		return prefix;
 	}
 
-	public void tryToConnect(Player player) throws GameMaintenanceException, GameMaxPlayersException {
+	public void tryToConnect(Player player) throws GameMaintenanceException, GameNotLoadedException, GameMaxPlayersException {
 		if(this.isMaintenance() && !player.hasPermission("group.Admin") && !player.hasPermission("group.Builder")) throw new GameMaintenanceException();
+		if(!this.isLoaded() && !player.hasPermission("group.Admin") && !player.hasPermission("group.Builder")) throw new GameNotLoadedException();
 		if(this.getPlayers().size() >= this.getMaxPlayers() && !player.hasPermission("group.Admin") && !player.hasPermission("group.Builder")) throw new GameMaxPlayersException();
 	}
 
-	public void joinPlayer(Player player) throws GameMaintenanceException, GameMaxPlayersException {
+	public void joinPlayer(Player player) throws GameMaintenanceException, GameNotLoadedException, GameMaxPlayersException {
 		this.tryToConnect(player);
 		GamePlayer gPlayer = this.getGamePlayer(player);
 		gPlayer.resetPlayer();
@@ -507,6 +524,10 @@ public abstract class Game implements Runnable {
 				}
 			}
 		},(lobbyTimeDefault/3)*20);
+	}
+
+	public void sendGamePartyEnd(){
+		GameParty.sendPartyGameEnd();
 	}
 
 	public long getLastPlayerPremiumOffer(GamePlayer gPlayer){

@@ -1,19 +1,18 @@
 package com.dominate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import com.dominate.DominateKit.DominateKitType;
+import com.dominate.DominateTeam.DominateTeamType;
+import com.games.arena.GameArena;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.util.Vector;
+import realcraft.bukkit.utils.LocationUtil;
 
-import com.dominate.DominateKit.DominateKitType;
-import com.dominate.DominateTeam.DominateTeamType;
-import com.games.arena.GameArena;
-import com.games.utils.LocationUtil;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DominateArena extends GameArena {
 

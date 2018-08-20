@@ -1,8 +1,12 @@
 package com.dominate.skills;
 
-import java.util.HashMap;
-import java.util.List;
-
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.dominate.DominateUtils;
+import com.games.Games;
+import com.games.game.GameState;
+import com.games.player.GamePlayerState;
+import com.games.utils.Glow;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -22,18 +26,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
-
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.dominate.DominateUtils;
-import com.games.Games;
-import com.games.game.GameState;
-import com.games.player.GamePlayerState;
-import com.games.utils.Glow;
-import com.games.utils.Particles;
-import com.games.utils.Particles.BlockData;
-
 import realcraft.bukkit.anticheat.AntiCheat;
+import realcraft.bukkit.utils.Particles;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class DominateSkillArrowExplosive extends DominateSkill {
 
@@ -126,7 +123,7 @@ public class DominateSkillArrowExplosive extends DominateSkill {
 				if(block.getType() == Material.ICE){
 					block.setType(Material.AIR);
 					block.getWorld().playSound(block.getLocation(),Sound.BLOCK_GLASS_BREAK,1f,1f);
-					Particles.BLOCK_CRACK.display(new BlockData(Material.ICE,(byte)0),0.3f,0.2f,0.3f,0.0f,8,block.getLocation().add(0.5,0.5,0.5),64);
+					Particles.BLOCK_CRACK.display(Bukkit.createBlockData(Material.ICE),0.3f,0.2f,0.3f,0.0f,8,block.getLocation().add(0.5,0.5,0.5),64);
 				}
 			}
 			Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
@@ -160,7 +157,7 @@ public class DominateSkillArrowExplosive extends DominateSkill {
 					if(!this.isCooldown()){
 						if(!selected){
 							selected = !selected;
-							player.playSound(player.getLocation(),Sound.BLOCK_NOTE_HAT,1f,1f);
+							player.playSound(player.getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,1f,1f);
 							this.updateInventory();
 						}
 					} else {
@@ -184,7 +181,7 @@ public class DominateSkillArrowExplosive extends DominateSkill {
 
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.addEnchant(new Glow(255),1,true);
+			meta.addEnchant(Glow.getGlow(),1,true);
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		} else {
@@ -194,7 +191,7 @@ public class DominateSkillArrowExplosive extends DominateSkill {
 			}
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.removeEnchant(new Glow(255));
+			meta.removeEnchant(Glow.getGlow());
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		}

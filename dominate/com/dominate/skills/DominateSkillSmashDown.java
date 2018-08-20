@@ -1,8 +1,11 @@
 package com.dominate.skills;
 
-import java.util.HashMap;
-import java.util.List;
-
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.dominate.DominateUtils;
+import com.games.Games;
+import com.games.game.GameState;
+import com.games.player.GamePlayerState;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -18,17 +21,11 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.util.Vector;
-
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.dominate.DominateUtils;
-import com.games.Games;
-import com.games.game.GameState;
-import com.games.player.GamePlayerState;
-import com.games.utils.Particles;
-import com.games.utils.Particles.BlockData;
-
 import realcraft.bukkit.anticheat.AntiCheat;
+import realcraft.bukkit.utils.Particles;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class DominateSkillSmashDown extends DominateSkill {
 
@@ -41,7 +38,7 @@ public class DominateSkillSmashDown extends DominateSkill {
 
 	@Override
 	public void activate(Entity none){
-		this.getPlayer().getWorld().playSound(this.getPlayer().getLocation(),Sound.ENTITY_FIREWORK_LAUNCH,1f,1f);
+		this.getPlayer().getWorld().playSound(this.getPlayer().getLocation(),Sound.ENTITY_FIREWORK_ROCKET_LAUNCH,1f,1f);
 		this.getPlayer().setVelocity(this.getPlayer().getVelocity().setY(2));
 		this.getPlayer().setFlying(false);
 		this.getPlayer().setAllowFlight(false);
@@ -69,7 +66,7 @@ public class DominateSkillSmashDown extends DominateSkill {
 		else if(started == -1 && this.getPlayer().getVelocity().getY() > -0.5 && (this.getPlayer().getLocation().getY() == this.getPlayer().getLocation().getBlockY() || this.getPlayer().getLocation().getY() == this.getPlayer().getLocation().getBlockY()+0.5)){
 			started = -2;
 			if(!this.getGame().getTeams().isLocationInSpawn(this.getPlayer().getLocation())){
-				this.getPlayer().getWorld().playSound(this.getPlayer().getLocation(),Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE,2f,1f);
+				this.getPlayer().getWorld().playSound(this.getPlayer().getLocation(),Sound.ENTITY_DRAGON_FIREBALL_EXPLODE,2f,1f);
 				Particles.EXPLOSION_LARGE.display(2.0f,1.0f,2.0f,0f,4,this.getPlayer().getLocation(),128);
 				List<Entity> entities = this.getPlayer().getNearbyEntities(3.0,3.0,3.0);
 				for(Entity victim : entities){
@@ -115,7 +112,7 @@ public class DominateSkillSmashDown extends DominateSkill {
 					if(block.getType() == Material.ICE){
 						block.setType(Material.AIR);
 						block.getWorld().playSound(block.getLocation(),Sound.BLOCK_GLASS_BREAK,1f,1f);
-						Particles.BLOCK_CRACK.display(new BlockData(Material.ICE,(byte)0),0.3f,0.2f,0.3f,0.0f,8,block.getLocation().add(0.5,0.5,0.5),64);
+						Particles.BLOCK_CRACK.display(Bukkit.createBlockData(Material.ICE),0.3f,0.2f,0.3f,0.0f,8,block.getLocation().add(0.5,0.5,0.5),64);
 					}
 				}
 			}

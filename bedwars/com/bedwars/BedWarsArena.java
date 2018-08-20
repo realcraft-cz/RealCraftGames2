@@ -1,21 +1,20 @@
 package com.bedwars;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.bedwars.BedWarsResource.BedWarsResourceType;
+import com.bedwars.BedWarsTeam.BedWarsTeamType;
+import com.games.arena.GameArena;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
+import realcraft.bukkit.utils.LocationUtil;
 
-import com.bedwars.BedWarsResource.BedWarsResourceType;
-import com.bedwars.BedWarsTeam.BedWarsTeamType;
-import com.games.arena.GameArena;
-import com.games.utils.LocationUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BedWarsArena extends GameArena {
 

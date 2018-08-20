@@ -1,21 +1,16 @@
 package com.dominate;
 
-import java.util.Random;
-
-import org.bukkit.ChatColor;
-import org.bukkit.FireworkEffect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
-
 import com.dominate.DominateTeam.DominateTeamType;
 import com.games.player.GamePlayer;
 import com.games.utils.FireworkUtil;
-import com.games.utils.Particles;
-import com.games.utils.Particles.BlockData;
+import org.bukkit.*;
+import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
+import realcraft.bukkit.utils.MaterialUtil;
+import realcraft.bukkit.utils.Particles;
+
+import java.util.Random;
 
 public class DominatePoint {
 
@@ -160,33 +155,28 @@ public class DominatePoint {
 	public void updateBlocks(){
 		if(progress == 25 || progress == -25){
 			for(Location location : this.getCorners()){
-				location.getBlock().setType(Material.WOOL);
-				location.getBlock().setData(this.getTeam().getDyeColor().getWoolData());
+				location.getBlock().setType(MaterialUtil.getWool(this.getTeam().getDyeColor()));
 			}
 			for(Location location : this.getGlasses()){
-				location.getBlock().setType(Material.STAINED_GLASS);
-				location.getBlock().setData(this.getTeam().getDyeColor().getWoolData());
-				if(!location.getBlock().getLocation().equals(this.getLocation().getBlock().getLocation())) location.getBlock().getRelative(BlockFace.DOWN).setData(this.getTeam().getDyeColor().getWoolData());
+				location.getBlock().setType(MaterialUtil.getStainedGlass(this.getTeam().getDyeColor()));
+				if(!location.getBlock().getLocation().equals(this.getLocation().getBlock().getLocation())){
+					location.getBlock().getRelative(BlockFace.DOWN).setType(MaterialUtil.getWool(this.getTeam().getDyeColor()));
+				}
 			}
 		} else {
 			for(Location location : this.getCorners()){
-				location.getBlock().setType(Material.WOOL);
-				location.getBlock().setData(team.getDyeColor().getWoolData());
+				location.getBlock().setType(MaterialUtil.getWool(team.getDyeColor()));
 			}
 			for(int i=0;i<this.getGlasses().length;i++){
 				if(i+1 <= Math.abs(progress)){
-					this.getGlasses()[i].getBlock().setType(Material.STAINED_GLASS);
-					this.getGlasses()[i].getBlock().setData(this.getCapturingTeam().getDyeColor().getWoolData());
+					this.getGlasses()[i].getBlock().setType(MaterialUtil.getStainedGlass(this.getCapturingTeam().getDyeColor()));
 					if(!this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).getLocation().equals(this.getLocation().getBlock().getLocation())){
-						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setType(Material.WOOL);
-						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setData(this.getCapturingTeam().getDyeColor().getWoolData());
+						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setType(MaterialUtil.getWool(this.getCapturingTeam().getDyeColor()));
 					}
 				} else {
-					this.getGlasses()[i].getBlock().setType(Material.STAINED_GLASS);
-					this.getGlasses()[i].getBlock().setData(DominateTeamType.NONE.getDyeColor().getWoolData());
+					this.getGlasses()[i].getBlock().setType(MaterialUtil.getStainedGlass(DominateTeamType.NONE.getDyeColor()));
 					if(!this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).getLocation().equals(this.getLocation().getBlock().getLocation())){
-						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setType(Material.WOOL);
-						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setData(DominateTeamType.NONE.getDyeColor().getWoolData());
+						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setType(MaterialUtil.getWool(DominateTeamType.NONE.getDyeColor()));
 					}
 				}
 			}
@@ -196,7 +186,7 @@ public class DominatePoint {
 	@SuppressWarnings("deprecation")
 	private void runEffect(DominateTeamType team){
 		for(Location location : this.getCorners()){
-			Particles.BLOCK_CRACK.display(new BlockData(Material.WOOL,team.getDyeColor().getWoolData()),0.3f,0.2f,0.3f,0.0f,64,location.clone().add(0,0.2,0),64);
+			Particles.BLOCK_CRACK.display(Bukkit.createBlockData(MaterialUtil.getWool(team.getDyeColor())),0.3f,0.2f,0.3f,0.0f,64,location.clone().add(0,0.2,0),64);
 		}
 	}
 
@@ -239,13 +229,13 @@ public class DominatePoint {
 				if(progress == 0) team = DominateTeamType.NONE;
 				this.updateBlocks();
 				this.runEffect(DominateTeamType.NONE);
-				for(Location location : this.getCorners()) location.getWorld().playSound(this.getLocation().clone().add(0,2,0),Sound.BLOCK_CLOTH_BREAK,0.5f,1f);
+				for(Location location : this.getCorners()) location.getWorld().playSound(this.getLocation().clone().add(0,2,0),Sound.BLOCK_WOOL_BREAK,0.5f,1f);
 			}
 			else if(team != DominateTeamType.NONE && progress != 25 && progress != -25){
 				if(progress != 0) progress = (progress > 0 ? progress+1 : progress-1);
 				this.updateBlocks();
 				this.runEffect(type);
-				for(Location location : this.getCorners()) location.getWorld().playSound(this.getLocation().clone().add(0,2,0),Sound.BLOCK_CLOTH_BREAK,0.5f,1f);
+				for(Location location : this.getCorners()) location.getWorld().playSound(this.getLocation().clone().add(0,2,0),Sound.BLOCK_WOOL_BREAK,0.5f,1f);
 			}
 		}
 		if(team != DominateTeamType.NONE){

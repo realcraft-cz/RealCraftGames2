@@ -3,7 +3,7 @@ package com.games.game;
 import org.bukkit.ChatColor;
 
 public enum GameType {
-	BEDWARS, HIDENSEEK, BLOCKPARTY, RAGEMODE, PAINTBALL, DOMINATE;
+	BEDWARS, HIDENSEEK, BLOCKPARTY, RAGEMODE, PAINTBALL, DOMINATE, RACES;
 
 	public static GameType getByName(String name){
 		return GameType.valueOf(name.toUpperCase());
@@ -21,6 +21,7 @@ public enum GameType {
 			case RAGEMODE: return 6;
 			case PAINTBALL: return 7;
 			case DOMINATE: return 10;
+			case RACES: return 12;
 		}
 		return 0;
 	}
@@ -33,6 +34,7 @@ public enum GameType {
 			case RAGEMODE: return "RageMode";
 			case PAINTBALL: return "Paintball";
 			case DOMINATE: return "Dominate";
+			case RACES: return "Races";
 		}
 		return "unknown";
 	}
@@ -45,6 +47,7 @@ public enum GameType {
 			case RAGEMODE: return ChatColor.RED;
 			case PAINTBALL: return ChatColor.GOLD;
 			case DOMINATE: return ChatColor.YELLOW;
+			case RACES: return ChatColor.DARK_AQUA;
 		}
 		return ChatColor.WHITE;
 	}

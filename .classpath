@@ -7,6 +7,7 @@
 	<classpathentry kind="src" path="ragemode"/>
 	<classpathentry kind="src" path="paintball"/>
 	<classpathentry kind="src" path="dominate"/>
+	<classpathentry kind="src" path="races"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/ProtocolLib.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/HolographicDisplays.jar"/>
@@ -16,10 +17,6 @@
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/LibsDisguises.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/public/lobby/plugins/RealCraft.jar"/>
 	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/LightAPI.jar"/>
-	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/spigot-1.12.2#5.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/D:/Backups/realcraft_server/source/spigot-api-1.12-R0.1-20170610.061059-9-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="D:/Backups/realcraft_server/source/spigot-1.13.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

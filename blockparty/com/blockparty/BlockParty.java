@@ -1,42 +1,25 @@
 package com.blockparty;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.blockparty.pickups.*;
+import com.blockparty.pickups.BlockPartyPickup.BlockPartyPickupType;
+import com.games.Games;
+import com.games.game.*;
+import com.games.game.GamePodium.GamePodiumType;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.StringUtil;
+import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.inventory.ItemStack;
+import realcraft.bukkit.utils.MaterialUtil;
+import realcraft.bukkit.utils.Particles;
 
-import com.blockparty.pickups.BlockPartyPickup;
-import com.blockparty.pickups.BlockPartyPickup.BlockPartyPickupType;
-import com.blockparty.pickups.BlockPartyPickupAcid;
-import com.blockparty.pickups.BlockPartyPickupBabyzombie;
-import com.blockparty.pickups.BlockPartyPickupBlindness;
-import com.blockparty.pickups.BlockPartyPickupColorBlindness;
-import com.blockparty.pickups.BlockPartyPickupJump;
-import com.blockparty.pickups.BlockPartyPickupShovels;
-import com.blockparty.pickups.BlockPartyPickupSilverfish;
-import com.blockparty.pickups.BlockPartyPickupSnowballs;
-import com.blockparty.pickups.BlockPartyPickupThunderstorm;
-import com.games.Games;
-import com.games.game.Game;
-import com.games.game.GameBossBar;
-import com.games.game.GameFlag;
-import com.games.game.GamePodium;
-import com.games.game.GamePodium.GamePodiumType;
-import com.games.game.GameScoreboard;
-import com.games.game.GameSpectator.SpectatorMenuItem;
-import com.games.game.GameState;
-import com.games.game.GameStats.GameStatsScore;
-import com.games.game.GameStats.GameStatsType;
-import com.games.game.GameType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.Particles;
-import com.games.utils.StringUtil;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BlockParty extends Game {
 
@@ -145,25 +128,40 @@ public class BlockParty extends Game {
 	public void playRoundSound(int countdown){
 		for(GamePlayer gPlayer : this.getPlayers()){
 			if(countdown == 1){
-				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_PLING,1,0.61f);
-				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BASS,1,0.61f);
+				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_PLING,1,0.61f);
+				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_BASS,1,0.61f);
 			}
 			else if(countdown == 2){
-				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_PLING,1,0.8f);
-				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BASS,1,0.8f);
+				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_PLING,1,0.8f);
+				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_BASS,1,0.8f);
 			}
 			else if(countdown == 3){
-				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_PLING,1,1);
-				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BASS,1,1);
+				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_PLING,1,1);
+				gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_BASS,1,1);
 			}
 		}
 	}
 
 	@SuppressWarnings("deprecation")
 	public void loadRoundInventory(BlockPartyBlock block){
-		ItemStack item = new ItemStack(block.getType(),1,(short)0,block.getData());
+		ItemStack item = new ItemStack(block.getType());
 		for(GamePlayer gPlayer : this.getPlayers()){
-			gPlayer.getPlayer().getInventory().remove(Material.STAINED_CLAY);
+			gPlayer.getPlayer().getInventory().remove(Material.WHITE_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.ORANGE_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.MAGENTA_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.LIGHT_BLUE_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.YELLOW_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.LIME_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.PINK_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.GRAY_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.LIGHT_GRAY_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.CYAN_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.PURPLE_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.BLUE_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.BROWN_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.GREEN_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.RED_TERRACOTTA);
+			gPlayer.getPlayer().getInventory().remove(Material.BLACK_TERRACOTTA);
 			gPlayer.getPlayer().setFoodLevel(20);
 			gPlayer.getPlayer().setSaturation(20);
 			for(int i=3;i<6;i++) gPlayer.getPlayer().getInventory().setItem(i,item);
@@ -189,7 +187,22 @@ public class BlockParty extends Game {
 			round = nextRound;
 			this.getArena().chooseRandomFloor();
 			for(GamePlayer gPlayer : this.getPlayers()){
-				gPlayer.getPlayer().getInventory().remove(Material.STAINED_CLAY);
+				gPlayer.getPlayer().getInventory().remove(Material.WHITE_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.ORANGE_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.MAGENTA_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.LIGHT_BLUE_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.YELLOW_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.LIME_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.PINK_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.GRAY_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.LIGHT_GRAY_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.CYAN_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.PURPLE_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.BLUE_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.BROWN_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.GREEN_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.RED_TERRACOTTA);
+				gPlayer.getPlayer().getInventory().remove(Material.BLACK_TERRACOTTA);
 				gPlayer.getPlayer().getInventory().setHeldItemSlot(4);
 				if(gPlayer.getState() != GamePlayerState.SPECTATOR){
 					this.getArena().teleportAboveFloor(gPlayer);
@@ -208,7 +221,7 @@ public class BlockParty extends Game {
 		for(GamePlayer gPlayer : this.getPlayers()){
 			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,1f);
 			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,0.5f);
-			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ENDERDRAGON_FLAP,1f,0.8f);
+			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ENDER_DRAGON_FLAP,1f,0.8f);
 		}
 	}
 
@@ -318,46 +331,46 @@ public class BlockParty extends Game {
 
 		private String getRandomBlockChatColor(){
 			BlockPartyBlock block = this.getGame().getArena().getCurrentBlock();
-			switch(block.getData()){
-				case 0: return "§f";
-				case 1: return "§6";
-				case 2: return "§4";
-				case 3: return "§b";
-				case 4: return "§e";
-				case 5: return "§a";
-				case 6: return "§d";
-				case 7: return "§8";
-				case 8: return "§7";
-				case 9: return "§3";
-				case 10: return "§5";
-				case 11: return "§1";
-				case 12: return "§0";
-				case 13: return "§2";
-				case 14: return "§c";
-				case 15: return "§0";
+			switch(MaterialUtil.getDyeColor(block.getType())){
+				case WHITE: return "§f";
+				case ORANGE: return "§6";
+				case RED: return "§4";
+				case LIGHT_BLUE: return "§b";
+				case YELLOW: return "§e";
+				case LIME: return "§a";
+				case MAGENTA: return "§d";
+				case GRAY: return "§8";
+				case LIGHT_GRAY: return "§7";
+				case CYAN: return "§3";
+				case PURPLE: return "§5";
+				case BLUE: return "§1";
+				case BROWN: return "§0";
+				case GREEN: return "§2";
+				case PINK: return "§c";
+				case BLACK: return "§0";
 			}
 			return "§f";
 		}
 
 		private String getRandomBlockColor(){
 			BlockPartyBlock block = this.getGame().getArena().getCurrentBlock();
-			switch(block.getData()){
-				case 0: return "WHITE";
-				case 1: return "ORANGE";
-				case 2: return "MAGENTA";
-				case 3: return "LIGHT BLUE";
-				case 4: return "YELLOW";
-				case 5: return "LIME";
-				case 6: return "PINK";
-				case 7: return "GRAY";
-				case 8: return "LIGHT GRAY";
-				case 9: return "CYAN";
-				case 10: return "PURPLE";
-				case 11: return "BLUE";
-				case 12: return "BROWN";
-				case 13: return "GREEN";
-				case 14: return "RED";
-				case 15: return "BLACK";
+			switch(MaterialUtil.getDyeColor(block.getType())){
+				case WHITE: return "WHITE";
+				case ORANGE: return "ORANGE";
+				case RED: return "MAGENTA";
+				case LIGHT_BLUE: return "LIGHT BLUE";
+				case YELLOW: return "YELLOW";
+				case LIME: return "LIME";
+				case MAGENTA: return "PINK";
+				case GRAY: return "GRAY";
+				case LIGHT_GRAY: return "LIGHT GRAY";
+				case CYAN: return "CYAN";
+				case PURPLE: return "PURPLE";
+				case BLUE: return "BLUE";
+				case BROWN: return "BROWN";
+				case GREEN: return "GREEN";
+				case PINK: return "RED";
+				case BLACK: return "BLACK";
 			}
 			return "UNKNOWN";
 		}

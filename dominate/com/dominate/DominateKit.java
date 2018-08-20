@@ -1,17 +1,14 @@
 package com.dominate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.dominate.skills.DominateSkill.DominateSkillType;
+import com.games.Games;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.Glow;
+import net.minecraft.server.v1_13_R1.PacketPlayOutEntityDestroy;
+import org.bukkit.*;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -21,18 +18,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import realcraft.bukkit.utils.MaterialUtil;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.dominate.skills.DominateSkill.DominateSkillType;
-import com.games.Games;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.Glow;
-
-import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class DominateKit implements Listener {
 
@@ -130,6 +124,13 @@ public class DominateKit implements Listener {
 		game.getUser(gPlayer).setKit(this.getType());
 		gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1f,1f);
 		gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_HORSE_ARMOR,0.5f,1f);
+	}
+
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent event){
+		if(event.hasItem() && MaterialUtil.isWool(event.getItem().getType())){
+			// code ...
+		}
 	}
 
 	@EventHandler
@@ -267,7 +268,7 @@ public class DominateKit implements Listener {
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
-				item = new ItemStack(Material.GOLD_HELMET);
+				item = new ItemStack(Material.GOLDEN_HELMET);
 				meta = item.getItemMeta();
 				meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,1,false);
 				meta.addEnchant(Enchantment.DURABILITY,3,false);
@@ -307,7 +308,7 @@ public class DominateKit implements Listener {
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
-				item = new ItemStack(Material.GOLD_CHESTPLATE);
+				item = new ItemStack(Material.GOLDEN_CHESTPLATE);
 				meta = item.getItemMeta();
 				meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
 				meta.addEnchant(Enchantment.DURABILITY,3,false);
@@ -348,7 +349,7 @@ public class DominateKit implements Listener {
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
-				item = new ItemStack(Material.GOLD_LEGGINGS);
+				item = new ItemStack(Material.GOLDEN_LEGGINGS);
 				meta = item.getItemMeta();
 				meta.addEnchant(Enchantment.PROTECTION_FIRE,1,false);
 				meta.addEnchant(Enchantment.DURABILITY,3,false);
@@ -370,12 +371,12 @@ public class DominateKit implements Listener {
 			else if(this == FROST){
 				item = new ItemStack(Material.IRON_BOOTS,1);
 		        meta = item.getItemMeta();
-		        meta.addEnchant(new Glow(255),1,true);
+		        meta.addEnchant(Glow.getGlow(),1,true);
 		        meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
 		        item.setItemMeta(meta);
 			}
 			else if(this == PYROMAN){
-				item = new ItemStack(Material.GOLD_BOOTS);
+				item = new ItemStack(Material.GOLDEN_BOOTS);
 				meta = item.getItemMeta();
 		        meta.addEnchant(Enchantment.PROTECTION_FIRE,4,false);
 		        item.setItemMeta(meta);
@@ -388,7 +389,7 @@ public class DominateKit implements Listener {
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
-				item = new ItemStack(Material.GOLD_BOOTS);
+				item = new ItemStack(Material.GOLDEN_BOOTS);
 				meta = item.getItemMeta();
 				meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
 				meta.addEnchant(Enchantment.DURABILITY,3,false);
@@ -401,7 +402,7 @@ public class DominateKit implements Listener {
 			ItemStack item = null;
 			ItemMeta meta;
 			if(this == ARCHER){
-				item = new ItemStack(Material.WOOD_SWORD);
+				item = new ItemStack(Material.WOODEN_SWORD);
 				meta = item.getItemMeta();
 				meta.addEnchant(Enchantment.DAMAGE_ALL,1,false);
 				meta.addEnchant(Enchantment.DURABILITY,3,false);
@@ -466,26 +467,26 @@ public class DominateKit implements Listener {
 			gPlayer.getPlayer().getInventory().setItem(1,this.getSecondaryWeapon());
 			if(this == ARCHER){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,32));
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
 				gPlayer.getPlayer().getInventory().setItem(8,DominateSkillType.WEB.getItemStack());
 			}
 			else if(this == FROST){
 				gPlayer.getPlayer().getInventory().setItem(1,DominateSkillType.ICETRAP.getItemStack());
 				gPlayer.getPlayer().getInventory().setItem(8,DominateSkillType.WATER_BOTTLE.getItemStack());
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+2,new ItemStack(Material.MUSHROOM_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+2,new ItemStack(Material.BEETROOT_SOUP));
 			}
 			else if(this == PYROMAN){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,16));
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
 			}
 			else if(this == CONFUSER){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,16));
 				gPlayer.getPlayer().getInventory().setItem(8,DominateSkillType.WEB.getItemStack());
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
 			}
 			else if(this == BOOMER){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,8));
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
 			}
 		}
 

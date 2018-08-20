@@ -1,14 +1,18 @@
 package com.bedwars;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.bedwars.BedWarsResource.BedWarsResourceType;
+import com.bedwars.specials.BedWarsSpecialSheep;
+import com.bedwars.specials.BedWarsSpecialStray;
+import com.games.Games;
+import com.games.events.*;
+import com.games.game.GameState;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.Title;
+import net.citizensnpcs.api.event.NPCLeftClickEvent;
+import net.citizensnpcs.api.event.NPCRightClickEvent;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -20,15 +24,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.EntityTargetEvent;
-import org.bukkit.event.entity.ItemMergeEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -37,36 +34,20 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Bed;
-
-import com.bedwars.BedWarsResource.BedWarsResourceType;
-import com.bedwars.specials.BedWarsSpecialSheep;
-import com.bedwars.specials.BedWarsSpecialStray;
-import com.games.Games;
-import com.games.events.GameCycleEvent;
-import com.games.events.GameEndEvent;
-import com.games.events.GamePlayerJoinEvent;
-import com.games.events.GamePlayerLeaveEvent;
-import com.games.events.GamePlayerStateChangeEvent;
-import com.games.events.GameStartEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.events.GameTimeoutEvent;
-import com.games.game.GameState;
-import com.games.game.GameStats.GameStatsType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.ItemUtil;
-import com.games.utils.LocationUtil;
-import com.games.utils.Title;
-
-import net.citizensnpcs.api.event.NPCLeftClickEvent;
-import net.citizensnpcs.api.event.NPCRightClickEvent;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.ItemUtil;
+import realcraft.bukkit.utils.LocationUtil;
+import realcraft.bukkit.utils.MaterialUtil;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class BedWarsListeners implements Listener {
 
-	private static final int SPAWN_PROTECTION_DELAY = 20*1000;
+	private static final int SPAWN_PROTECTION_DELAY = 20 * 1000;
 
 	private BedWars game;
 
@@ -189,7 +170,7 @@ public class BedWarsListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getTeams().getActiveTeams().size() < 2) game.setState(GameState.ENDING);
+			if(game.getTeams().getActiveTeams().size() < 2 && !RealCraft.isTestServer()) game.setState(GameState.ENDING);
 			else if(game.getGameTime() == 0 && game.getTeams().getWinnerTeam() != null) game.setState(GameState.ENDING);
 		}
 		game.getScoreboard().update();
@@ -241,7 +222,7 @@ public class BedWarsListeners implements Listener {
 		}
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		Block block = event.getBlock();
-		if(block.getType() == Material.BED_BLOCK){
+		if(MaterialUtil.isBed(block.getType())){
 			BedWarsTeam team = game.getTeams().getPlayerTeam(gPlayer);
 
 			Block breakBlock = block;
@@ -404,18 +385,17 @@ public class BedWarsListeners implements Listener {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void PlayerInteractEvent(PlayerInteractEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		if(game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR) return;
 		if(game.getState().isLobby()){
 			ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-			if(itemStack.getType() == Material.WOOL){
+			if(MaterialUtil.isWool(itemStack.getType())){
 				if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 					event.setCancelled(true);
 					for(BedWarsTeam team : game.getTeams().getTeams()){
-						if(itemStack.getDurability() == team.getType().getDyeColor().getWoolData()){
+						if(MaterialUtil.getDyeColor(itemStack.getType()) == team.getType().getDyeColor()){
 							if(game.getTeams().getPlayerTeam(gPlayer) != team){
 								game.getTeams().setPlayerTeam(gPlayer,team);
 								gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1,1);
@@ -439,13 +419,13 @@ public class BedWarsListeners implements Listener {
 					}
 				}
 			}
-			else if(item.getType() == Material.MONSTER_EGG && ItemUtil.spawnEggFromItemStack(item) == EntityType.SHEEP && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
+			else if(MaterialUtil.isSpawnEgg(item.getType()) && MaterialUtil.getSpawnEggType(item.getType()) == EntityType.SHEEP && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
 				event.setCancelled(true);
 				ItemUtil.removeItems(gPlayer.getPlayer().getInventory(),item,1);
 				BedWarsSpecialSheep sheep = new BedWarsSpecialSheep(game,game.getTeams().getPlayerTeam(gPlayer));
 				sheep.activate(gPlayer);
 			}
-			else if(item.getType() == Material.MONSTER_EGG && ItemUtil.spawnEggFromItemStack(item) == EntityType.STRAY && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
+			else if(MaterialUtil.isSpawnEgg(item.getType()) && MaterialUtil.getSpawnEggType(item.getType()) == EntityType.STRAY && (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
 				event.setCancelled(true);
 				ItemUtil.removeItems(gPlayer.getPlayer().getInventory(),item,1);
 				BedWarsSpecialStray stray = new BedWarsSpecialStray(game,game.getTeams().getPlayerTeam(gPlayer));

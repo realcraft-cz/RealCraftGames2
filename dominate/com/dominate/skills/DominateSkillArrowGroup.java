@@ -1,8 +1,11 @@
 package com.dominate.skills;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.dominate.DominateUtils;
+import com.games.Games;
+import com.games.game.GameState;
+import com.games.utils.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -18,12 +21,8 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.dominate.DominateUtils;
-import com.games.Games;
-import com.games.game.GameState;
-import com.games.utils.Title;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DominateSkillArrowGroup extends DominateSkill {
 
@@ -83,7 +82,7 @@ public class DominateSkillArrowGroup extends DominateSkill {
 			if(started+800 < System.currentTimeMillis()){
 				if(force < 15){
 					force += 1;
-					this.getPlayer().playSound(this.getPlayer().getLocation(),Sound.BLOCK_NOTE_HARP,1,1+(force*(1.0f/15f)));
+					this.getPlayer().playSound(this.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_HARP,1,1+(force*(1.0f/15f)));
 				}
 				String message = "";
 				for(int i=0;i<15;i++){

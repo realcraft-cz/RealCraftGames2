@@ -1,22 +1,21 @@
 package com.blockparty;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.games.Games;
+import com.games.arena.GameArena;
+import com.games.player.GamePlayer;
+import com.games.utils.RandomUtil;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import realcraft.bukkit.utils.LocationUtil;
 
-import com.games.Games;
-import com.games.arena.GameArena;
-import com.games.player.GamePlayer;
-import com.games.utils.LocationUtil;
-import com.games.utils.RandomUtil;
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitWorld;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BlockPartyArena extends GameArena {
 
@@ -74,7 +73,7 @@ public class BlockPartyArena extends GameArena {
 	}
 
 	public void chooseRandomBlock(){
-		currentBlock = currentFloor.getRandomBlock(this.getWorld(),locMin);
+		currentBlock = currentFloor.getRandomBlock();
 		this.getGame().loadRoundInventory(currentBlock);
 	}
 
@@ -122,7 +121,7 @@ public class BlockPartyArena extends GameArena {
 			for(int x=locMin.getBlockX();x<=locMax.getBlockX();x++){
 				for(int z=locMin.getBlockZ();z<=locMax.getBlockZ();z++){
 					Block block = this.getWorld().getBlockAt(x,y,z);
-					if(force || block.getType() != this.getCurrentBlock().getType() || block.getData() != this.getCurrentBlock().getData()){
+					if(force || block.getType() != this.getCurrentBlock().getType()){
 						block.setType(Material.AIR);
 					}
 					List<Entity> entities = (List<Entity>) this.getWorld().getNearbyEntities(this.getGameLocation(),20,10,20);

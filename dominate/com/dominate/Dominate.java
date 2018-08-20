@@ -1,33 +1,27 @@
 package com.dominate;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scoreboard.Team;
-
 import com.dominate.DominateTeam.DominateTeamType;
 import com.games.Games;
-import com.games.game.Game;
-import com.games.game.GameFlag;
-import com.games.game.GamePodium;
+import com.games.game.*;
 import com.games.game.GamePodium.GamePodiumType;
-import com.games.game.GameScoreboard;
 import com.games.game.GameSpectator.SpectatorMenuItem;
 import com.games.game.GameSpectator.SpectatorMenuItemLocation;
 import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
-import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsScore;
 import com.games.game.GameStats.GameStatsType;
-import com.games.game.GameType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Glow;
+import org.bukkit.Bukkit;
+import org.bukkit.DyeColor;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scoreboard.Team;
+import realcraft.bukkit.utils.MaterialUtil;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Dominate extends Game {
 
@@ -108,7 +102,6 @@ public class Dominate extends Game {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public void loadLobbyInventory(GamePlayer gPlayer){
 		DominateTeam team = this.getTeams().getPlayerTeam(gPlayer);
 		ItemStack itemStack;
@@ -117,19 +110,19 @@ public class Dominate extends Game {
 
 		amount = this.getTeams().getTeam(DominateTeamType.RED).getPlayers().size();
 		if(amount == 0) amount = 1;
-		itemStack = new ItemStack(Material.WOOL,amount,DyeColor.RED.getWoolData());
+		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.RED),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(DominateTeamType.RED.getChatColor()+"§l"+DominateTeamType.RED.toName());
-		if(team != null && team.getType() == DominateTeamType.RED) meta.addEnchant(new Glow(255),10,true);
+		if(team != null && team.getType() == DominateTeamType.RED) meta.addEnchant(Glow.getGlow(),10,true);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(7,itemStack);
 
 		amount = this.getTeams().getTeam(DominateTeamType.BLUE).getPlayers().size();
 		if(amount == 0) amount = 1;
-		itemStack = new ItemStack(Material.WOOL,amount,DyeColor.BLUE.getWoolData());
+		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.BLUE),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(DominateTeamType.BLUE.getChatColor()+"§l"+DominateTeamType.BLUE.toName());
-		if(team != null && team.getType() == DominateTeamType.BLUE) meta.addEnchant(new Glow(255),10,true);
+		if(team != null && team.getType() == DominateTeamType.BLUE) meta.addEnchant(Glow.getGlow(),10,true);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 	}
@@ -140,7 +133,6 @@ public class Dominate extends Game {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
 		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
 		int row = 0;
@@ -148,7 +140,7 @@ public class Dominate extends Game {
 		for(DominateTeam team : this.getTeams().getTeams()){
 			int column = 0;
 			index = (row*9)+(column++);
-			ItemStack item = new ItemStack(Material.WOOL,1,team.getType().getDyeColor().getWoolData());
+			ItemStack item = new ItemStack(MaterialUtil.getWool(team.getType().getDyeColor()));
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
 			item.setItemMeta(meta);

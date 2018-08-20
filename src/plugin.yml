@@ -1,4 +1,5 @@
 name: RealCraftGames2
 version: 2.0
+api-version: 1.13
 main: com.games.Games
 author: RealCraft.cz

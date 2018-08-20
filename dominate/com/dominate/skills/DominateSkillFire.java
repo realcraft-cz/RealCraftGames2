@@ -1,8 +1,8 @@
 package com.dominate.skills;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.dominate.DominateUtils;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.BlockFace;
@@ -13,11 +13,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.util.Vector;
+import realcraft.bukkit.utils.Particles;
 
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.dominate.DominateUtils;
-import com.games.utils.Particles;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DominateSkillFire extends DominateSkill {
 

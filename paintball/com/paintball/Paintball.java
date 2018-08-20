@@ -30,6 +30,8 @@ import com.games.utils.Glow;
 import com.games.utils.StringUtil;
 import com.paintball.PaintballTeam.PaintballTeamType;
 
+import realcraft.bukkit.utils.MaterialUtil;
+
 public class Paintball extends Game {
 
 	private PaintballScoreboard scoreboard;
@@ -96,7 +98,6 @@ public class Paintball extends Game {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public void loadLobbyInventory(GamePlayer gPlayer){
 		PaintballTeam team = this.getTeams().getPlayerTeam(gPlayer);
 		ItemStack itemStack;
@@ -105,19 +106,19 @@ public class Paintball extends Game {
 
 		amount = this.getTeams().getTeam(PaintballTeamType.RED).getPlayers().size();
 		if(amount == 0) amount = 1;
-		itemStack = new ItemStack(Material.WOOL,amount,DyeColor.RED.getWoolData());
+		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.RED),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(PaintballTeamType.RED.getChatColor()+"§l"+PaintballTeamType.RED.toName());
-		if(team != null && team.getType() == PaintballTeamType.RED) meta.addEnchant(new Glow(255),10,true);
+		if(team != null && team.getType() == PaintballTeamType.RED) meta.addEnchant(Glow.getGlow(),10,true);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(7,itemStack);
 
 		amount = this.getTeams().getTeam(PaintballTeamType.BLUE).getPlayers().size();
 		if(amount == 0) amount = 1;
-		itemStack = new ItemStack(Material.WOOL,amount,DyeColor.BLUE.getWoolData());
+		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.BLUE),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(PaintballTeamType.BLUE.getChatColor()+"§l"+PaintballTeamType.BLUE.toName());
-		if(team != null && team.getType() == PaintballTeamType.BLUE) meta.addEnchant(new Glow(255),10,true);
+		if(team != null && team.getType() == PaintballTeamType.BLUE) meta.addEnchant(Glow.getGlow(),10,true);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 	}
@@ -129,11 +130,10 @@ public class Paintball extends Game {
 	public void setPlayerWeapons(GamePlayer gPlayer,boolean respawn){
 		if(respawn) gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
 		PaintballUser user = this.getUser(gPlayer);
-		gPlayer.getPlayer().getInventory().setItem(0,new ItemStack(Material.SNOW_BALL,user.getPistols()));
+		gPlayer.getPlayer().getInventory().setItem(0,new ItemStack(Material.SNOWBALL,user.getPistols()));
 		gPlayer.getPlayer().getInventory().setItem(1,new ItemStack(Material.EGG,user.getGrenades()));
 	}
 
-	@SuppressWarnings("deprecation")
 	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
 		HashMap<Integer,SpectatorMenuItem> items = new HashMap<Integer,SpectatorMenuItem>();
 		int row = 0;
@@ -141,7 +141,7 @@ public class Paintball extends Game {
 		for(PaintballTeam team : this.getTeams().getActiveTeams()){
 			int column = 0;
 			index = (row*9)+(column++);
-			ItemStack item = new ItemStack(Material.WOOL,1,team.getType().getDyeColor().getWoolData());
+			ItemStack item = new ItemStack(MaterialUtil.getWool(team.getType().getDyeColor()));
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
 			item.setItemMeta(meta);

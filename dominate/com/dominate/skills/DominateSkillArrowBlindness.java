@@ -1,8 +1,11 @@
 package com.dominate.skills;
 
-import java.util.HashMap;
-import java.util.List;
-
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.games.Games;
+import com.games.game.GameState;
+import com.games.player.GamePlayerState;
+import com.games.utils.Glow;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -21,14 +24,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
+import realcraft.bukkit.utils.Particles;
 
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.games.Games;
-import com.games.game.GameState;
-import com.games.player.GamePlayerState;
-import com.games.utils.Glow;
-import com.games.utils.Particles;
+import java.util.HashMap;
+import java.util.List;
 
 public class DominateSkillArrowBlindness extends DominateSkill {
 
@@ -125,7 +124,7 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 					if(!this.isCooldown()){
 						if(!selected){
 							selected = !selected;
-							player.playSound(player.getLocation(),Sound.BLOCK_NOTE_HAT,1f,1f);
+							player.playSound(player.getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,1f,1f);
 							this.updateInventory();
 						}
 					} else {
@@ -149,7 +148,7 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.addEnchant(new Glow(255),1,true);
+			meta.addEnchant(Glow.getGlow(),1,true);
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		} else {
@@ -159,7 +158,7 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 			}
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.removeEnchant(new Glow(255));
+			meta.removeEnchant(Glow.getGlow());
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		}

@@ -1,11 +1,12 @@
 package com.paintball.drops;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.games.Games;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.FireworkUtil;
+import com.games.utils.RandomUtil;
+import com.paintball.Paintball;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -16,16 +17,8 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
-
-import com.games.Games;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.FireworkUtil;
-import com.games.utils.ItemUtil;
-import com.games.utils.Particles;
-import com.games.utils.Particles.BlockData;
-import com.games.utils.RandomUtil;
-import com.paintball.Paintball;
+import realcraft.bukkit.utils.ItemUtil;
+import realcraft.bukkit.utils.Particles;
 
 public abstract class PaintballDrop implements Runnable, Listener {
 
@@ -84,7 +77,7 @@ public abstract class PaintballDrop implements Runnable, Listener {
 			Location location = stand.getLocation();
 			Particles.SPELL_WITCH.display(0.3f,0.3f,0.3f,0.5f,2,stand.getEyeLocation(),64);
 			if(location.getY() > this.location.getY()-1){
-				Particles.BLOCK_CRACK.display(new BlockData(Material.EMERALD_ORE,(byte)0),0.3f,0.5f,0.3f,0.0f,4,stand.getEyeLocation(),64);
+				Particles.BLOCK_CRACK.display(Bukkit.createBlockData(Material.EMERALD_ORE),0.3f,0.5f,0.3f,0.0f,4,stand.getEyeLocation(),64);
 				if(stand.getTicksLived()%3 == 0) location.getWorld().playSound(location,Sound.ENTITY_CHICKEN_EGG,1f,1f);
 				if(stand.getTicksLived()%5 == 0) Particles.EXPLOSION_LARGE.display(0,0,0,0,1,stand.getEyeLocation(),128);
 			}

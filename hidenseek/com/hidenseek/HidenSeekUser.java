@@ -1,35 +1,26 @@
 package com.hidenseek;
 
+import com.games.player.GamePlayer;
+import com.games.utils.Glow;
+import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
+import net.minecraft.server.v1_13_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_12_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftFallingBlock;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
-import org.bukkit.entity.Entity;
+import org.bukkit.craftbukkit.v1_13_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_13_R1.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftFallingBlock;
+import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import com.games.player.GamePlayer;
-import com.games.utils.Glow;
-import com.games.utils.Particles;
-import com.games.utils.Particles.BlockData;
-import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
-
-import me.libraryaddict.disguise.DisguiseAPI;
-import me.libraryaddict.disguise.disguisetypes.MobDisguise;
-import net.minecraft.server.v1_12_R1.EntityArmorStand;
-import net.minecraft.server.v1_12_R1.EntityFallingBlock;
-import net.minecraft.server.v1_12_R1.IBlockData;
-import net.minecraft.server.v1_12_R1.PacketPlayOutEntityDestroy;
-import net.minecraft.server.v1_12_R1.World;
+import realcraft.bukkit.utils.Particles;
 
 public class HidenSeekUser {
 
@@ -110,14 +101,6 @@ public class HidenSeekUser {
 		this.fireworks = fireworks;
 	}
 
-	public int getSolidCountdown(){
-		return solidCountdown;
-	}
-
-	public void setSolidCountdown(int solidCountdown){
-		this.solidCountdown = solidCountdown;
-	}
-
 	public void useWeapon(){
 		if(weaponActive){
 			weaponDamage += WEAPON_DAMAGE;
@@ -151,26 +134,22 @@ public class HidenSeekUser {
 		return this.solid;
 	}
 
-	@SuppressWarnings("deprecation")
 	public ItemStack getItemStack(){
 		if(type == DisguiseType.BLOCK){
 			Material material = this.getBlock().getMaterial();
-			Byte data = this.getBlock().getBlockData();
-			if(material == Material.ANVIL) data = 0;
-			if(material == Material.REDSTONE_LAMP_ON) material = Material.REDSTONE_LAMP_OFF;
-			return new ItemStack(material,1,(short)0,data);
+			return new ItemStack(material);
 		}
 		else if(type == DisguiseType.ENTITY){
-			if(DisguiseAPI.isDisguised(gPlayer.getPlayer())){
+			/*if(DisguiseAPI.isDisguised(gPlayer.getPlayer())){
 				switch(DisguiseAPI.getDisguise(gPlayer.getPlayer()).getType()){
 					case COW: return new ItemStack(Material.MILK_BUCKET);
-					case PIG: return new ItemStack(Material.PORK);
-					case SHEEP: return new ItemStack(Material.WOOL);
+					case PIG: return new ItemStack(Material.PORKCHOP);
+					case SHEEP: return new ItemStack(Material.WHITE_WOOL);
 					case CHICKEN: return new ItemStack(Material.EGG);
 					case RABBIT: return new ItemStack(Material.RABBIT_HIDE);
 					default: return new ItemStack(Material.AIR);
 				}
-			}
+			}*/
 		}
 		return null;
 	}
@@ -179,7 +158,6 @@ public class HidenSeekUser {
 		this.disguiseBlock(game.getArena().getRandomBlock());
 	}
 
-	@SuppressWarnings("deprecation")
 	public void disguiseBlock(Block baseBlock){
 		this.cancelDisguise();
 		type = DisguiseType.BLOCK;
@@ -191,8 +169,7 @@ public class HidenSeekUser {
 		stand.setSmall(true);
 		stand.setSize(0,0);
 		((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle().addEntity(stand,SpawnReason.CUSTOM);
-
-		IBlockData ibd = net.minecraft.server.v1_12_R1.Block.getByCombinedId(baseBlock.getTypeId()+(baseBlock.getData() << 12));
+		IBlockData ibd = ((CraftBlock)baseBlock).getNMS();
 		block = new HidenSeekFallingBlock(((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle(),gPlayer.getPlayer().getLocation().getX(),gPlayer.getPlayer().getLocation().getY(),gPlayer.getPlayer().getLocation().getZ(),ibd);
 		block.dropItem = false;
 		((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle().addEntity(block,SpawnReason.CUSTOM);
@@ -208,11 +185,9 @@ public class HidenSeekUser {
 	}
 
 	public void respawnBlock(Location location){
-		int id = this.getBlock().getBlockId();
-		int data = this.getBlock().getBlockData();
 		stand.getBukkitEntity().eject();
+		IBlockData ibd = block.getBlock();
 		if(block != null) block.remove();
-		IBlockData ibd = net.minecraft.server.v1_12_R1.Block.getByCombinedId(id+(data << 12));
 		block = new HidenSeekFallingBlock(((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle(),location.getX(),location.getY(),location.getZ(),ibd);
 		block.dropItem = false;
 		((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle().addEntity(block,SpawnReason.CUSTOM);
@@ -220,19 +195,19 @@ public class HidenSeekUser {
 		stand.getBukkitEntity().setPassenger(block.getBukkitEntity());
 	}
 
-	public void disguiseEntity(Entity original){
+	/*public void disguiseEntity(Entity original){
 		this.cancelDisguise();
 		type = DisguiseType.ENTITY;
 		MobDisguise disguise = new MobDisguise(me.libraryaddict.disguise.disguisetypes.DisguiseType.getType(original));
 		disguise.setViewSelfDisguise(true);
 		DisguiseAPI.disguiseToAll(gPlayer.getPlayer(),disguise);
 		gPlayer.getPlayer().removePotionEffect(PotionEffectType.INVISIBILITY);
-	}
+	}*/
 
 	public void cancelDisguise(){
 		this.setSolid(false);
 		solidCountdown = 5;
-		DisguiseAPI.undisguiseToAll(gPlayer.getPlayer());
+		//DisguiseAPI.undisguiseToAll(gPlayer.getPlayer());
 		for(Player player2 : Bukkit.getOnlinePlayers()){
 			if(!player2.equals(gPlayer.getPlayer())){
 				player2.showPlayer(gPlayer.getPlayer());
@@ -258,17 +233,17 @@ public class HidenSeekUser {
 		if(solid){
 			if(!this.isSolid()){
 				Block block = gPlayer.getPlayer().getLocation().getBlock();
-				if(block.getType() == Material.AIR || block.getType() == Material.WATER || block.getType() == Material.STATIONARY_WATER){
+				if(block.getType() == Material.AIR || block.getType() == Material.WATER){
 					if(solid == true){
 						origBlock = block;
 						for(Player player2 : Bukkit.getOnlinePlayers()){
 							if(!player2.equals(gPlayer.getPlayer())){
-								player2.sendBlockChange(gPlayer.getPlayer().getLocation().getBlock().getLocation(),this.getBlock().getBlockId(),this.getBlock().getBlockData());
+								player2.sendBlockChange(gPlayer.getPlayer().getLocation().getBlock().getLocation(),this.getBlock().getBlockData());
 								PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(this.getEntityId());
 								((CraftPlayer)player2).getHandle().playerConnection.sendPacket(packet);
 							}
 						}
-						Particles.BLOCK_CRACK.display(new BlockData(this.getBlock().getMaterial(),this.getBlock().getBlockData()),0.3f,0.3f,0.3f,0.0f,64,origBlock.getLocation().add(0.5,0.7,0.5),64);
+						Particles.BLOCK_CRACK.display(Bukkit.createBlockData(this.getBlock().getMaterial()),0.3f,0.3f,0.3f,0.0f,64,origBlock.getLocation().add(0.5,0.7,0.5),64);
 						gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_STONE_PLACE,1,1);
 						this.solid = true;
 						success = true;
@@ -279,7 +254,7 @@ public class HidenSeekUser {
 			if(this.isSolid()){
 				if(origBlock != null){
 					for(Player player2 : Bukkit.getOnlinePlayers()){
-						player2.sendBlockChange(origBlock.getLocation(),origBlock.getTypeId(),origBlock.getData());
+						player2.sendBlockChange(origBlock.getLocation(),origBlock.getBlockData());
 					}
 					this.respawnBlock(origBlock.getLocation());
 					origBlock = null;
@@ -322,7 +297,7 @@ public class HidenSeekUser {
 			else tmpTracker = 10;
 			if(tracker+1 > tmpTracker){
 				tracker = 1;
-				gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_HAT,1,1);
+				gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_NOTE_BLOCK_HAT,1,1);
 			} else {
 				tracker += 1;
 			}
@@ -367,12 +342,12 @@ public class HidenSeekUser {
 		if(type == DisguiseType.BLOCK && !this.isSolid()){
 			ItemStack itemStack = this.getItemStack();
 			ItemMeta meta = itemStack.getItemMeta();
-			if(solidCountdown == 0) meta.addEnchant(new Glow(255),10,true);
+			if(solidCountdown == 0) meta.addEnchant(Glow.getGlow(),10,true);
 			itemStack.setItemMeta(meta);
 			gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 			Block block = gPlayer.getPlayer().getLocation().getBlock();
 			gPlayer.getPlayer().setExp(1-(solidCountdown/5.0f));
-			if((block.getType() == Material.AIR || block.getType() == Material.WATER || block.getType() == Material.STATIONARY_WATER) && block.getRelative(BlockFace.DOWN).getType() != Material.AIR){
+			if((block.getType() == Material.AIR || block.getType() == Material.WATER) && block.getRelative(BlockFace.DOWN).getType() != Material.AIR){
 				if(solidCountdown == 0) this.setSolid(true);
 				else solidCountdown --;
 			}
@@ -391,6 +366,11 @@ public class HidenSeekUser {
 		public HidenSeekArmorStand(World world, double d0, double d1, double d2){
 			super(world, d0, d1, d2);
 		}
+
+		@Override
+		public NBTTagCompound save(NBTTagCompound nbttagcompound){
+			return null;
+		}
 	}
 
 	public class HidenSeekFallingBlock extends EntityFallingBlock {
@@ -408,6 +388,11 @@ public class HidenSeekUser {
 		@Override
 		public void die(){
 			if(this.dead) super.die();
+		}
+
+		@Override
+		public NBTTagCompound save(NBTTagCompound nbttagcompound){
+			return null;
 		}
 	}
 }

@@ -67,7 +67,7 @@ public class BedWarsResource implements Runnable {
 
 		public Material toMaterial(){
 			switch(this){
-				case BRONZE: return Material.CLAY_BRICK;
+				case BRONZE: return Material.BRICK;
 				case IRON: return Material.IRON_INGOT;
 				case GOLD: return Material.GOLD_INGOT;
 			}

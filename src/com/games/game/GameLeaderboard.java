@@ -1,13 +1,6 @@
 package com.games.game;
 
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import javax.imageio.ImageIO;
-
+import com.games.Games;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,12 +9,17 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
+import realcraft.bukkit.utils.LocationUtil;
 
-import com.games.Games;
-import com.games.utils.LocationUtil;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 
 public class GameLeaderboard {
 
@@ -128,8 +126,10 @@ public class GameLeaderboard {
 					MapView map = Bukkit.getServer().createMap(world);
 					map.getRenderers().clear();
 					map.addRenderer(new CustomMapRenderer(image));
-					ItemStack item = new ItemStack(Material.MAP);
-					item.setDurability(map.getId());
+					ItemStack item = new ItemStack(Material.FILLED_MAP);
+					MapMeta meta = (MapMeta)item.getItemMeta();
+					meta.setMapId(map.getId());
+					item.setItemMeta(meta);
 					items[index++] = item;
 				}
 				images = items;
@@ -141,8 +141,6 @@ public class GameLeaderboard {
 	private BufferedImage loadImage(String url){
 		try {
 			return ImageIO.read(new URL(url));
-		} catch (MalformedURLException e){
-			e.printStackTrace();
 		} catch (IOException e){
 			e.printStackTrace();
 		}

@@ -180,10 +180,6 @@ public abstract class DominateSkill implements Listener, Runnable {
 	public enum DominateSkillType {
 		FIRE, ARROW_FIRE, ARROW_EXPLOSIVE, ARROW_BLINDNESS, ARROW_GROUP, FIREBALL, ICETRAP, FROSTWALK, SMASHDOWN, JUMP, RECALL, WEB, WATER_BOTTLE, SOUP;
 
-		public String getCustomName(){
-			return this.toString().toLowerCase();
-		}
-
 		public String getName(){
 			switch(this){
 				default:break;
@@ -197,23 +193,16 @@ public abstract class DominateSkill implements Listener, Runnable {
 				case ARROW_EXPLOSIVE: return Material.TIPPED_ARROW;
 				case ARROW_BLINDNESS: return Material.TIPPED_ARROW;
 				case FIRE: return Material.BLAZE_POWDER;
-				case FIREBALL: return Material.FIREBALL;
+				case FIREBALL: return Material.FIRE_CHARGE;
 				case ICETRAP: return Material.ICE;
 				case FROSTWALK: return Material.ICE;
 				case RECALL: return Material.IRON_SWORD;
-				case WEB: return Material.WEB;
+				case WEB: return Material.COBWEB;
 				case WATER_BOTTLE: return Material.POTION;
-				case SOUP: return Material.MUSHROOM_SOUP;
+				case SOUP: return Material.MUSHROOM_STEW;
 				default:break;
 			}
 			return null;
-		}
-
-		public byte getByte(){
-			switch(this){
-				default:break;
-			}
-			return (byte)0;
 		}
 
 		public int getAmount(){
@@ -263,9 +252,8 @@ public abstract class DominateSkill implements Listener, Runnable {
 			return 0;
 		}
 
-		@SuppressWarnings("deprecation")
 		public ItemStack getItemStack(){
-			ItemStack item = new ItemStack(this.getMaterial(),this.getAmount(),(short)0,this.getByte());
+			ItemStack item = new ItemStack(this.getMaterial(),this.getAmount());
 			if(this == ARROW_FIRE){
 				PotionMeta potionMeta = (PotionMeta)item.getItemMeta();
 				potionMeta.setBasePotionData(new PotionData(PotionType.FIRE_RESISTANCE));

@@ -22,11 +22,12 @@ import org.bukkit.util.EulerAngle;
 
 import com.games.Games;
 import com.games.events.GameEndEvent;
-import com.games.utils.ItemUtil;
 import com.games.utils.SkinUtil;
 import com.games.utils.SkinUtil.Skin;
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+
+import realcraft.bukkit.utils.ItemUtil;
 
 public abstract class GamePodium implements Listener {
 
@@ -125,7 +126,7 @@ public abstract class GamePodium implements Listener {
 		private Location location;
 		private ArmorStand stand;
 		private Hologram hologram;
-		private ItemStack head = new ItemStack(Material.SKULL_ITEM);
+		private ItemStack head = new ItemStack(Material.PLAYER_HEAD);
 
 		public GamePodiumStand(GamePodiumStandType type,Location location){
 			this.type = type;
@@ -180,9 +181,9 @@ public abstract class GamePodium implements Listener {
 				stand.getEquipment().setBoots(new ItemStack(Material.DIAMOND_BOOTS));
 			}
 			else if(type == GamePodiumStandType.SECOND){
-				stand.getEquipment().setChestplate(new ItemStack(Material.GOLD_CHESTPLATE));
-				stand.getEquipment().setLeggings(new ItemStack(Material.GOLD_LEGGINGS));
-				stand.getEquipment().setBoots(new ItemStack(Material.GOLD_BOOTS));
+				stand.getEquipment().setChestplate(new ItemStack(Material.GOLDEN_CHESTPLATE));
+				stand.getEquipment().setLeggings(new ItemStack(Material.GOLDEN_LEGGINGS));
+				stand.getEquipment().setBoots(new ItemStack(Material.GOLDEN_BOOTS));
 			}
 			else if(type == GamePodiumStandType.THIRD){
 				stand.getEquipment().setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE));

@@ -1,32 +1,41 @@
 package com.blockparty;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Random;
-
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.world.block.BaseBlock;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
+import realcraft.bukkit.utils.MaterialUtil;
+import realcraft.bukkit.utils.RandomUtil;
 
-import com.sk89q.worldedit.CuboidClipboard;
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.blocks.BaseBlock;
-import com.sk89q.worldedit.schematic.MCEditSchematicFormat;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 
 @SuppressWarnings("deprecation")
 public class BlockPartyFloor {
 
-	private Vector size;
-	public CuboidClipboard floor = null;
+	public Clipboard floor = null;
 
 	private boolean used = false;
 
 	public BlockPartyFloor(File file){
 		try {
-			floor = MCEditSchematicFormat.getFormat(file).load(file);
-			size = floor.getSize();
-		} catch (com.sk89q.worldedit.data.DataException | IOException e){
+			BuiltInClipboardFormat format = BuiltInClipboardFormat.MCEDIT_SCHEMATIC;
+			FileInputStream fis = new FileInputStream(file);
+			BufferedInputStream bis = new BufferedInputStream(fis);
+			ClipboardReader reader = format.getReader(bis);
+			this.floor = reader.read();
+			fis.close();
+			bis.close();
+		} catch (IOException e){
 			e.printStackTrace();
 		}
 	}
@@ -39,28 +48,30 @@ public class BlockPartyFloor {
 		this.used = used;
 	}
 
-	public BlockPartyBlock getRandomBlock(World world,Vector locMin){
-		HashMap<Integer,BaseBlock> types = new HashMap<Integer,BaseBlock>();
-		for(int y=0;y<size.getBlockY();y++){
-			for(int x=0;x<size.getBlockX();x++){
-				for(int z=0;z<size.getBlockZ();z++){
-					if(!types.containsKey(floor.getBlock(new Vector(x,y,z)).getData()) && floor.getBlock(new Vector(x,y,z)).getId() == Material.STAINED_CLAY.getId()){
-						types.put(floor.getBlock(new Vector(x,y,z)).getData(),floor.getBlock(new Vector(x,y,z)));
+	public BlockPartyBlock getRandomBlock(){
+		ArrayList<Material> types = new ArrayList<>();
+		for(int x = floor.getRegion().getMinimumPoint().getBlockX();x <= floor.getRegion().getMaximumPoint().getBlockX();x++){
+			for(int y = floor.getRegion().getMinimumPoint().getBlockY();y <= floor.getRegion().getMaximumPoint().getBlockY();y++){
+				for(int z = floor.getRegion().getMinimumPoint().getBlockZ();z <= floor.getRegion().getMaximumPoint().getBlockZ();z++){
+					BaseBlock block = floor.getFullBlock(new BlockVector(x,y,z));
+					Material type = BukkitAdapter.adapt(block.getBlockType());
+					if(!types.contains(type) && MaterialUtil.isTerracotta(type)){
+						types.add(type);
 					}
 				}
 			}
 		}
-		BaseBlock block = (BaseBlock)types.values().toArray()[new Random().nextInt(types.size())];
-		return new BlockPartyBlock(Material.getMaterial(block.getType()),(byte)block.getData());
+		return new BlockPartyBlock(types.get(RandomUtil.getRandomInteger(0,types.size()-1)));
 	}
 
 	public void paste(World world,Vector locMin){
-		for(int y=0;y<size.getBlockY();y++){
-			for(int x=0;x<size.getBlockX();x++){
-				for(int z=0;z<size.getBlockZ();z++){
-					Block block = world.getBlockAt(locMin.getBlockX() + x,locMin.getBlockY() + y,locMin.getBlockZ() + z);
-					block.setType(Material.getMaterial(floor.getBlock(new Vector(x,y,z)).getId()),false);
-					block.setData((byte)floor.getBlock(new Vector(x,y,z)).getData(),false);
+		for(int x = floor.getRegion().getMinimumPoint().getBlockX();x <= floor.getRegion().getMaximumPoint().getBlockX();x++){
+			for(int y = floor.getRegion().getMinimumPoint().getBlockY();y <= floor.getRegion().getMaximumPoint().getBlockY();y++){
+				for(int z = floor.getRegion().getMinimumPoint().getBlockZ();z <= floor.getRegion().getMaximumPoint().getBlockZ();z++){
+					BaseBlock block = floor.getFullBlock(new BlockVector(x,y,z));
+					Location location = new Location(world,x-floor.getRegion().getMinimumPoint().getBlockX(),y-floor.getRegion().getMinimumPoint().getBlockY(),z-floor.getRegion().getMinimumPoint().getBlockZ());
+					location.add(locMin.getBlockX(),locMin.getBlockY(),locMin.getBlockZ());
+					location.getBlock().setType(BukkitAdapter.adapt(block.getBlockType()));
 				}
 			}
 		}

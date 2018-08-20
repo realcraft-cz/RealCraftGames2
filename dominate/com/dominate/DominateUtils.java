@@ -1,15 +1,15 @@
 package com.dominate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class DominateUtils {
 
@@ -257,7 +257,7 @@ public class DominateUtils {
 
 	@SuppressWarnings("deprecation")
 	public static boolean setBlockOnWater(Location location,Material material){
-		if(location.getBlock().getType() == Material.STATIONARY_WATER && location.getBlock().getData() == (byte)0){
+		if(location.getBlock().getType() == Material.WATER && location.getBlock().getData() == (byte)0){
 			if(location.getBlock().getRelative(BlockFace.UP).getType() == Material.AIR){
 				location.getBlock().setType(material);
 				return true;

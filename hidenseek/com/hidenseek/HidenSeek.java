@@ -1,9 +1,17 @@
 package com.hidenseek;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import com.games.Games;
+import com.games.game.*;
+import com.games.game.GamePodium.GamePodiumType;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
+import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.FormatUtil;
+import com.games.utils.StringUtil;
+import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,22 +24,9 @@ import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
 
-import com.games.Games;
-import com.games.game.Game;
-import com.games.game.GameFlag;
-import com.games.game.GamePodium;
-import com.games.game.GamePodium.GamePodiumType;
-import com.games.game.GameScoreboard;
-import com.games.game.GameSpectator.SpectatorMenuItem;
-import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
-import com.games.game.GameStats.GameStatsScore;
-import com.games.game.GameStats.GameStatsType;
-import com.games.game.GameType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.FormatUtil;
-import com.games.utils.StringUtil;
-import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class HidenSeek extends Game {
 
@@ -138,7 +133,7 @@ public class HidenSeek extends Game {
 			itemStack.setItemMeta(meta);
 			gPlayer.getPlayer().getInventory().setItem(4,itemStack);
 
-			itemStack = new ItemStack(Material.FIREWORK,5);
+			itemStack = new ItemStack(Material.FIREWORK_ROCKET,5);
 			meta = itemStack.getItemMeta();
 			meta.setDisplayName("§e§lOhnostroj §r§7(+20 coins)");
 			itemStack.setItemMeta(meta);
@@ -259,7 +254,7 @@ public class HidenSeek extends Game {
 		switch(material){
 			case ANVIL: return true;
 			case BOOKSHELF: return true;
-			case CAKE_BLOCK: return true;
+			case CAKE: return true;
 			case COAL_BLOCK: return true;
 			case COAL_ORE: return true;
 			case DIAMOND_BLOCK: return true;
@@ -278,18 +273,33 @@ public class HidenSeek extends Game {
 			case JUKEBOX: return true;
 			case LAPIS_BLOCK: return true;
 			case LAPIS_ORE: return true;
-			case MELON_BLOCK: return true;
-			case MYCEL: return true;
+			case MELON: return true;
+			case MYCELIUM: return true;
 			case NOTE_BLOCK: return true;
 			case PUMPKIN: return true;
-			case REDSTONE_LAMP_OFF: return true;
-			case REDSTONE_LAMP_ON: return true;
+			case CARVED_PUMPKIN: return true;
+			case REDSTONE_LAMP: return true;
 			case REDSTONE_ORE: return true;
 			case SLIME_BLOCK: return true;
 			case SPONGE: return true;
 			case TNT: return true;
-			case WOOL: return true;
-			case WORKBENCH: return true;
+			case CRAFTING_TABLE: return true;
+			case WHITE_WOOL: return true;
+			case ORANGE_WOOL: return true;
+			case MAGENTA_WOOL: return true;
+			case LIGHT_BLUE_WOOL: return true;
+			case YELLOW_WOOL: return true;
+			case LIME_WOOL: return true;
+			case PINK_WOOL: return true;
+			case GRAY_WOOL: return true;
+			case LIGHT_GRAY_WOOL: return true;
+			case CYAN_WOOL: return true;
+			case PURPLE_WOOL: return true;
+			case BLUE_WOOL: return true;
+			case BROWN_WOOL: return true;
+			case GREEN_WOOL: return true;
+			case RED_WOOL: return true;
+			case BLACK_WOOL: return true;
 			default: return false;
 		}
 	}

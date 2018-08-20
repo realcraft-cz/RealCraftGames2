@@ -1,22 +1,16 @@
 package com.bedwars;
 
-import java.util.ArrayList;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import com.games.Games;
+import com.games.player.GamePlayer;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import realcraft.bukkit.utils.MaterialUtil;
 
-import com.games.Games;
-import com.games.player.GamePlayer;
+import java.util.ArrayList;
 
 public class BedWarsTeam {
 
@@ -67,7 +61,7 @@ public class BedWarsTeam {
 	}
 
 	public boolean hasBed(){
-		return (this.getBedBlock().getType() == Material.BED_BLOCK);
+		return MaterialUtil.isBed(this.getBedBlock().getType());
 	}
 
 	public Inventory getInventory(){
@@ -142,7 +136,7 @@ public class BedWarsTeam {
 	public void destroyBed(GamePlayer gPlayer){
 		if(players.size() > 0){
 			for(GamePlayer gPlayer2 : game.getPlayers()){
-				gPlayer2.getPlayer().playSound(gPlayer2.getPlayer().getLocation(),Sound.ENTITY_ENDERDRAGON_GROWL,1f,1f);
+				gPlayer2.getPlayer().playSound(gPlayer2.getPlayer().getLocation(),Sound.ENTITY_ENDER_DRAGON_GROWL,1f,1f);
 			}
 			game.sendMessage("§c\u2623 §b"+gPlayer.getPlayer().getName()+" §7znicil postel tymu "+this.getType().getChatColor()+this.getType().toName());
 			gPlayer.getSettings().addInt("beds",1);

@@ -1,10 +1,10 @@
 package com.dominate.skills;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.dominate.DominateUtils;
+import com.games.Games;
+import com.games.game.GameState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,14 +19,12 @@ import org.bukkit.event.block.BlockFadeEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import realcraft.bukkit.utils.Particles;
 
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.dominate.DominateUtils;
-import com.games.Games;
-import com.games.game.GameState;
-import com.games.utils.Particles;
-import com.games.utils.Particles.BlockData;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 
 public class DominateSkillIceTrap extends DominateSkill {
 
@@ -69,7 +67,7 @@ public class DominateSkillIceTrap extends DominateSkill {
 				for(Location block : blocks){
 					if(DominateUtils.getRandomBoolean()){
 						Location location = new Location(block.getWorld(),block.getBlockX()+0.5,block.getBlockY()+0.5,block.getBlockZ()+0.5);
-						Particles.BLOCK_CRACK.display(new BlockData(Material.ICE,(byte)0),0.3f,0.2f,0.3f,0.0f,8,location,64);
+						Particles.BLOCK_CRACK.display(Bukkit.createBlockData(Material.ICE),0.3f,0.2f,0.3f,0.0f,8,location,64);
 					}
 				}
 				Collections.sort(blocks,new Comparator<Location>(){

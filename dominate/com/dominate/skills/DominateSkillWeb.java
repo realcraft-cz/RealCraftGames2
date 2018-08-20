@@ -22,8 +22,9 @@ import com.dominate.DominateUser;
 import com.dominate.DominateUtils;
 import com.games.Games;
 import com.games.game.GameState;
-import com.games.utils.LocationUtil;
 import com.games.utils.RandomUtil;
+
+import realcraft.bukkit.utils.LocationUtil;
 
 public class DominateSkillWeb extends DominateSkill {
 
@@ -85,7 +86,7 @@ public class DominateSkillWeb extends DominateSkill {
 
 	private void runWebBlock(Block block){
 		if(block.getType() == Material.AIR){
-			block.setType(Material.WEB);
+			block.setType(Material.COBWEB);
 			Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 				@Override
 				public void run(){
