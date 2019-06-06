@@ -151,7 +151,7 @@ public class PaintballListeners implements Listener {
 				user.addPistols(1);
 				game.setPlayerWeapons(gPlayer);
 			}
-			if(game.getGameTime()%30 == 0){
+			if(game.getGameTime()%15 == 0){
 				game.getDrops().addDrop();
 			}
 		}

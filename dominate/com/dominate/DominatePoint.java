@@ -151,15 +151,15 @@ public class DominatePoint {
 		return ""+team.getScoreboardColor();
 	}
 
-	@SuppressWarnings("deprecation")
 	public void updateBlocks(){
+		if(this.getLocation().getBlock().getType() != Material.BEACON) this.getLocation().getBlock().setType(Material.BEACON);
 		if(progress == 25 || progress == -25){
 			for(Location location : this.getCorners()){
 				location.getBlock().setType(MaterialUtil.getWool(this.getTeam().getDyeColor()));
 			}
 			for(Location location : this.getGlasses()){
 				location.getBlock().setType(MaterialUtil.getStainedGlass(this.getTeam().getDyeColor()));
-				if(!location.getBlock().getLocation().equals(this.getLocation().getBlock().getLocation())){
+				if(location.getBlock().getRelative(BlockFace.DOWN).getType() != Material.BEACON){
 					location.getBlock().getRelative(BlockFace.DOWN).setType(MaterialUtil.getWool(this.getTeam().getDyeColor()));
 				}
 			}
@@ -170,12 +170,12 @@ public class DominatePoint {
 			for(int i=0;i<this.getGlasses().length;i++){
 				if(i+1 <= Math.abs(progress)){
 					this.getGlasses()[i].getBlock().setType(MaterialUtil.getStainedGlass(this.getCapturingTeam().getDyeColor()));
-					if(!this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).getLocation().equals(this.getLocation().getBlock().getLocation())){
+					if(this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).getType() != Material.BEACON){
 						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setType(MaterialUtil.getWool(this.getCapturingTeam().getDyeColor()));
 					}
 				} else {
 					this.getGlasses()[i].getBlock().setType(MaterialUtil.getStainedGlass(DominateTeamType.NONE.getDyeColor()));
-					if(!this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).getLocation().equals(this.getLocation().getBlock().getLocation())){
+					if(this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).getType() != Material.BEACON){
 						this.getGlasses()[i].getBlock().getRelative(BlockFace.DOWN).setType(MaterialUtil.getWool(DominateTeamType.NONE.getDyeColor()));
 					}
 				}
@@ -191,7 +191,7 @@ public class DominatePoint {
 	}
 
 	private void runFirework(){
-		FireworkUtil.spawnFirework(this.getLocation().clone().add(0,2,0),FireworkEffect.Type.BALL_LARGE,team.getColor(),true,true);
+		FireworkUtil.spawnFirework(this.getLocation().clone().add(0,2,0),FireworkEffect.Type.BALL_LARGE,team.getColor(),false,false);
 	}
 
 	public void run(){

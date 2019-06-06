@@ -23,8 +23,10 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
+import realcraft.bukkit.database.DB;
 
-import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -74,16 +76,15 @@ public class HidenSeek extends Game {
 	}
 
 	public void loadArenas(){
-		File [] arenasFiles = new File(Games.getInstance().getDataFolder()+"/"+this.getType().getName()).listFiles();
-		if(arenasFiles != null){
-			for(File file : arenasFiles){
-				if(file.isDirectory()){
-					File config = new File(file.getPath()+"/config.yml");
-					if(config.exists()){
-						new HidenSeekArena(this,file.getName());
-					}
-				}
+		ResultSet rs = DB.query("SELECT * FROM "+MAPS+" WHERE map_type = '"+this.getType().getId()+"' AND map_state = '1'");
+		try {
+			while(rs.next()){
+				int id = rs.getInt("map_id");
+				this.addArena(new HidenSeekArena(this,id));
 			}
+			rs.close();
+		} catch (SQLException e){
+			e.printStackTrace();
 		}
 	}
 
@@ -274,7 +275,6 @@ public class HidenSeek extends Game {
 			case LAPIS_BLOCK: return true;
 			case LAPIS_ORE: return true;
 			case MELON: return true;
-			case MYCELIUM: return true;
 			case NOTE_BLOCK: return true;
 			case PUMPKIN: return true;
 			case CARVED_PUMPKIN: return true;

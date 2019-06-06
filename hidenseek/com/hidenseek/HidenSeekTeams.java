@@ -70,7 +70,7 @@ public class HidenSeekTeams {
 		}
 		for(GamePlayer gPlayer : game.getGamePlayers()){
 			if(randomSeekers.contains(gPlayer.getPlayer().getName())){
-				this.setPlayerTeam(gPlayer,hidersTeam);//TODO: seekersTeam
+				this.setPlayerTeam(gPlayer,seekersTeam);
 			} else {
 				this.setPlayerTeam(gPlayer,hidersTeam);
 			}

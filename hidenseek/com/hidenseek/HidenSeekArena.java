@@ -1,31 +1,25 @@
 package com.hidenseek;
 
 import com.games.arena.GameArena;
+import com.games.arena.data.GameArenaData;
+import com.games.arena.data.GameArenaDataLocation;
+import com.games.arena.data.GameArenaDataMap;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import realcraft.bukkit.utils.LocationUtil;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class HidenSeekArena extends GameArena {
 
-	private Location minLocation;
-	private Location maxLocation;
-
-	private Location hidersSpawn;
-	private Location seekersSpawn;
-
+	private HashMap<HidenSeekTeamType,Location> spawns = new HashMap<>();
 	private HashMap<Material,Block> blocks = new HashMap<Material,Block>();
 
-	public HidenSeekArena(HidenSeek game,String name){
-		super(game,name);
-		minLocation = LocationUtil.getConfigLocation(this.getConfig(),"custom.locMin");
-		maxLocation = LocationUtil.getConfigLocation(this.getConfig(),"custom.locMax");
-		this.loadSpawns();
-		this.loadBlocks();
+	public HidenSeekArena(HidenSeek game,int id){
+		super(game,id);
 	}
 
 	public HidenSeek getGame(){
@@ -33,14 +27,25 @@ public class HidenSeekArena extends GameArena {
 	}
 
 	public Location getTeamSpawn(HidenSeekTeamType type){
-		if(type == HidenSeekTeamType.HIDERS) return hidersSpawn;
-		else if(type == HidenSeekTeamType.SEEKERS) return seekersSpawn;
-		return null;
+		return spawns.get(type);
 	}
 
-	private void loadSpawns(){
-		this.hidersSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.hidersSpawn");
-		this.seekersSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.seekersSpawn");
+	@Override
+	public void resetRegion(){
+		this.getRegion().reset();
+	}
+
+	@Override
+	public void loadData(GameArenaData data){
+		this.loadSpawns(data);
+	}
+
+	private void loadSpawns(GameArenaData data){
+		GameArenaDataMap<GameArenaDataLocation> tmpData = new GameArenaDataMap<>(this,"spawns",GameArenaDataLocation.class);
+		tmpData.loadData(data);
+		for(Map.Entry<String,GameArenaDataLocation> entry : tmpData.getValues().entrySet()){
+			spawns.put(HidenSeekTeamType.getByName(entry.getKey()),entry.getValue().getLocation());
+		}
 	}
 
 	public Block getRandomBlock(){
@@ -49,14 +54,12 @@ public class HidenSeekArena extends GameArena {
 		return (Block) values[generator.nextInt(values.length)];
 	}
 
-	private void loadBlocks(){
-		int minX = minLocation.getBlockX();
-		int minY = minLocation.getBlockY();
-		int minZ = minLocation.getBlockZ();
-		for(int x=minX;x<=maxLocation.getBlockX();x++){
-			for(int y=minY;y<=maxLocation.getBlockY();y++){
-				for(int z=minZ;z<=maxLocation.getBlockZ();z++){
-					Block block = minLocation.getWorld().getBlockAt(x,y,z);
+	public void loadBlocks(){
+		blocks.clear();
+		for(int x=this.getRegion().getMinLocation().getBlockX();x<=this.getRegion().getMaxLocation().getBlockX();x++){
+			for(int y=this.getRegion().getMinLocation().getBlockY();y<=this.getRegion().getMaxLocation().getBlockY();y++){
+				for(int z=this.getRegion().getMinLocation().getBlockZ();z<=this.getRegion().getMaxLocation().getBlockZ();z++){
+					Block block = this.getRegion().getMinLocation().getWorld().getBlockAt(x,y,z);
 					if(this.getGame().isBlockValid(block)){
 						blocks.put(block.getType(),block);
 					}

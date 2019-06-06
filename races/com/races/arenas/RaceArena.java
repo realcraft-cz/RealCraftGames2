@@ -1,26 +1,19 @@
 package com.races.arenas;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.util.Vector;
-
 import com.games.arena.GameArena;
+import com.games.arena.data.*;
 import com.races.RaceCheckpoint;
 import com.races.RaceCheckpoint.RaceCheckpointType;
 import com.races.RaceType;
 import com.races.Races;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.util.Vector;
 
-import realcraft.bukkit.utils.LocationUtil;
+import java.util.ArrayList;
 
-public abstract class RaceArena extends GameArena {
+public class RaceArena extends GameArena {
 
 	private RaceType type;
 	private int rounds;
@@ -28,12 +21,8 @@ public abstract class RaceArena extends GameArena {
 	private ArrayList<RaceCheckpoint> checkpoints = new ArrayList<RaceCheckpoint>();
 	private RaceBarrier barrier;
 
-	public RaceArena(Races game,String name,RaceType type){
-		super(game,name);
-		this.type = type;
-		this.loadSpawns();
-		this.loadCheckpoints();
-		this.loadBarrier();
+	public RaceArena(Races game,int id){
+		super(game,id);
 	}
 
 	public Races getGame(){
@@ -45,7 +34,6 @@ public abstract class RaceArena extends GameArena {
 	}
 
 	public int getRounds(){
-		if(rounds == 0) rounds = this.getConfig().getInt("rounds");
 		return rounds;
 	}
 
@@ -61,39 +49,45 @@ public abstract class RaceArena extends GameArena {
 		return barrier;
 	}
 
-	private void loadSpawns(){
-		List<Map<String, Object>> tempSpawns = (List<Map<String, Object>>) this.getConfig().get("spawns");
-		if(tempSpawns != null && !tempSpawns.isEmpty()){
-			for(Map<String, Object> spawn : tempSpawns){
-				double x = Double.valueOf(spawn.get("x").toString());
-				double y = Double.valueOf(spawn.get("y").toString());
-				double z = Double.valueOf(spawn.get("z").toString());
-				float yaw = Float.valueOf(spawn.get("yaw").toString());
-				float pitch = Float.valueOf(spawn.get("pitch").toString());
-				World world = Bukkit.getWorld(spawn.get("world").toString());
-				if(world == null) continue;
-				spawns.add(new Location(world,x,y,z,yaw,pitch));
-			}
+	@Override
+	public void resetRegion(){
+		this.getRegion().reset();
+	}
+
+	@Override
+	public void loadData(GameArenaData data){
+		GameArenaDataString type = new GameArenaDataString(this,"type");
+		type.loadData(data);
+		this.type = RaceType.fromName(type.getValue());
+		GameArenaDataInteger rounds = new GameArenaDataInteger(this,"rounds");
+		rounds.loadData(data);
+		this.rounds = rounds.getValue();
+		this.loadSpawns(data);
+		this.loadCheckpoints(data);
+		this.loadBarrier(data);
+	}
+
+	private void loadSpawns(GameArenaData data){
+		GameArenaDataList<GameArenaDataLocation> tmpData = new GameArenaDataList<>(this,"spawns",GameArenaDataLocation.class);
+		tmpData.loadData(data);
+		for(GameArenaDataLocation entry : tmpData.getValues()){
+			spawns.add(entry.getLocation());
 		}
 	}
 
-	private void loadCheckpoints(){
-		if(this.getConfig().getConfigurationSection("checkpoints") != null){
-			int index = 0;
-			for(String key : this.getConfig().getConfigurationSection("checkpoints").getKeys(false)){
-				ConfigurationSection section = this.getConfig().getConfigurationSection("checkpoints."+key);
-				RaceCheckpointType type = RaceCheckpointType.fromName(section.getString("type"));
-				Location location1 = LocationUtil.getConfigLocation(section,"locFrom");
-				Location location2 = LocationUtil.getConfigLocation(section,"locTo");
-				checkpoints.add(new RaceCheckpoint(this,index++,type,location1,location2));
-			}
+	private void loadCheckpoints(GameArenaData data){
+		GameArenaDataList<GameArenaDataLocationArea> tmpData = new GameArenaDataList<>(this,"checkpoints",GameArenaDataLocationArea.class);
+		tmpData.loadData(data);
+		int index = 0;
+		for(GameArenaDataLocationArea entry : tmpData.getValues()){
+			checkpoints.add(new RaceCheckpoint(this,index++,(index < tmpData.getValues().size() ? RaceCheckpointType.CHECKPOINT : RaceCheckpointType.FINISH),entry.getMinLocation().getLocation(),entry.getMaxLocation().getLocation()));
 		}
 	}
 
-	private void loadBarrier(){
-		Location location1 = LocationUtil.getConfigLocation(this.getConfig(),"barrier.locFrom");
-		Location location2 = LocationUtil.getConfigLocation(this.getConfig(),"barrier.locTo");
-		barrier = new RaceBarrier(location1,location2);
+	private void loadBarrier(GameArenaData data){
+		GameArenaDataLocationArea entry = new GameArenaDataLocationArea(this,"barrier");
+		entry.loadData(data);
+		barrier = new RaceBarrier(entry.getMinLocation().getLocation(),entry.getMaxLocation().getLocation());
 	}
 
 	public class RaceBarrier {

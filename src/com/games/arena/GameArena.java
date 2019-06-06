@@ -1,43 +1,51 @@
 package com.games.arena;
 
-import com.games.Games;
+import com.games.arena.data.GameArenaData;
+import com.games.arena.data.GameArenaDataInteger;
+import com.games.arena.data.GameArenaDataLocation;
+import com.games.arena.data.GameArenaDataString;
 import com.games.game.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import realcraft.bukkit.utils.LocationUtil;
+import org.bukkit.World.Environment;
+import org.bukkit.block.Biome;
+import realcraft.bukkit.database.DB;
 
-import java.io.File;
+import java.sql.Blob;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static realcraft.bukkit.mapmanager.MapManager.MAPS;
 
 public abstract class GameArena {
 
+	private int id;
 	private Game game;
 	private String name;
 	private World world;
 
-	private GameArenaImage image;
-	private GameArenaRegion region;
+	private GameArenaImage image = new GameArenaImage(this);
+	private GameArenaRegion region = new GameArenaRegion(this);
 
-	private FileConfiguration config;
-
-	private int time = -1;
-	private int spectatorRadius;
-	private Location spectatorLocation;
+	private GameArenaDataInteger time = new GameArenaDataInteger(this,"time");
+	private GameArenaDataBiome biome = new GameArenaDataBiome(this,"biome");
+	private GameArenaDataEnvironment environment = new GameArenaDataEnvironment(this,"environment");
+	private GameArenaDataLocation spectator = new GameArenaDataLocation(this,"spectator");
 
 	private boolean loaded = false;
 
-	public GameArena(Game game,String name){
+	public GameArena(Game game,int id){
 		this.game = game;
-		this.name = name;
-		this.image = new GameArenaImage(this);
-		this.region = new GameArenaRegion(this);
-		this.game.addArena(this);
+		this.id = id;
 	}
 
 	public Game getGame(){
 		return game;
+	}
+
+	public int getId(){
+		return id;
 	}
 
 	public String getName(){
@@ -45,8 +53,12 @@ public abstract class GameArena {
 	}
 
 	public World getWorld(){
-		if(world == null) world = Bukkit.getWorld(this.getConfig().getString("world"));
+		if(world == null) world = Bukkit.getWorld("world_"+this.getId());
 		return world;
+	}
+
+	public void setWorld(World world){
+		this.world = world;
 	}
 
 	public GameArenaImage getImage(){
@@ -57,34 +69,20 @@ public abstract class GameArena {
 		return region;
 	}
 
-	public FileConfiguration getConfig(){
-		if(config == null){
-			File file = new File(Games.getInstance().getDataFolder()+"/"+game.getType().getName()+"/"+this.getName()+"/"+"config.yml");
-			if(file.exists()){
-				config = new YamlConfiguration();
-				try {
-					config.load(file);
-				} catch (Exception e){
-					e.printStackTrace();
-				}
-			}
-		}
-		return config;
-	}
-
 	public int getTime(){
-		if(time == -1) time = this.getConfig().getInt("time",6000);
-		return time;
+		return time.getValue();
 	}
 
-	public int getSpectatorRadius(){
-		if(spectatorRadius == 0) spectatorRadius = this.getConfig().getInt("spectator.radius");
-		return spectatorRadius;
+	public Biome getBiome(){
+		return biome.getBiome();
 	}
 
-	public Location getSpectatorLocation(){
-		if(spectatorLocation == null) spectatorLocation = LocationUtil.getConfigLocation(this.getConfig(),"spectator");
-		return spectatorLocation;
+	public Environment getEnvironment(){
+		return environment.getEnvironment();
+	}
+
+	public Location getSpectator(){
+		return spectator.getLocation();
 	}
 
 	public boolean isLoaded(){
@@ -93,5 +91,90 @@ public abstract class GameArena {
 
 	public void setLoaded(boolean loaded){
 		this.loaded = loaded;
+	}
+
+	public void load(){
+		ResultSet rs = DB.query("SELECT * FROM "+MAPS+" WHERE map_id = '"+this.getId()+"'");
+		try {
+			if(rs.next()){
+				name = rs.getString("map_name");
+				this._loadData(new GameArenaData(this,rs.getString("map_data")));
+				this.loadRegion(rs.getBlob("map_region"));
+				this.loadImage(rs.getBlob("map_image"));
+			}
+			rs.close();
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+	}
+
+	private void _loadData(GameArenaData data){
+		time.loadData(data);
+		biome.loadData(data);
+		environment.loadData(data);
+		this.getRegion().initWorld();
+		spectator.loadData(data);
+		this.loadData(data);
+	}
+
+	private void loadRegion(Blob blob) throws SQLException {
+		if(blob != null){
+			byte[] bytes = blob.getBytes(1,(int)blob.length());
+			blob.free();
+			this.getRegion().load(bytes);
+		} else {
+			this.setLoaded(true);
+		}
+	}
+
+	private void loadImage(Blob blob) throws SQLException {
+		if(blob != null){
+			byte[] bytes = blob.getBytes(1,(int)blob.length());
+			blob.free();
+			this.getImage().load(bytes);
+		} else {
+			this.getImage().setDefaultImage();
+		}
+	}
+
+	public abstract void loadData(GameArenaData data);
+	public abstract void resetRegion();
+
+	public class GameArenaDataBiome extends GameArenaDataString {
+
+		private Biome biome;
+
+		public GameArenaDataBiome(GameArena arena,String name){
+			super(arena,name);
+		}
+
+		public Biome getBiome(){
+			return biome;
+		}
+
+		@Override
+		public void loadData(GameArenaData data){
+			super.loadData(data);
+			this.biome = Biome.valueOf(this.getValue());
+		}
+	}
+
+	public class GameArenaDataEnvironment extends GameArenaDataString {
+
+		private Environment environment;
+
+		public GameArenaDataEnvironment(GameArena arena,String name){
+			super(arena,name);
+		}
+
+		public Environment getEnvironment(){
+			return environment;
+		}
+
+		@Override
+		public void loadData(GameArenaData data){
+			super.loadData(data);
+			this.environment = Environment.valueOf(this.getValue());
+		}
 	}
 }

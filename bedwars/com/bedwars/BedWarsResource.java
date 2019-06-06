@@ -22,6 +22,7 @@ public class BedWarsResource implements Runnable {
 		this.arena = arena;
 		this.type = type;
 		this.location = location;
+		this.location.add(0.5,0.5,0.5);
 		Bukkit.getScheduler().scheduleSyncRepeatingTask(Games.getInstance(),this,20,type.toRepeatDelay());
 	}
 
@@ -46,6 +47,10 @@ public class BedWarsResource implements Runnable {
 
 		public String toString(){
 			return this.name().toLowerCase();
+		}
+
+		public static BedWarsResourceType getByName(String name){
+			return BedWarsResourceType.valueOf(name.toUpperCase());
 		}
 
 		public String toItemName(){

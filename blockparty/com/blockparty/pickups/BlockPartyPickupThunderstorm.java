@@ -58,10 +58,10 @@ public class BlockPartyPickupThunderstorm extends BlockPartyPickup {
 	}
 
 	private Location getRandomLocation(){
-		int randX = RandomUtil.getRandomInteger(this.getGame().getArena().getLocMin().getBlockX(),this.getGame().getArena().getLocMax().getBlockX());
-		int randZ = RandomUtil.getRandomInteger(this.getGame().getArena().getLocMin().getBlockZ(),this.getGame().getArena().getLocMax().getBlockZ());
+		int randX = RandomUtil.getRandomInteger(this.getGame().getArena().getRegion().getMinLocation().getBlockX(),this.getGame().getArena().getRegion().getMaxLocation().getBlockX());
+		int randZ = RandomUtil.getRandomInteger(this.getGame().getArena().getRegion().getMinLocation().getBlockZ(),this.getGame().getArena().getRegion().getMaxLocation().getBlockZ());
 		int randY = 0;
-		for(int y=this.getGame().getArena().getLocMax().getBlockY();y>=this.getGame().getArena().getLocMin().getBlockY();y--){
+		for(int y=this.getGame().getArena().getRegion().getMaxLocation().getBlockY();y>=this.getGame().getArena().getRegion().getMinLocation().getBlockY();y--){
 			if(this.getGame().getArena().getWorld().getBlockAt(randX,y,randZ).isEmpty() && !this.getGame().getArena().getWorld().getBlockAt(randX,y-1,randZ).isEmpty()){
 				randY = y;
 				break;
@@ -114,14 +114,14 @@ public class BlockPartyPickupThunderstorm extends BlockPartyPickup {
                         continue;
                     }
 
-                    if(air || location.clone().add(x, y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(x, y, z))) blocks.add(location.clone().add(x, y, z).getBlock());
-                    if(air || location.clone().add(-x, y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(-x, y, z))) blocks.add(location.clone().add(-x, y, z).getBlock());
-                    if(air || location.clone().add(x, -y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(x, -y, z))) blocks.add(location.clone().add(x, -y, z).getBlock());
-                    if(air || location.clone().add(x, y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(x, y, -z))) blocks.add(location.clone().add(x, y, -z).getBlock());
-                    if(air || location.clone().add(-x, -y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(-x, -y, z))) blocks.add(location.clone().add(-x, -y, z).getBlock());
-                    if(air || location.clone().add(x, -y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(x, -y, -z))) blocks.add(location.clone().add(x, -y, -z).getBlock());
-                    if(air || location.clone().add(-x, y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(-x, y, -z))) blocks.add(location.clone().add(-x, y, -z).getBlock());
-                    if(air || location.clone().add(-x, -y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().isBlockInArena(location.clone().add(-x, -y, -z))) blocks.add(location.clone().add(-x, -y, -z).getBlock());
+                    if(air || location.clone().add(x, y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(x, y, z))) blocks.add(location.clone().add(x, y, z).getBlock());
+                    if(air || location.clone().add(-x, y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(-x, y, z))) blocks.add(location.clone().add(-x, y, z).getBlock());
+                    if(air || location.clone().add(x, -y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(x, -y, z))) blocks.add(location.clone().add(x, -y, z).getBlock());
+                    if(air || location.clone().add(x, y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(x, y, -z))) blocks.add(location.clone().add(x, y, -z).getBlock());
+                    if(air || location.clone().add(-x, -y, z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(-x, -y, z))) blocks.add(location.clone().add(-x, -y, z).getBlock());
+                    if(air || location.clone().add(x, -y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(x, -y, -z))) blocks.add(location.clone().add(x, -y, -z).getBlock());
+                    if(air || location.clone().add(-x, y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(-x, y, -z))) blocks.add(location.clone().add(-x, y, -z).getBlock());
+                    if(air || location.clone().add(-x, -y, -z).getBlock().getType() != Material.AIR && this.getGame().getArena().getRegion().isLocationInside(location.clone().add(-x, -y, -z))) blocks.add(location.clone().add(-x, -y, -z).getBlock());
                 }
             }
         }

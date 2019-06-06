@@ -37,7 +37,7 @@ public abstract class BlockPartyPickup implements Runnable {
 	}
 
 	public void place(){
-		location = game.getArena().getRandomPickupLocation();
+		location = game.getRandomPickupLocation();
 		location.getBlock().setType(Material.BEACON);
 		location.getWorld().playSound(location,Sound.ENTITY_EXPERIENCE_ORB_PICKUP,1f,1f);
 	}

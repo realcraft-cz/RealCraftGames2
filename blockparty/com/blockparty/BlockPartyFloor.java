@@ -1,7 +1,7 @@
 package com.blockparty;
 
+import com.games.utils.RandomUtil;
 import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
@@ -9,35 +9,30 @@ import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
+import realcraft.bukkit.database.DB;
 import realcraft.bukkit.utils.MaterialUtil;
-import realcraft.bukkit.utils.RandomUtil;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.Blob;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
-@SuppressWarnings("deprecation")
+import static realcraft.bukkit.mapmanager.MapManager.MAPS;
+
 public class BlockPartyFloor {
 
-	public Clipboard floor = null;
+	private int id;
+	private BlockPartyArena arena;
 
 	private boolean used = false;
+	private Clipboard clipboard;
 
-	public BlockPartyFloor(File file){
-		try {
-			BuiltInClipboardFormat format = BuiltInClipboardFormat.MCEDIT_SCHEMATIC;
-			FileInputStream fis = new FileInputStream(file);
-			BufferedInputStream bis = new BufferedInputStream(fis);
-			ClipboardReader reader = format.getReader(bis);
-			this.floor = reader.read();
-			fis.close();
-			bis.close();
-		} catch (IOException e){
-			e.printStackTrace();
-		}
+	public BlockPartyFloor(BlockPartyArena arena,int id){
+		this.arena = arena;
+		this.id = id;
+		this.loadRegion();
 	}
 
 	public boolean isUsed(){
@@ -48,29 +43,50 @@ public class BlockPartyFloor {
 		this.used = used;
 	}
 
-	public BlockPartyBlock getRandomBlock(){
+	public Material getRandomBlock(){
 		ArrayList<Material> types = new ArrayList<>();
-		for(int x = floor.getRegion().getMinimumPoint().getBlockX();x <= floor.getRegion().getMaximumPoint().getBlockX();x++){
-			for(int y = floor.getRegion().getMinimumPoint().getBlockY();y <= floor.getRegion().getMaximumPoint().getBlockY();y++){
-				for(int z = floor.getRegion().getMinimumPoint().getBlockZ();z <= floor.getRegion().getMaximumPoint().getBlockZ();z++){
-					BaseBlock block = floor.getFullBlock(new BlockVector(x,y,z));
-					Material type = BukkitAdapter.adapt(block.getBlockType());
+		for(int x = clipboard.getRegion().getMinimumPoint().getBlockX();x <= clipboard.getRegion().getMaximumPoint().getBlockX();x++){
+			for(int y = clipboard.getRegion().getMinimumPoint().getBlockY();y <= clipboard.getRegion().getMaximumPoint().getBlockY();y++){
+				for(int z = clipboard.getRegion().getMinimumPoint().getBlockZ();z <= clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
+					Material type = BukkitAdapter.adapt(clipboard.getFullBlock(new BlockVector(x,y,z)).getBlockType());
 					if(!types.contains(type) && MaterialUtil.isTerracotta(type)){
 						types.add(type);
 					}
 				}
 			}
 		}
-		return new BlockPartyBlock(types.get(RandomUtil.getRandomInteger(0,types.size()-1)));
+		return types.get(RandomUtil.getRandomInteger(0,types.size()-1));
 	}
 
-	public void paste(World world,Vector locMin){
-		for(int x = floor.getRegion().getMinimumPoint().getBlockX();x <= floor.getRegion().getMaximumPoint().getBlockX();x++){
-			for(int y = floor.getRegion().getMinimumPoint().getBlockY();y <= floor.getRegion().getMaximumPoint().getBlockY();y++){
-				for(int z = floor.getRegion().getMinimumPoint().getBlockZ();z <= floor.getRegion().getMaximumPoint().getBlockZ();z++){
-					BaseBlock block = floor.getFullBlock(new BlockVector(x,y,z));
-					Location location = new Location(world,x-floor.getRegion().getMinimumPoint().getBlockX(),y-floor.getRegion().getMinimumPoint().getBlockY(),z-floor.getRegion().getMinimumPoint().getBlockZ());
-					location.add(locMin.getBlockX(),locMin.getBlockY(),locMin.getBlockZ());
+	private void loadRegion(){
+		ResultSet rs = DB.query("SELECT * FROM "+MAPS+" WHERE map_id = '"+this.id+"'");
+		try {
+			if(rs.next()){
+				Blob blob = rs.getBlob("map_region");
+				byte[] bytes = blob.getBytes(1,(int)blob.length());
+				blob.free();
+				try {
+					BuiltInClipboardFormat format = BuiltInClipboardFormat.SPONGE_SCHEMATIC;
+					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+					ClipboardReader reader = format.getReader(bais);
+					clipboard = reader.read();
+				} catch (IOException e){
+					e.printStackTrace();
+				}
+			}
+			rs.close();
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+	}
+
+	public void reset(){
+		for(int x = clipboard.getRegion().getMinimumPoint().getBlockX();x <= clipboard.getRegion().getMaximumPoint().getBlockX();x++){
+			for(int y = clipboard.getRegion().getMinimumPoint().getBlockY();y <= clipboard.getRegion().getMaximumPoint().getBlockY();y++){
+				for(int z = clipboard.getRegion().getMinimumPoint().getBlockZ();z <= clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
+					BaseBlock block = clipboard.getFullBlock(new BlockVector(x,y,z));
+					Location location = new Location(arena.getWorld(),x-clipboard.getRegion().getMinimumPoint().getBlockX(),y-clipboard.getRegion().getMinimumPoint().getBlockY(),z-clipboard.getRegion().getMinimumPoint().getBlockZ());
+					location.add(arena.getGame().getMinLoc().getBlockX(),arena.getGame().getMinLoc().getBlockY(),arena.getGame().getMinLoc().getBlockZ());
 					location.getBlock().setType(BukkitAdapter.adapt(block.getBlockType()));
 				}
 			}

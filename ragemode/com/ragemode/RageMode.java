@@ -1,31 +1,27 @@
 package com.ragemode;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-
+import com.games.game.*;
+import com.games.game.GamePodium.GamePodiumType;
+import com.games.game.GameSpectator.SpectatorMenuItem;
+import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
+import com.games.game.GameStats.GameStatsScore;
+import com.games.game.GameStats.GameStatsType;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.FormatUtil;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
+import realcraft.bukkit.database.DB;
 
-import com.games.Games;
-import com.games.game.Game;
-import com.games.game.GameFlag;
-import com.games.game.GamePodium;
-import com.games.game.GamePodium.GamePodiumType;
-import com.games.game.GameScoreboard;
-import com.games.game.GameSpectator.SpectatorMenuItem;
-import com.games.game.GameSpectator.SpectatorMenuItemPlayer;
-import com.games.game.GameStats.GameStatsScore;
-import com.games.game.GameStats.GameStatsType;
-import com.games.game.GameType;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.FormatUtil;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 
 public class RageMode extends Game {
 
@@ -44,16 +40,15 @@ public class RageMode extends Game {
 	}
 
 	public void loadArenas(){
-		File [] arenasFiles = new File(Games.getInstance().getDataFolder()+"/"+this.getType().getName()).listFiles();
-		if(arenasFiles != null){
-			for(File file : arenasFiles){
-				if(file.isDirectory()){
-					File config = new File(file.getPath()+"/config.yml");
-					if(config.exists()){
-						new RageModeArena(this,file.getName());
-					}
-				}
+		ResultSet rs = DB.query("SELECT * FROM "+MAPS+" WHERE map_type = '"+this.getType().getId()+"' AND map_state = '1'");
+		try {
+			while(rs.next()){
+				int id = rs.getInt("map_id");
+				this.addArena(new RageModeArena(this,id));
 			}
+			rs.close();
+		} catch (SQLException e){
+			e.printStackTrace();
 		}
 	}
 

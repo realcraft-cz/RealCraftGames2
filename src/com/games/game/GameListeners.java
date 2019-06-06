@@ -442,7 +442,7 @@ public class GameListeners implements Listener {
 		game.getVoting().resetVoting();
 		game.getLeaderboard().update();
 		game.getStats().addGame(game.getStartPlayers());
-		game.getArena().getRegion().reset();
+		game.getArena().resetRegion();
 		game.sendGamePartyEnd();
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
@@ -456,7 +456,7 @@ public class GameListeners implements Listener {
 		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 			@Override
 			public void run(){
-				game.getArena().getRegion().clearEntites();
+				game.getArena().getRegion().clearEntities();
 			}
 		},20);
 	}

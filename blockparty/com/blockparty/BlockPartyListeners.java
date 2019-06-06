@@ -25,6 +25,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
+import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
 import realcraft.bukkit.utils.Particles;
@@ -61,7 +62,7 @@ public class BlockPartyListeners implements Listener {
 		int idx = 0;
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
-			gPlayer.getPlayer().teleport(game.getArena().getStartLocation(idx++,game.getPlayersCount()));
+			gPlayer.getPlayer().teleport(game.getStartLocation(idx++,game.getPlayersCount()));
 			gPlayer.getPlayer().setGameMode(GameMode.SURVIVAL);
 			gPlayer.getPlayer().getInventory().setHeldItemSlot(4);
 			game.getScoreboard().updateForPlayer(gPlayer);
@@ -94,13 +95,13 @@ public class BlockPartyListeners implements Listener {
 	@EventHandler
 	public void GameStateChangeEvent(GameStateChangeEvent event){
 		if(game.getState() == GameState.ENDING){
-			game.getArena().chooseDefaultFloor();
+			game.chooseDefaultFloor();
 			GamePlayer winner = game.getWinner();
 			if(winner != null){
-				Location sideLoc1 = game.getArena().getGameLocation().clone().add(10,1,10);
-				Location sideLoc2 = game.getArena().getGameLocation().clone().add(-10,1,-10);
-				Location sideLoc3 = game.getArena().getGameLocation().clone().add(10,1,-10);
-				Location sideLoc4 = game.getArena().getGameLocation().clone().add(-10,1,10);
+				Location sideLoc1 = game.getGameLocation().clone().add(10,1,10);
+				Location sideLoc2 = game.getGameLocation().clone().add(-10,1,-10);
+				Location sideLoc3 = game.getGameLocation().clone().add(10,1,-10);
+				Location sideLoc4 = game.getGameLocation().clone().add(-10,1,10);
 				for(int i=1;i<120;i+=20){
 					Bukkit.getScheduler().scheduleSyncDelayedTask(Games.getInstance(),new Runnable(){
 						@Override
@@ -113,7 +114,7 @@ public class BlockPartyListeners implements Listener {
 					},i);
 				}
 				for(int i=10;i<120;i+=20){
-					Location randomLoc = game.getArena().getGameLocation().clone();
+					Location randomLoc = game.getGameLocation().clone();
 					Random random = new Random();
 					randomLoc.add((random.nextInt(10)-5),4,(random.nextInt(10)-5));
 					Bukkit.getScheduler().scheduleSyncDelayedTask(Games.getInstance(),new Runnable(){
@@ -129,7 +130,7 @@ public class BlockPartyListeners implements Listener {
 			for(GamePlayer gPlayer : game.getPlayers()){
 				gPlayer.getPlayer().getInventory().clear();
 				if(gPlayer == winner){
-					gPlayer.getPlayer().teleport(game.getArena().getGameLocation());
+					gPlayer.getPlayer().teleport(game.getGameLocation());
 
 					final int reward = Users.getUser(gPlayer.getPlayer()).giveCoins(
 						(game.getConfig().getInt("reward.base",0))+
@@ -161,15 +162,15 @@ public class BlockPartyListeners implements Listener {
 	@EventHandler
 	public void GameCycleEvent(GameCycleEvent event){
 		if(game.getState() == GameState.INGAME){
-			if(game.getPlayersCount() < 2) game.setState(GameState.ENDING);//TODO: uncomment
-			Particles.FIREWORKS_SPARK.display(10f,4f,10f,0f,26,game.getArena().getGameLocation().clone().add(0,8,0),64);
+			if(game.getPlayersCount() < 2 && !RealCraft.isTestServer()) game.setState(GameState.ENDING);
+			Particles.FIREWORKS_SPARK.display(10f,4f,10f,0f,26,game.getGameLocation().clone().add(0,8,0),64);
 			if(game.getRoundState() == BlockPartyState.WAITING){
 				if(game.getCountdown() > 0){
 					game.setCountdown(game.getCountdown()-1);
 				} else {
 					game.setRoundState(BlockPartyState.COUNTDOWN);
 					game.setCountdown(game.getRoundSpeed());
-					game.getArena().chooseRandomBlock();
+					game.chooseRandomBlock();
 					game.playRoundSound(game.getCountdown()+1);
 				}
 			}
@@ -199,7 +200,7 @@ public class BlockPartyListeners implements Listener {
 
 	@EventHandler
 	public void PlayerRespawnEvent(PlayerRespawnEvent event){
-		event.setRespawnLocation(game.getArena().getLobbyLocation());
+		event.setRespawnLocation(game.getSpectatorLocation());
 		game.getGamePlayer(event.getPlayer()).resetPlayer();
 	}
 
@@ -232,7 +233,7 @@ public class BlockPartyListeners implements Listener {
 			if(event.getPlayer().getLocation().getY() < BlockParty.MINY){
 				event.getPlayer().setFallDistance(0);
 				event.getPlayer().getWorld().strikeLightningEffect(event.getPlayer().getLocation());
-				event.getPlayer().teleport(game.getArena().getLobbyLocation());
+				event.getPlayer().teleport(game.getSpectatorLocation());
 				game.getGamePlayer(event.getPlayer()).setState(GamePlayerState.SPECTATOR);
 				game.getGamePlayer(event.getPlayer()).toggleSpectator();
 			}
@@ -249,7 +250,7 @@ public class BlockPartyListeners implements Listener {
 			game.getPickup().remove();
 			game.sendMessage("§b"+event.getPlayer().getName()+" "+game.getPickup().getType().getMessage());
 		}
-		else if(event.getAction() == Action.LEFT_CLICK_BLOCK && event.getItem() != null && event.getItem().getType() == Material.GOLDEN_SHOVEL && block != null && this.getGame().getArena().isBlockInArena(block.getLocation())){
+		else if(event.getAction() == Action.LEFT_CLICK_BLOCK && event.getItem() != null && event.getItem().getType() == Material.GOLDEN_SHOVEL && block != null && this.getGame().getArena().getRegion().isLocationInside(block.getLocation())){
 			Particles.BLOCK_CRACK.display(Bukkit.createBlockData(block.getType()),0.3f,0.3f,0.3f,0.0f,64,block.getLocation().add(0.5,0.7,0.5),64);
 			block.getWorld().playSound(block.getLocation(),Sound.BLOCK_STONE_PLACE,1f,1f);
 			block.setType(Material.AIR);

@@ -71,7 +71,7 @@ public class GamePlayer {
 	}
 
 	public void teleportToSpectatorLocation(){
-		player.teleport(game.getArena().getSpectatorLocation());
+		player.teleport(game.getArena().getSpectator());
 	}
 
 	public void toggleSpectator(){
@@ -96,7 +96,7 @@ public class GamePlayer {
 			public void run(){
 				player.setGameMode(GameMode.ADVENTURE);
 				player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,Integer.MAX_VALUE,Integer.MAX_VALUE,false,false));
-				BorderUtil.setBorder(player,game.getArena().getSpectatorLocation(),game.getArena().getSpectatorRadius()*2);
+				BorderUtil.setBorder(player,game.getArena().getSpectator(),Math.max(game.getType().getDimension().getX(),game.getType().getDimension().getZ()));
 			}
 		},2);
 	}

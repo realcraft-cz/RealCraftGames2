@@ -1,18 +1,13 @@
 package com.dominate;
 
-import java.util.ArrayList;
-
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-
 import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.utils.Title;
+import org.bukkit.*;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
+
+import java.util.ArrayList;
 
 public class DominateTeam {
 
@@ -105,6 +100,10 @@ public class DominateTeam {
 
 		public String toString(){
 			return this.name().toLowerCase();
+		}
+
+		public static DominateTeamType getByName(String name){
+			return DominateTeamType.valueOf(name.toUpperCase());
 		}
 
 		public String toName(){

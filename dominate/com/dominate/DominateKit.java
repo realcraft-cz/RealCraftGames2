@@ -6,9 +6,9 @@ import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Glow;
-import net.minecraft.server.v1_13_R1.PacketPlayOutEntityDestroy;
+import net.minecraft.server.v1_13_R2.PacketPlayOutEntityDestroy;
 import org.bukkit.*;
-import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -467,26 +467,26 @@ public class DominateKit implements Listener {
 			gPlayer.getPlayer().getInventory().setItem(1,this.getSecondaryWeapon());
 			if(this == ARCHER){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,32));
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_STEW));
 				gPlayer.getPlayer().getInventory().setItem(8,DominateSkillType.WEB.getItemStack());
 			}
 			else if(this == FROST){
 				gPlayer.getPlayer().getInventory().setItem(1,DominateSkillType.ICETRAP.getItemStack());
 				gPlayer.getPlayer().getInventory().setItem(8,DominateSkillType.WATER_BOTTLE.getItemStack());
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+2,new ItemStack(Material.BEETROOT_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+2,new ItemStack(Material.MUSHROOM_STEW));
 			}
 			else if(this == PYROMAN){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,16));
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_STEW));
 			}
 			else if(this == CONFUSER){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,16));
 				gPlayer.getPlayer().getInventory().setItem(8,DominateSkillType.WEB.getItemStack());
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_STEW));
 			}
 			else if(this == BOOMER){
 				gPlayer.getPlayer().getInventory().setItem(2,new ItemStack(Material.ARROW,8));
-				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.BEETROOT_SOUP));
+				for(int i=0;i<5;i++) gPlayer.getPlayer().getInventory().setItem(i+3,new ItemStack(Material.MUSHROOM_STEW));
 			}
 		}
 

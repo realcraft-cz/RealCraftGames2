@@ -1,7 +1,6 @@
 package com.bedwars;
 
 import com.bedwars.BedWarsTeam.BedWarsTeamType;
-import com.games.Games;
 import com.games.game.*;
 import com.games.game.GamePodium.GamePodiumType;
 import com.games.game.GameSpectator.SpectatorMenuItem;
@@ -18,9 +17,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.scoreboard.Team.Option;
 import org.bukkit.scoreboard.Team.OptionStatus;
+import realcraft.bukkit.database.DB;
 import realcraft.bukkit.utils.MaterialUtil;
 
-import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -54,16 +55,15 @@ public class BedWars extends Game {
 	}
 
 	public void loadArenas(){
-		File [] arenasFiles = new File(Games.getInstance().getDataFolder()+"/"+this.getType().getName()).listFiles();
-		if(arenasFiles != null){
-			for(File file : arenasFiles){
-				if(file.isDirectory()){
-					File config = new File(file.getPath()+"/config.yml");
-					if(config.exists()){
-						new BedWarsArena(this,file.getName());
-					}
-				}
+		ResultSet rs = DB.query("SELECT * FROM "+MAPS+" WHERE map_type = '"+this.getType().getId()+"' AND map_state = '1'");
+		try {
+			while(rs.next()){
+				int id = rs.getInt("map_id");
+				this.addArena(new BedWarsArena(this,id));
 			}
+			rs.close();
+		} catch (SQLException e){
+			e.printStackTrace();
 		}
 	}
 

@@ -3,17 +3,17 @@ package com.hidenseek;
 import com.games.player.GamePlayer;
 import com.games.utils.Glow;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
-import net.minecraft.server.v1_13_R1.*;
+import net.minecraft.server.v1_13_R2.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_13_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_13_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_13_R1.entity.CraftFallingBlock;
-import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_13_R2.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftFallingBlock;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
@@ -342,8 +342,10 @@ public class HidenSeekUser {
 		if(type == DisguiseType.BLOCK && !this.isSolid()){
 			ItemStack itemStack = this.getItemStack();
 			ItemMeta meta = itemStack.getItemMeta();
-			if(solidCountdown == 0) meta.addEnchant(Glow.getGlow(),10,true);
-			itemStack.setItemMeta(meta);
+			if(meta != null){
+				if(solidCountdown == 0) meta.addEnchant(Glow.getGlow(),10,true);
+				itemStack.setItemMeta(meta);
+			}
 			gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 			Block block = gPlayer.getPlayer().getLocation().getBlock();
 			gPlayer.getPlayer().setExp(1-(solidCountdown/5.0f));

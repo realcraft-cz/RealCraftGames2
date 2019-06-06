@@ -1,13 +1,12 @@
 package com.games.game;
 
-import java.util.List;
-import java.util.Map;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import com.games.Games;
+import com.games.events.GameEndEvent;
+import com.games.utils.SkinUtil;
+import com.games.utils.SkinUtil.Skin;
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -19,15 +18,10 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
-
-import com.games.Games;
-import com.games.events.GameEndEvent;
-import com.games.utils.SkinUtil;
-import com.games.utils.SkinUtil.Skin;
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
-
 import realcraft.bukkit.utils.ItemUtil;
+
+import java.util.List;
+import java.util.Map;
 
 public abstract class GamePodium implements Listener {
 
@@ -151,6 +145,7 @@ public abstract class GamePodium implements Listener {
 						Skin skin = new Skin("steve","","","");
 						String skinName = SkinUtil.getPlayerSkin(name);
 						if(skinName != null) skin = SkinUtil.getSkin(skinName);
+						if(skin == null) skin = new SkinUtil.DefaultSkin();
 						final Skin skinFinal = skin;
 						Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
 							@Override

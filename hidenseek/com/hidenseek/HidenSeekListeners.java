@@ -344,7 +344,7 @@ public class HidenSeekListeners implements Listener {
 		else if(event.getDamager() instanceof Player && event.getEntity() instanceof Animals){
 			event.setCancelled(true);
 		}
-		else if(event.getEntity().getType() == EntityType.ARMOR_STAND){
+		else if(event.getEntity().getType() == EntityType.ARMOR_STAND || event.getEntity().getType() == EntityType.FIREWORK){
 			event.setCancelled(true);
 		}
 	}
@@ -402,8 +402,8 @@ public class HidenSeekListeners implements Listener {
 							fireworkMeta.setPower(1);
 							FireworkEffect.Builder fireworkEffect = FireworkEffect.builder();
 							fireworkEffect.with(FireworkEffect.Type.BALL_LARGE);
-							fireworkEffect.withFlicker();
-							fireworkEffect.withTrail();
+							fireworkEffect.flicker(true);
+							fireworkEffect.trail(false);
 							fireworkEffect.withColor(Color.YELLOW);
 							fireworkMeta.addEffect(fireworkEffect.build());
 							firework.setFireworkMeta(fireworkMeta);
@@ -472,5 +472,10 @@ public class HidenSeekListeners implements Listener {
 				}
 			}
 		}
+	}
+
+	@EventHandler
+	public void GameRegionLoadEvent(GameRegionLoadEvent event){
+		((HidenSeekArena)event.getArena()).loadBlocks();
 	}
 }

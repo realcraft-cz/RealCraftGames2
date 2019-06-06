@@ -10,16 +10,26 @@ import com.games.game.GameStats.GameStatsScore;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
+import com.games.utils.RandomUtil;
 import com.games.utils.StringUtil;
-import org.bukkit.*;
+import com.sk89q.worldedit.Vector;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
+import realcraft.bukkit.utils.LocationUtil;
 import realcraft.bukkit.utils.MaterialUtil;
 import realcraft.bukkit.utils.Particles;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class BlockParty extends Game {
 
@@ -27,6 +37,12 @@ public class BlockParty extends Game {
 	private BlockPartyScoreboard scoreboard;
 	private BlockPartyBossBar bossbar;
 	private BlockPartyPickup pickup;
+	private Material currentBlock;
+
+	private Vector minLoc;
+	private Vector maxLoc;
+	private Location spectatorLocation;
+	private Location gameLocation;
 
 	private static final int ROUNDS = 20;
 	public static final int MINY = -20;
@@ -43,11 +59,9 @@ public class BlockParty extends Game {
 		this.bossbar = new BlockPartyBossBar(this);
 		new BlockPartyPodium(this,GamePodiumType.LEFT);
 		new BlockPartyPodium(this,GamePodiumType.RIGHT);
-		this.loadArenas();
-	}
-
-	public void loadArenas(){
-		new BlockPartyArena(this,"BlockParty");
+		BlockPartyArena arena = new BlockPartyArena(this,0);
+		this.setArena(arena);
+		this.addArena(arena);
 	}
 
 	public BlockPartyArena getArena(){
@@ -86,13 +100,48 @@ public class BlockParty extends Game {
 		return pickup;
 	}
 
+	public Material getCurrentBlock(){
+		return currentBlock;
+	}
+
+	public void chooseRandomBlock(){
+		currentBlock = this.getArena().getCurrentFloor().getRandomBlock();
+		this.loadRoundInventory(currentBlock);
+	}
+
+	public Vector getMinLoc(){
+		if(minLoc == null){
+			Location location = LocationUtil.getConfigLocation(this.getConfig(),"minLoc");
+			minLoc = new Vector(location.getBlockX(),location.getBlockY(),location.getBlockZ());
+		}
+		return minLoc;
+	}
+
+	public Vector getMaxLoc(){
+		if(maxLoc == null){
+			Location location = LocationUtil.getConfigLocation(this.getConfig(),"maxLoc");
+			maxLoc = new Vector(location.getBlockX(),location.getBlockY(),location.getBlockZ());
+		}
+		return maxLoc;
+	}
+
+	public Location getSpectatorLocation(){
+		if(spectatorLocation == null) spectatorLocation = LocationUtil.getConfigLocation(this.getConfig(),"spectator");
+		return spectatorLocation;
+	}
+
+	public Location getGameLocation(){
+		if(gameLocation == null) gameLocation = LocationUtil.getConfigLocation(this.getConfig(),"gameSpawn");
+		return gameLocation;
+	}
+
 	public GamePlayer getWinner(){
 		GamePlayer winner = null;
 		for(GamePlayer gPlayer : this.getPlayers()){
 			if(gPlayer.getState() == GamePlayerState.SPECTATOR) continue;
 			if(gPlayer.getPlayer().getLocation().getY() < 0) continue;
 			if(winner == null) winner = gPlayer;
-			else if(winner != null) return null;
+			else return null;
 		}
 		return winner;
 	}
@@ -143,8 +192,8 @@ public class BlockParty extends Game {
 	}
 
 	@SuppressWarnings("deprecation")
-	public void loadRoundInventory(BlockPartyBlock block){
-		ItemStack item = new ItemStack(block.getType());
+	public void loadRoundInventory(Material type){
+		ItemStack item = new ItemStack(type);
 		for(GamePlayer gPlayer : this.getPlayers()){
 			gPlayer.getPlayer().getInventory().remove(Material.WHITE_TERRACOTTA);
 			gPlayer.getPlayer().getInventory().remove(Material.ORANGE_TERRACOTTA);
@@ -172,8 +221,10 @@ public class BlockParty extends Game {
 		round = 0;
 		countdown = 6;
 		state = BlockPartyState.WAITING;
-		this.getArena().reset();
-		this.getArena().chooseDefaultFloor();
+		for(BlockPartyFloor floor : this.getArena().getFloors()){
+			floor.setUsed(false);
+		}
+		this.chooseDefaultFloor();
 		this.getArena().getWorld().setStorm(false);
 		this.getArena().getWorld().setThundering(false);
 	}
@@ -185,7 +236,7 @@ public class BlockParty extends Game {
 		int nextRound = round+1;
 		if(ROUNDS >= nextRound){
 			round = nextRound;
-			this.getArena().chooseRandomFloor();
+			this.chooseRandomFloor();
 			for(GamePlayer gPlayer : this.getPlayers()){
 				gPlayer.getPlayer().getInventory().remove(Material.WHITE_TERRACOTTA);
 				gPlayer.getPlayer().getInventory().remove(Material.ORANGE_TERRACOTTA);
@@ -205,23 +256,13 @@ public class BlockParty extends Game {
 				gPlayer.getPlayer().getInventory().remove(Material.BLACK_TERRACOTTA);
 				gPlayer.getPlayer().getInventory().setHeldItemSlot(4);
 				if(gPlayer.getState() != GamePlayerState.SPECTATOR){
-					this.getArena().teleportAboveFloor(gPlayer);
+					this.teleportAboveFloor(gPlayer);
 					Particles.HEART.display(0f,0f,0f,0f,1,gPlayer.getPlayer().getEyeLocation().add(0f,0.5f,0f),64);
 				}
 			}
 			if(round%2 != 0) this.placePickup();
 		} else {
 			this.setState(GameState.ENDING);
-		}
-	}
-
-	public void clearFloor(){
-		if(pickup != null) pickup.remove();
-		this.getArena().clearFloor();
-		for(GamePlayer gPlayer : this.getPlayers()){
-			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,1f);
-			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,0.5f);
-			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ENDER_DRAGON_FLAP,1f,0.8f);
 		}
 	}
 
@@ -251,7 +292,143 @@ public class BlockParty extends Game {
 	}
 
 	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
-		return new HashMap<Integer,SpectatorMenuItem>();
+		return new HashMap<>();
+	}
+
+	public void chooseDefaultFloor(){
+		this.clearFloor(true);
+		this.getArena().setCurrentFloor(this.getArena().getFloors().get(0));
+		this.getArena().resetRegion();
+		this.getArena().getCurrentFloor().setUsed(true);
+	}
+
+	public void chooseRandomFloor(){
+		this.clearFloor(true);
+		this.getArena().setCurrentFloor(this.getRandomFloor());
+		this.getArena().resetRegion();
+		this.getArena().getCurrentFloor().setUsed(true);
+	}
+
+	private BlockPartyFloor getRandomFloor(){
+		BlockPartyFloor floor = this.getArena().getFloors().get(RandomUtil.getRandomInteger(0,this.getArena().getFloors().size()-1));
+		if(floor.isUsed()) floor = this.getRandomFloor();
+		return floor;
+	}
+
+	public void clearFloor(){
+		this.clearFloor(false);
+		for(GamePlayer gPlayer : this.getPlayers()){
+			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,1f);
+			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_SNOW_BREAK,1f,0.5f);
+			gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ENDER_DRAGON_FLAP,1f,0.8f);
+		}
+	}
+
+	private void clearFloor(boolean force){
+		if(pickup != null) pickup.remove();
+		for(int y=this.getMinLoc().getBlockY();y<=this.getMaxLoc().getBlockY();y++){
+			for(int x=this.getMinLoc().getBlockX();x<=this.getMaxLoc().getBlockX();x++){
+				for(int z=this.getMinLoc().getBlockZ();z<=this.getMaxLoc().getBlockZ();z++){
+					Block block = this.getArena().getWorld().getBlockAt(x,y,z);
+					if(force || block.getType() != this.getCurrentBlock()){
+						block.setType(Material.AIR);
+					}
+					List<Entity> entities = (List<Entity>) this.getArena().getWorld().getNearbyEntities(this.getGameLocation(),20,10,20);
+					for(Entity entity : entities){
+						if(!(entity instanceof Item)) continue;
+						entity.remove();
+					}
+				}
+			}
+		}
+	}
+
+	public void teleportAboveFloor(GamePlayer gPlayer){
+		Location location = gPlayer.getPlayer().getLocation().clone();
+		if(location.getBlockY() >= 0){
+			int maxY = 0;
+			for(Vector2D vector : POS_VOLUMES){
+				for(int y=this.getMaxLoc().getBlockY();y>=this.getMinLoc().getBlockY();y--){
+					if(!location.getWorld().getBlockAt(location.getBlockX()+vector.x,y,location.getBlockZ()+vector.z).isEmpty()){
+						if(maxY < y) maxY = y;
+					}
+				}
+			}
+			if(maxY != 0){
+				if(location.getBlockY() <= maxY){
+					location.setY(maxY+1.1);
+					gPlayer.getPlayer().teleport(location);
+				}
+			}
+		}
+	}
+
+	public Location getRandomPickupLocation(){
+		int randX = RandomUtil.getRandomInteger(this.getMinLoc().getBlockX(),this.getMaxLoc().getBlockX());
+		int randZ = RandomUtil.getRandomInteger(this.getMinLoc().getBlockZ(),this.getMaxLoc().getBlockZ());
+		int randY = 0;
+		for(int y=this.getMaxLoc().getBlockY();y>=this.getMinLoc().getBlockY();y--){
+			if(this.getArena().getWorld().getBlockAt(randX,y,randZ).isEmpty() && !this.getArena().getWorld().getBlockAt(randX,y-1,randZ).isEmpty()){
+				randY = y;
+				break;
+			}
+		}
+		if(randY == 0) return this.getRandomPickupLocation();
+		return new Location(this.getArena().getWorld(),randX,randY,randZ);
+	}
+
+	public Location getStartLocation(int index,int max){
+		Location location = this.getGameLocation().clone();
+		double angle = index*(2*Math.PI)/max;
+		Vector vector = new Vector(Math.cos(angle),0,Math.sin(angle)).multiply(4.0);
+		location.add(vector.getX(),vector.getY(),vector.getZ());
+		location.setDirection(this.getGameLocation().getDirection());
+		location = this.setLocationLookingAt(location,this.getGameLocation());
+		return location;
+	}
+
+	private Location setLocationLookingAt(Location loc,Location lookat){
+		loc = loc.clone();
+
+		double dx = lookat.getX() - loc.getX();
+		double dy = lookat.getY() - loc.getY();
+		double dz = lookat.getZ() - loc.getZ();
+
+		if(dx != 0){
+			if(dx < 0){
+				loc.setYaw((float) (1.5 * Math.PI));
+			} else {
+				loc.setYaw((float) (0.5 * Math.PI));
+			}
+			loc.setYaw(loc.getYaw() - (float) Math.atan(dz / dx));
+		} else if(dz < 0){
+			loc.setYaw((float) Math.PI);
+		}
+
+		double dxz = Math.sqrt(Math.pow(dx, 2) + Math.pow(dz, 2));
+		loc.setPitch((float) -Math.atan(dy / dxz));
+		loc.setYaw(-loc.getYaw() * 180f / (float) Math.PI);
+		loc.setPitch(loc.getPitch() * 180f / (float) Math.PI);
+
+		return loc;
+	}
+
+	private static final Vector2D[] POS_VOLUMES = new Vector2D[]{
+			new Vector2D(0,0),
+			new Vector2D(0,1),
+			new Vector2D(1,0),
+			new Vector2D(0,-1),
+			new Vector2D(-1,0),
+	};
+
+	public static class Vector2D {
+		public int x;
+		public int z;
+
+		public Vector2D(int x,int z){
+			this.x = x;
+			this.z = z;
+		}
 	}
 
 	public class BlockPartyScoreboard extends GameScoreboard {
@@ -330,8 +507,8 @@ public class BlockParty extends Game {
 		}
 
 		private String getRandomBlockChatColor(){
-			BlockPartyBlock block = this.getGame().getArena().getCurrentBlock();
-			switch(MaterialUtil.getDyeColor(block.getType())){
+			Material type = this.getGame().getCurrentBlock();
+			switch(MaterialUtil.getDyeColor(type)){
 				case WHITE: return "§f";
 				case ORANGE: return "§6";
 				case RED: return "§4";
@@ -353,8 +530,8 @@ public class BlockParty extends Game {
 		}
 
 		private String getRandomBlockColor(){
-			BlockPartyBlock block = this.getGame().getArena().getCurrentBlock();
-			switch(MaterialUtil.getDyeColor(block.getType())){
+			Material type = this.getGame().getCurrentBlock();
+			switch(MaterialUtil.getDyeColor(type)){
 				case WHITE: return "WHITE";
 				case ORANGE: return "ORANGE";
 				case RED: return "MAGENTA";

@@ -1,8 +1,8 @@
 package com.bedwars;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import com.bedwars.BedWarsResource.BedWarsResourceType;
+import com.games.player.GamePlayer;
+import com.games.utils.Glow;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -15,13 +15,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-
-import com.bedwars.BedWarsResource.BedWarsResourceType;
-import com.games.player.GamePlayer;
-import com.games.utils.Glow;
-
 import realcraft.bukkit.utils.ItemUtil;
 import realcraft.bukkit.utils.MaterialUtil;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BedWarsShop {
 
@@ -128,7 +126,7 @@ public class BedWarsShop {
 				case BOWS: return "§aLuky";
 				case FOOD: return "§9Jidlo";
 				case TOOLS: return "§eNastroje";
-				case BLOCKS: return "§fBloky";
+				case BLOCKS: return "§bBloky";
 				case SPECIAL: return "§6Specialni";
 			}
 			return null;

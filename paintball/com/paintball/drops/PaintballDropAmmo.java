@@ -14,9 +14,11 @@ public class PaintballDropAmmo extends PaintballDrop {
 
 	@Override
 	public void activate(GamePlayer gPlayer){
-		gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_PICKUP,1f,1f);
-		this.getGame().getUser(gPlayer).addPistols(64);
-		this.getGame().setPlayerWeapons(gPlayer,false);
+		for(GamePlayer gPlayer2 : this.getGame().getTeams().getPlayerTeam(gPlayer).getPlayers()){
+			gPlayer2.getPlayer().getWorld().playSound(gPlayer2.getPlayer().getLocation(),Sound.ENTITY_ITEM_PICKUP,1f,1f);
+			this.getGame().getUser(gPlayer).addPistols(64);
+			this.getGame().setPlayerWeapons(gPlayer,false);
+		}
 	}
 
 	@Override

@@ -1,11 +1,10 @@
 package com.games.utils;
 
+import org.bukkit.entity.Player;
+import realcraft.bukkit.database.DB;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import org.bukkit.entity.Player;
-
-import realcraft.bukkit.database.DB;
 
 public class SkinUtil {
 
@@ -70,6 +69,13 @@ public class SkinUtil {
 
 		public String getSignature(){
 			return signature;
+		}
+	}
+
+	public static class DefaultSkin extends Skin {
+
+		public DefaultSkin(){
+			super("FreeWall","014fd96865c5479f88c4656db279469a","eyJ0aW1lc3RhbXAiOjE1MzgzOTQ2Njk3OTQsInByb2ZpbGVJZCI6IjAxNGZkOTY4NjVjNTQ3OWY4OGM0NjU2ZGIyNzk0NjlhIiwicHJvZmlsZU5hbWUiOiJGcmVlV2FsbCIsInNpZ25hdHVyZVJlcXVpcmVkIjp0cnVlLCJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNGM3YjA0NjgwNDRiZmVjYWNjNDNkMDBhM2E2OTMzNWE4MzRiNzM5Mzc2ODgyOTJjMjBkMzk4OGNhZTU4MjQ4ZCJ9fX0=",null);
 		}
 	}
 }

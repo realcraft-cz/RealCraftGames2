@@ -94,7 +94,7 @@ public class DominateEmerald implements Listener {
 	public void pickup(GamePlayer gPlayer){
 		cooldown = COOLDOWN;
 		game.getTeams().getPlayerTeam(gPlayer).pickupEmerald();
-		FireworkUtil.spawnFirework(this.getLocation().clone().add(0,0.5,0),FireworkEffect.Type.BALL,Color.LIME,true,true);
+		FireworkUtil.spawnFirework(this.getLocation().clone().add(0,0.5,0),FireworkEffect.Type.BALL,Color.LIME,false,false);
 		Title.showTitle(gPlayer.getPlayer()," ",0.5,2,0.5);
 		Title.showSubTitle(gPlayer.getPlayer(),"§a+"+POINTS+" bodu",0.5,2,0.5);
 		this.remove();

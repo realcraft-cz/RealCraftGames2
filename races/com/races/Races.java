@@ -1,15 +1,5 @@
 package com.races;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import com.games.Games;
 import com.games.game.Game;
 import com.games.game.GamePodium;
 import com.games.game.GamePodium.GamePodiumType;
@@ -23,8 +13,14 @@ import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.FormatUtil;
 import com.races.arenas.RaceArena;
-import com.races.arenas.RaceBoatArena;
-import com.races.arenas.RaceHorseArena;
+import realcraft.bukkit.database.DB;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 
 public class Races extends Game {
 
@@ -49,23 +45,15 @@ public class Races extends Game {
 	}
 
 	public void loadArenas(){
-		File [] arenasFiles = new File(Games.getInstance().getDataFolder()+"/"+this.getType().getName()).listFiles();
-		if(arenasFiles != null){
-			for(File file : arenasFiles){
-				if(file.isDirectory()){
-					File file2 = new File(file.getPath()+"/config.yml");
-					if(file2.exists()){
-						FileConfiguration config = new YamlConfiguration();
-						try {
-							config.load(file2);
-							if(RaceType.fromName(config.getString("type")) == RaceType.BOAT) new RaceBoatArena(this,file.getName());
-							else if(RaceType.fromName(config.getString("type")) == RaceType.HORSE) new RaceHorseArena(this,file.getName());
-						} catch (Exception e){
-							e.printStackTrace();
-						}
-					}
-				}
+		ResultSet rs = DB.query("SELECT * FROM "+MAPS+" WHERE map_type = '"+this.getType().getId()+"' AND map_state = '1'");
+		try {
+			while(rs.next()){
+				int id = rs.getInt("map_id");
+				this.addArena(new RaceArena(this,id));
 			}
+			rs.close();
+		} catch (SQLException e){
+			e.printStackTrace();
 		}
 	}
 

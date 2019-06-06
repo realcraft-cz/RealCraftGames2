@@ -292,8 +292,8 @@ public class DominateListeners implements Listener {
 	@EventHandler
 	public void ChunkUnloadEvent(ChunkUnloadEvent event){
 		if(game.getState().isLobby()) return;
-		Location location = new Location(event.getWorld(),event.getChunk().getX()*16,game.getArena().getMinLocation().getY(),event.getChunk().getZ()*16);
-		if(game.getArena().isLocationInArena(location)){
+		Location location = new Location(event.getWorld(),event.getChunk().getX()*16,game.getArena().getRegion().getMinLocation().getY(),event.getChunk().getZ()*16);
+		if(game.getArena().getRegion().isLocationInside(location)){
 			event.setCancelled(true);
 		}
 	}

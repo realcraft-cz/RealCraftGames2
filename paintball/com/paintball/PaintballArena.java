@@ -1,34 +1,24 @@
 package com.paintball;
 
 import com.games.arena.GameArena;
+import com.games.arena.data.*;
+import com.google.gson.JsonElement;
 import com.paintball.PaintballTeam.PaintballTeamType;
 import com.paintball.specials.*;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.configuration.ConfigurationSection;
-import realcraft.bukkit.utils.LocationUtil;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 public class PaintballArena extends GameArena {
 
-	private Location redSpawn;
-	private Location blueSpawn;
+	private HashMap<PaintballTeamType,Location> spawns = new HashMap<>();
+	private ArrayList<Location> dropLocations = new ArrayList<>();
+	private ArrayList<PaintballSpecial> specials = new ArrayList<>();
 
-	private ArrayList<Location> dropLocations = new ArrayList<Location>();
-	private ArrayList<PaintballSpecial> specials = new ArrayList<PaintballSpecial>();
-
-	public PaintballArena(Paintball game,String name){
-		super(game,name);
-		this.loadSpawns();
-		this.loadDrops();
-		this.loadJumps();
-		this.loadSpeeds();
-		this.loadMachineGuns();
+	public PaintballArena(Paintball game,int id){
+		super(game,id);
 		specials.add(new PaintballSpecialGrenade(game));
 	}
 
@@ -37,9 +27,7 @@ public class PaintballArena extends GameArena {
 	}
 
 	public Location getTeamSpawn(PaintballTeamType type){
-		if(type == PaintballTeamType.RED) return redSpawn;
-		else if(type == PaintballTeamType.BLUE) return blueSpawn;
-		return null;
+		return spawns.get(type);
 	}
 
 	public ArrayList<Location> getDropLocations(){
@@ -50,87 +38,93 @@ public class PaintballArena extends GameArena {
 		return specials;
 	}
 
-	private void loadSpawns(){
-		this.redSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.spawns."+PaintballTeamType.RED.toString());
-		this.blueSpawn = LocationUtil.getConfigLocation(this.getConfig(),"custom.spawns."+PaintballTeamType.BLUE.toString());
+	@Override
+	public void resetRegion(){
+		this.getRegion().reset();
 	}
 
-	@SuppressWarnings("unchecked")
-	private void loadDrops(){
-		List<Map<String, Object>> temps = (List<Map<String, Object>>) this.getConfig().get("custom.drops");
-		if(temps != null && !temps.isEmpty()){
-			for(Map<String, Object> resource : temps){
-				double x = Double.valueOf(resource.get("x").toString());
-				double y = Double.valueOf(resource.get("y").toString());
-				double z = Double.valueOf(resource.get("z").toString());
-				float yaw = Float.valueOf(resource.get("yaw").toString());
-				float pitch = Float.valueOf(resource.get("pitch").toString());
-				World world = Bukkit.getWorld(resource.get("world").toString());
-				if(world == null){
-					world = Bukkit.createWorld(new WorldCreator(resource.get("world").toString()));
-					if(world == null){
-						continue;
-					}
-				}
-				dropLocations.add(new Location(world,x,y,z,yaw,pitch));
-			}
+	@Override
+	public void loadData(GameArenaData data){
+		this.loadSpawns(data);
+		this.loadDrops(data);
+		this.loadJumps(data);
+		this.loadSpeeds(data);
+		this.loadMachineGuns(data);
+	}
+
+	private void loadSpawns(GameArenaData data){
+		GameArenaDataMap<GameArenaDataLocation> tmpData = new GameArenaDataMap<>(this,"spawns",GameArenaDataLocation.class);
+		tmpData.loadData(data);
+		for(Map.Entry<String,GameArenaDataLocation> entry : tmpData.getValues().entrySet()){
+			spawns.put(PaintballTeamType.getByName(entry.getKey()),entry.getValue().getLocation());
 		}
 	}
 
-	private void loadJumps(){
-		if(this.getConfig().getConfigurationSection("custom.jumps") != null){
-			for(String key : this.getConfig().getConfigurationSection("custom.jumps").getKeys(false)){
-				ConfigurationSection section = this.getConfig().getConfigurationSection("custom.jumps."+key);
-				double force = section.getDouble("force");
-				Location location1 = LocationUtil.getConfigLocation(section,"minLoc");
-				Location location2 = LocationUtil.getConfigLocation(section,"maxLoc");
-				specials.add(new PaintballSpecialJump(this.getGame(),force,location1,location2));
-			}
+	private void loadDrops(GameArenaData data){
+		GameArenaDataList<GameArenaDataLocation> tmpData = new GameArenaDataList<>(this,"drops",GameArenaDataLocation.class);
+		tmpData.loadData(data);
+		for(GameArenaDataLocation entry : tmpData.getValues()){
+			dropLocations.add(entry.getLocation());
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private void loadSpeeds(){
-		List<Map<String, Object>> temps = (List<Map<String, Object>>) this.getConfig().get("custom.speeds");
-		if(temps != null && !temps.isEmpty()){
-			for(Map<String, Object> resource : temps){
-				int duration = Integer.valueOf(resource.get("duration").toString());
-				double x = Double.valueOf(resource.get("x").toString());
-				double y = Double.valueOf(resource.get("y").toString());
-				double z = Double.valueOf(resource.get("z").toString());
-				float yaw = Float.valueOf(resource.get("yaw").toString());
-				float pitch = Float.valueOf(resource.get("pitch").toString());
-				World world = Bukkit.getWorld(resource.get("world").toString());
-				if(world == null){
-					world = Bukkit.createWorld(new WorldCreator(resource.get("world").toString()));
-					if(world == null){
-						continue;
-					}
-				}
-				specials.add(new PaintballSpecialSpeed(this.getGame(),duration,new Location(world,x,y,z,yaw,pitch)));
-			}
+	private void loadJumps(GameArenaData data){
+		GameArenaDataList<GameArenaDataJumpArea> tmpData = new GameArenaDataList<>(this,"jumps",GameArenaDataJumpArea.class);
+		tmpData.loadData(data);
+		for(GameArenaDataJumpArea entry : tmpData.getValues()){
+			specials.add(new PaintballSpecialJump(this.getGame(),entry.getForce(),entry.getMinLocation().getLocation(),entry.getMaxLocation().getLocation()));
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private void loadMachineGuns(){
-		List<Map<String, Object>> temps = (List<Map<String, Object>>) this.getConfig().get("custom.machineguns");
-		if(temps != null && !temps.isEmpty()){
-			for(Map<String, Object> resource : temps){
-				double x = Double.valueOf(resource.get("x").toString());
-				double y = Double.valueOf(resource.get("y").toString());
-				double z = Double.valueOf(resource.get("z").toString());
-				float yaw = Float.valueOf(resource.get("yaw").toString());
-				float pitch = Float.valueOf(resource.get("pitch").toString());
-				World world = Bukkit.getWorld(resource.get("world").toString());
-				if(world == null){
-					world = Bukkit.createWorld(new WorldCreator(resource.get("world").toString()));
-					if(world == null){
-						continue;
-					}
-				}
-				specials.add(new PaintballSpecialMachineGun(this.getGame(),new Location(world,x,y,z,yaw,pitch)));
-			}
+	private void loadSpeeds(GameArenaData data){
+		GameArenaDataList<GameArenaDataSpeed> tmpData = new GameArenaDataList<>(this,"speeds",GameArenaDataSpeed.class);
+		tmpData.loadData(data);
+		for(GameArenaDataSpeed entry : tmpData.getValues()){
+			specials.add(new PaintballSpecialSpeed(this.getGame(),entry.getDuration(),entry.getLocation()));
+		}
+	}
+
+	private void loadMachineGuns(GameArenaData data){
+		GameArenaDataList<GameArenaDataLocation> tmpData = new GameArenaDataList<>(this,"machineguns",GameArenaDataLocation.class);
+		tmpData.loadData(data);
+		for(GameArenaDataLocation entry : tmpData.getValues()){
+			specials.add(new PaintballSpecialMachineGun(this.getGame(),entry.getLocation()));
+		}
+	}
+
+	public static class GameArenaDataJumpArea extends GameArenaDataLocationArea {
+
+		private double force;
+
+		public GameArenaDataJumpArea(GameArena arena,String name){
+			super(arena,name);
+		}
+
+		public GameArenaDataJumpArea(GameArena arena,JsonElement element){
+			super(arena,element);
+			this.force = element.getAsJsonObject().get("force").getAsDouble();
+		}
+
+		public double getForce(){
+			return force;
+		}
+	}
+
+	public static class GameArenaDataSpeed extends GameArenaDataLocation {
+
+		private int duration;
+
+		public GameArenaDataSpeed(GameArena arena,String name){
+			super(arena,name);
+		}
+
+		public GameArenaDataSpeed(GameArena arena,JsonElement element){
+			super(arena,element);
+			this.duration = element.getAsJsonObject().get("duration").getAsInt();
+		}
+
+		public int getDuration(){
+			return duration;
 		}
 	}
 }

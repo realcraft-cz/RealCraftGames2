@@ -1,17 +1,12 @@
 package com.paintball;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import com.games.utils.RandomUtil;
+import com.paintball.drops.*;
+import com.paintball.drops.PaintballDrop.PaintballDropType;
 import org.bukkit.Location;
 
-import com.games.utils.RandomUtil;
-import com.paintball.drops.PaintballDrop;
-import com.paintball.drops.PaintballDrop.PaintballDropType;
-import com.paintball.drops.PaintballDropAmmo;
-import com.paintball.drops.PaintballDropGlow;
-import com.paintball.drops.PaintballDropGrenade;
-import com.paintball.drops.PaintballDropSpeed;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class PaintballDrops {
 
@@ -28,7 +23,7 @@ public class PaintballDrops {
 	}
 
 	public ArrayList<PaintballDrop> getDrops(){
-		return new ArrayList<PaintballDrop>(drops.values());
+		return new ArrayList<>(drops.values());
 	}
 
 	public void addDrop(){

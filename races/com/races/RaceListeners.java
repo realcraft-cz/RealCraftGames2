@@ -14,7 +14,7 @@ import com.games.utils.FireworkUtil;
 import com.games.utils.Title;
 import com.races.RaceCheckpoint.RaceCheckpointType;
 import com.races.arenas.RaceArena.RaceBarrier;
-import net.minecraft.server.v1_13_R1.PacketPlayInSteerVehicle;
+import net.minecraft.server.v1_13_R2.PacketPlayInSteerVehicle;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -50,7 +50,8 @@ public class RaceListeners implements Listener {
 			public void onPacketReceiving(PacketEvent event){
 				if(event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE){
 					PacketPlayInSteerVehicle packet = (PacketPlayInSteerVehicle) event.getPacket().getHandle();
-					if(packet.d()) event.setCancelled(true);
+					GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
+					if(packet.d() && gPlayer.getState() != GamePlayerState.SPECTATOR) event.setCancelled(true);
 					if(Math.abs(packet.b()) > 0.0001 || Math.abs(packet.c()) > 0.0001) game.getUser(game.getGamePlayer(event.getPlayer())).setLastKeyAction();
 				}
 			}
@@ -169,9 +170,9 @@ public class RaceListeners implements Listener {
 			else if(game.getGameTimeDefault()-game.getGameTime() <= game.getArena().getRaceType().getMaxStartInactivity()+1){
 				for(GamePlayer gPlayer : game.getPlayers()){
 					if(gPlayer.getState() != GamePlayerState.SPECTATOR && game.getUser(gPlayer).getLastKeyAction()+(game.getArena().getRaceType().getMaxStartInactivity()*1000) < System.currentTimeMillis()){
+						gPlayer.setState(GamePlayerState.SPECTATOR);
 						gPlayer.getPlayer().leaveVehicle();
 						game.getUser(gPlayer).exitVehicle();
-						gPlayer.setState(GamePlayerState.SPECTATOR);
 						gPlayer.toggleSpectator();
 						game.sendMessage("§7"+gPlayer.getPlayer().getName()+" diskvalifikovan za neaktivitu");
 					}
@@ -180,9 +181,9 @@ public class RaceListeners implements Listener {
 			else if(game.getGameTimeDefault()-game.getGameTime() > game.getArena().getRaceType().getMaxStartInactivity()+1){
 				for(GamePlayer gPlayer : game.getPlayers()){
 					if(gPlayer.getState() != GamePlayerState.SPECTATOR && game.getUser(gPlayer).getLastKeyAction()+(game.getArena().getRaceType().getMaxGameInactivity()*1000) < System.currentTimeMillis()){
+						gPlayer.setState(GamePlayerState.SPECTATOR);
 						gPlayer.getPlayer().leaveVehicle();
 						game.getUser(gPlayer).exitVehicle();
-						gPlayer.setState(GamePlayerState.SPECTATOR);
 						gPlayer.toggleSpectator();
 						game.sendMessage("§7"+gPlayer.getPlayer().getName()+" diskvalifikovan za neaktivitu");
 					}
@@ -289,7 +290,7 @@ public class RaceListeners implements Listener {
 								public void run(){
 									Location location = checkpoint.getCenterLocation().clone();
 									location.add(RandomUtil.getRandomInteger(-5,5),RandomUtil.getRandomInteger(0,5),RandomUtil.getRandomInteger(-5,5));
-									FireworkUtil.spawnFirework(location,null,true);
+									FireworkUtil.spawnFirework(location,null,false);
 									location.getWorld().playSound(location,Sound.ENTITY_FIREWORK_ROCKET_LAUNCH,1f,1f);
 								}
 							},i*10);
@@ -304,9 +305,9 @@ public class RaceListeners implements Listener {
 						@Override
 						public void run(){
 							if(gPlayer.getPlayer().isOnline()){
+								gPlayer.setState(GamePlayerState.SPECTATOR);
 								gPlayer.getPlayer().leaveVehicle();
 								game.getUser(gPlayer).exitVehicle();
-								gPlayer.setState(GamePlayerState.SPECTATOR);
 								gPlayer.toggleSpectator();
 							}
 						}

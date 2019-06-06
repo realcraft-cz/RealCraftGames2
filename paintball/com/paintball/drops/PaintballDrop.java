@@ -25,7 +25,7 @@ public abstract class PaintballDrop implements Runnable, Listener {
 	private static final String DROP_TEXTURE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGM2YmFjZDM2ZWQ2MGY1MzMxMzhlNzU5YzQyNTk0NjIyMmI3OGVkYTZiNjE2MjE2ZjZkY2MwOGU5MGQzM2UifX19";
 	private static final ItemStack HEAD = ItemUtil.getHead(DROP_TEXTURE);
 
-	private static final int LIVETIME_TICKS = 30*20;
+	private static final int LIVETIME_TICKS = 35*20;
 
 	private PaintballDropType type;
 	private Paintball game;
@@ -52,7 +52,7 @@ public abstract class PaintballDrop implements Runnable, Listener {
 	}
 
 	public void drop(){
-		stand = (ArmorStand) location.getWorld().spawnEntity(location.clone().add(0,32,0),EntityType.ARMOR_STAND);
+		stand = (ArmorStand) location.getWorld().spawnEntity(this.getTopLocation(),EntityType.ARMOR_STAND);
 		stand.setSmall(false);
 		stand.setGravity(false);
 		stand.setBasePlate(false);
@@ -136,6 +136,15 @@ public abstract class PaintballDrop implements Runnable, Listener {
 		}
 	}
 
+	public Location getTopLocation(){
+		Location tmpLocation = location.clone();
+		while(tmpLocation.getBlock().getType() == Material.AIR && tmpLocation.getBlockY()-32 < location.getBlockY()){
+			tmpLocation.add(0,1,0);
+		}
+		tmpLocation.add(0,-1,0);
+		return tmpLocation;
+	}
+
 	public abstract void activate(GamePlayer gPlayer);
 
 	public enum PaintballDropType {
@@ -145,20 +154,19 @@ public abstract class PaintballDrop implements Runnable, Listener {
 			switch(this){
 				case GLOW: return "§7aktivoval §b§lglowing";
 				case SPEED: return "§7ziskal §d§lspeed boost";
-				case GRENADE: return "§7ziskal §e§l2 granaty";
-				case AMMO: return "§7ziskal §f§ldoplneni munice";
+				case GRENADE: return "§7ziskal §e§l2 granaty§7 pro svuj tym";
+				case AMMO: return "§7ziskal §f§ldoplneni munice§7 pro svuj tym";
 				default:break;
 			}
 			return null;
 		}
 
 		public static PaintballDropType getRandomType(){
-			switch(RandomUtil.getRandomInteger(0,4)){
+			switch(RandomUtil.getRandomInteger(0,3)){
 				case 0: return PaintballDropType.GLOW;
 				case 1: return PaintballDropType.SPEED;
 				case 2: return PaintballDropType.AMMO;
-				case 3:
-				case 4: return PaintballDropType.GRENADE;
+				case 3: return PaintballDropType.GRENADE;
 				default: return PaintballDropType.AMMO;
 			}
 		}

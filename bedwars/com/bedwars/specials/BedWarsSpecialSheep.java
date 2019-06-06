@@ -1,7 +1,7 @@
 package com.bedwars.specials;
 
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_13_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Sheep;
@@ -12,8 +12,8 @@ import com.bedwars.BedWarsTeam;
 import com.games.game.GameState;
 import com.games.player.GamePlayer;
 
-import net.minecraft.server.v1_13_R1.EntityInsentient;
-import net.minecraft.server.v1_13_R1.GenericAttributes;
+import net.minecraft.server.v1_13_R2.EntityInsentient;
+import net.minecraft.server.v1_13_R2.GenericAttributes;
 
 public class BedWarsSpecialSheep extends BedWarsSpecialTeam {
 

@@ -1,9 +1,16 @@
 package com.games.game;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.UUID;
-
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+import com.games.Games;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
+import com.games.utils.ReflectionUtils;
+import com.games.utils.SkinUtil;
+import com.games.utils.SkinUtil.Skin;
+import net.minecraft.server.v1_13_R2.PacketPlayOutPlayerInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,20 +25,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketEvent;
-import com.games.Games;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-import com.games.utils.ReflectionUtils;
-import com.games.utils.SkinUtil;
-import com.games.utils.SkinUtil.Skin;
-
-import net.minecraft.server.v1_13_R1.PacketPlayOutPlayerInfo;
 import realcraft.bukkit.utils.ItemUtil;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.UUID;
 
 public class GameSpectator implements Listener {
 

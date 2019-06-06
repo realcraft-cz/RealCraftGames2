@@ -14,6 +14,7 @@ import net.citizensnpcs.api.event.NPCLeftClickEvent;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -33,7 +34,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.Bed;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
@@ -47,7 +47,7 @@ import java.util.List;
 
 public class BedWarsListeners implements Listener {
 
-	private static final int SPAWN_PROTECTION_DELAY = 20 * 1000;
+	private static final int SPAWN_PROTECTION_DELAY = 20*1000;
 
 	private BedWars game;
 
@@ -210,7 +210,7 @@ public class BedWarsListeners implements Listener {
 			gPlayer.resetPlayer();
 			gPlayer.setState(GamePlayerState.SPECTATOR);
 			gPlayer.toggleSpectator();
-			event.setRespawnLocation(game.getArena().getSpectatorLocation());
+			event.setRespawnLocation(game.getArena().getSpectator());
 		}
 	}
 
@@ -226,10 +226,10 @@ public class BedWarsListeners implements Listener {
 			BedWarsTeam team = game.getTeams().getPlayerTeam(gPlayer);
 
 			Block breakBlock = block;
-			Block neighbor = null;
-			Bed breakBed = (Bed) breakBlock.getState().getData();
+			Block neighbor;
+			Bed breakBed = (Bed) breakBlock.getBlockData();
 
-			if(!breakBed.isHeadOfBed()){
+			if(breakBed.getPart() == Bed.Part.FOOT){
 				neighbor = breakBlock;
 				breakBlock = LocationUtil.getBedNeighbor(neighbor);
 			}
@@ -284,7 +284,7 @@ public class BedWarsListeners implements Listener {
 		}
 		GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
 		Block block = event.getBlock();
-		if(game.getArena().isBlockInArena(block)){
+		if(game.getArena().getRegion().isLocationInside(block.getLocation())){
 			game.getArena().addPlayerBlock(block);
 			if(block.getType() == Material.ENDER_CHEST){
 				game.getTeams().getPlayerTeam(gPlayer).addChest(block);
@@ -314,7 +314,7 @@ public class BedWarsListeners implements Listener {
 		if(event.getEntityType() == EntityType.PRIMED_TNT){
 			List<Block> blocks = new ArrayList<Block>(event.blockList());
 			for(Block block : blocks){
-				if(game.getArena().isBlockInArena(block) && !game.getArena().isPlayerBlock(block)){
+				if(game.getArena().getRegion().isLocationInside(block.getLocation()) && !game.getArena().isPlayerBlock(block)){
 					event.blockList().remove(block);
 				}
 			}

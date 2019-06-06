@@ -1,14 +1,13 @@
 package com.hidenseek;
 
-import java.util.ArrayList;
-
+import com.games.Games;
+import com.games.player.GamePlayer;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.potion.PotionEffectType;
 
-import com.games.Games;
-import com.games.player.GamePlayer;
+import java.util.ArrayList;
 
 public class HidenSeekTeam {
 
@@ -63,6 +62,10 @@ public class HidenSeekTeam {
 
 		public String toString(){
 			return this.name().toLowerCase();
+		}
+
+		public static HidenSeekTeamType getByName(String name){
+			return HidenSeekTeamType.valueOf(name.toUpperCase());
 		}
 
 		public String toName(){

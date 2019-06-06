@@ -1,17 +1,12 @@
 package com.paintball;
 
-import java.util.ArrayList;
-
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.DyeColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import com.games.Games;
+import com.games.player.GamePlayer;
+import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-import com.games.Games;
-import com.games.player.GamePlayer;
+import java.util.ArrayList;
 
 public class PaintballTeam {
 
@@ -106,6 +101,10 @@ public class PaintballTeam {
 
 		public String toString(){
 			return this.name().toLowerCase();
+		}
+
+		public static PaintballTeamType getByName(String name){
+			return PaintballTeamType.valueOf(name.toUpperCase());
 		}
 
 		public String toName(){

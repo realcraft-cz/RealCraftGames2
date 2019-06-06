@@ -16,15 +16,15 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.server.v1_13_R1.PacketPlayOutPlayerInfo;
-import net.minecraft.server.v1_13_R1.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
+import net.minecraft.server.v1_13_R2.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_13_R2.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_13_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.gameparty.GameParty;
@@ -42,6 +42,7 @@ import java.util.HashMap;
 
 public abstract class Game implements Runnable {
 
+	public static final String MAPS = "minigames_maps";
 	private static final int PREMIUM_OFFER_TIMEOUT = 7200;
 
 	private GameType type;
@@ -50,7 +51,7 @@ public abstract class Game implements Runnable {
 	private FileConfiguration config;
 
 	private HashMap<String,GamePlayer> players = new HashMap<String,GamePlayer>();
-	private HashMap<String,GameArena> arenas = new HashMap<String,GameArena>();
+	private HashMap<Integer,GameArena> arenas = new HashMap<Integer,GameArena>();
 	private HashMap<String,Long> playersPremiumOffers = new HashMap<String,Long>();
 	private Location lobbyLocation;
 	private LobbyScoreboard lobbyScoreboard;
@@ -143,7 +144,7 @@ public abstract class Game implements Runnable {
 				this.setArena(gameVoting.getWinningArena());
 				this.setState(GameState.INGAME);
 				this.setStartPlayers(this.getPlayersCount());
-				this.getArena().getRegion().clearEntites();
+				this.getArena().getRegion().clearEntities();
 				this.getArena().getWorld().setFullTime(this.getArena().getTime());
 				for(GamePlayer gPlayer : this.getPlayers()){
 					lobbyScoreboard.updateForPlayer(gPlayer);
@@ -279,18 +280,16 @@ public abstract class Game implements Runnable {
 	}
 
 	public void addArena(GameArena arena){
-		arenas.put(arena.getName(),arena);
+		arenas.put(arena.getId(),arena);
+		arena.load();
 	}
 
 	public void resetArenas(){
 		for(GameArena arena : Game.this.getArenas()){
 			if(!arena.isLoaded()){
 				Games.DEBUG("Reseting map: "+arena.getName());
-				if(arena.getRegion().isAvailable()){
-					arena.getRegion().reset();
-					return;
-				}
-				else arena.setLoaded(true);
+				arena.resetRegion();
+				return;
 			}
 		}
 		Games.DEBUG("Reseting complete");

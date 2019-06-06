@@ -150,6 +150,10 @@ public class BedWarsTeam {
 			return this.name().toLowerCase();
 		}
 
+		public static BedWarsTeamType getByName(String name){
+			return BedWarsTeamType.valueOf(name.toUpperCase());
+		}
+
 		public String toName(){
 			switch(this){
 				case RED: return "Red";
