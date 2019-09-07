@@ -4,6 +4,7 @@ import com.games.Games;
 import com.games.arena.GameArena;
 import com.games.arena.data.GameArenaData;
 import com.games.game.GameType;
+import com.sk89q.worldedit.math.BlockVector3;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -85,5 +86,10 @@ public class BlockPartyArena extends GameArena {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public boolean isBlockInArena(Location location){
+		BlockVector3 vec = BlockVector3.at(location.getBlockX(),location.getBlockY(),location.getBlockZ());
+		return vec.containedWithin(this.getGame().getMinLoc(),this.getGame().getMaxLoc());
 	}
 }

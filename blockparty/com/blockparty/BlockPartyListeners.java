@@ -250,7 +250,7 @@ public class BlockPartyListeners implements Listener {
 			game.getPickup().remove();
 			game.sendMessage("§b"+event.getPlayer().getName()+" "+game.getPickup().getType().getMessage());
 		}
-		else if(event.getAction() == Action.LEFT_CLICK_BLOCK && event.getItem() != null && event.getItem().getType() == Material.GOLDEN_SHOVEL && block != null && this.getGame().getArena().getRegion().isLocationInside(block.getLocation())){
+		else if(event.getAction() == Action.LEFT_CLICK_BLOCK && event.getItem() != null && event.getItem().getType() == Material.GOLDEN_SHOVEL && block != null && this.getGame().getArena().isBlockInArena(block.getLocation())){
 			Particles.BLOCK_CRACK.display(Bukkit.createBlockData(block.getType()),0.3f,0.3f,0.3f,0.0f,64,block.getLocation().add(0.5,0.7,0.5),64);
 			block.getWorld().playSound(block.getLocation(),Sound.BLOCK_STONE_PLACE,1f,1f);
 			block.setType(Material.AIR);

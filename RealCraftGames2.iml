@@ -90,34 +90,8 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="LightAPI.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../LightAPI.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../spigot-1.14.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../spigot-1.14.2.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../worldedit-bukkit-7.0.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="spigot-1.14.4" level="project" />
+    <orderEntry type="library" name="worldedit-bukkit-7.0.1" level="project" />
+    <orderEntry type="library" name="LightAPI-fork-3.3.2" level="project" />
   </component>
 </module>
