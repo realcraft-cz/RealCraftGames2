@@ -1,11 +1,11 @@
 package com.blockparty;
 
 import com.games.utils.RandomUtil;
-import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -48,7 +48,7 @@ public class BlockPartyFloor {
 		for(int x = clipboard.getRegion().getMinimumPoint().getBlockX();x <= clipboard.getRegion().getMaximumPoint().getBlockX();x++){
 			for(int y = clipboard.getRegion().getMinimumPoint().getBlockY();y <= clipboard.getRegion().getMaximumPoint().getBlockY();y++){
 				for(int z = clipboard.getRegion().getMinimumPoint().getBlockZ();z <= clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
-					Material type = BukkitAdapter.adapt(clipboard.getFullBlock(new BlockVector(x,y,z)).getBlockType());
+					Material type = BukkitAdapter.adapt(clipboard.getFullBlock(BlockVector3.at(x,y,z)).getBlockType());
 					if(!types.contains(type) && MaterialUtil.isTerracotta(type)){
 						types.add(type);
 					}
@@ -84,7 +84,7 @@ public class BlockPartyFloor {
 		for(int x = clipboard.getRegion().getMinimumPoint().getBlockX();x <= clipboard.getRegion().getMaximumPoint().getBlockX();x++){
 			for(int y = clipboard.getRegion().getMinimumPoint().getBlockY();y <= clipboard.getRegion().getMaximumPoint().getBlockY();y++){
 				for(int z = clipboard.getRegion().getMinimumPoint().getBlockZ();z <= clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
-					BaseBlock block = clipboard.getFullBlock(new BlockVector(x,y,z));
+					BaseBlock block = clipboard.getFullBlock(BlockVector3.at(x,y,z));
 					Location location = new Location(arena.getWorld(),x-clipboard.getRegion().getMinimumPoint().getBlockX(),y-clipboard.getRegion().getMinimumPoint().getBlockY(),z-clipboard.getRegion().getMinimumPoint().getBlockZ());
 					location.add(arena.getGame().getMinLoc().getBlockX(),arena.getGame().getMinLoc().getBlockY(),arena.getGame().getMinLoc().getBlockZ());
 					location.getBlock().setType(BukkitAdapter.adapt(block.getBlockType()));

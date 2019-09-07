@@ -10,7 +10,7 @@ import com.games.player.GamePlayerState;
 import com.games.utils.ReflectionUtils;
 import com.games.utils.SkinUtil;
 import com.games.utils.SkinUtil.Skin;
-import net.minecraft.server.v1_13_R2.PacketPlayOutPlayerInfo;
+import net.minecraft.server.v1_14_R1.PacketPlayOutPlayerInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -130,7 +130,7 @@ public class GameSpectator implements Listener {
 	public void InventoryClickEvent(InventoryClickEvent event){
 		if(event.getWhoClicked() instanceof Player){
 			GamePlayer gPlayer = game.getGamePlayer((Player)event.getWhoClicked());
-			if(event.getInventory().getName().equalsIgnoreCase(INV_NAME)){
+			if(event.getView().getTitle().equalsIgnoreCase(INV_NAME)){
 				if(items.containsKey(event.getRawSlot())){
 					items.get(event.getRawSlot()).onPlayerClick(gPlayer);
 					event.setCancelled(true);

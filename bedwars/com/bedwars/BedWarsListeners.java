@@ -438,7 +438,7 @@ public class BedWarsListeners implements Listener {
 	@EventHandler
 	public void InventoryClickEvent(InventoryClickEvent event){
 		if(game.getState().isGame()){
-			if(event.getInventory().getTitle().equalsIgnoreCase("Obchod")){
+			if(event.getView().getTitle().equalsIgnoreCase("Obchod")){
 				game.getShop().onPlayerClick(event);
 			}
 		}
@@ -447,7 +447,7 @@ public class BedWarsListeners implements Listener {
 
 	@EventHandler
 	public void InventoryDragEvent(InventoryDragEvent event){
-		if(event.getInventory().getTitle().equalsIgnoreCase("Obchod")){
+		if(event.getView().getTitle().equalsIgnoreCase("Obchod")){
 			event.setCancelled(true);
 		}
 	}

@@ -1,17 +1,22 @@
 package com.games.arena;
 
 import com.games.events.GameRegionLoadEvent;
-import com.sk89q.worldedit.*;
+import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldedit.MaxChangedBlocksException;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.math.BlockVector2;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.util.Vector;
 import realcraft.bukkit.RealCraft;
 
 import java.io.ByteArrayInputStream;
@@ -93,7 +98,7 @@ public class GameArenaRegion {
 				&& vector.getBlockZ() >= this.getMinLocation().getBlockZ() && vector.getBlockZ() <= this.getMaxLocation().getBlockZ());
 	}
 
-	public boolean isLocationInside(Vector2D vector){
+	public boolean isLocationInside(BlockVector2 vector){
 		return (vector.getBlockX() >= this.getMinLocation().getBlockX() && vector.getBlockX() <= this.getMaxLocation().getBlockX()
 				&& vector.getBlockZ() >= this.getMinLocation().getBlockZ() && vector.getBlockZ() <= this.getMaxLocation().getBlockZ());
 	}
@@ -128,9 +133,9 @@ public class GameArenaRegion {
 			for(int x=clipboard.getRegion().getMinimumPoint().getBlockX();x<=clipboard.getRegion().getMaximumPoint().getBlockX();x++){
 				for(int y=clipboard.getRegion().getMinimumPoint().getBlockY();y<=clipboard.getRegion().getMaximumPoint().getBlockY();y++){
 					for(int z=clipboard.getRegion().getMinimumPoint().getBlockZ();z<=clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
-						BlockVector pt = new BlockVector(x,y,z);
+						BlockVector3 pt = BlockVector3.at(x,y,z);
 						BaseBlock block = clipboard.getFullBlock(pt);
-						Vector pos = pt.add(-clipboard.getRegion().getMinimumPoint().getBlockX(),-clipboard.getRegion().getMinimumPoint().getBlockY(),-clipboard.getRegion().getMinimumPoint().getBlockZ());
+						BlockVector3 pos = pt.add(-clipboard.getRegion().getMinimumPoint().getBlockX(),-clipboard.getRegion().getMinimumPoint().getBlockY(),-clipboard.getRegion().getMinimumPoint().getBlockZ());
 						pos = pos.add(this.getBaseLocation().getBlockX(),this.getBaseLocation().getBlockY(),this.getBaseLocation().getBlockZ());
 						this.getBaseLocation().getWorld().getBlockAt(pos.getBlockX(),pos.getBlockY(),pos.getBlockZ()).setType(BukkitAdapter.adapt(block.getBlockType()),false);
 						this.getBaseLocation().getWorld().getBlockAt(pos.getBlockX(),pos.getBlockY(),pos.getBlockZ()).setBlockData(BukkitAdapter.adapt(block),false);
@@ -154,7 +159,7 @@ public class GameArenaRegion {
 
 	public void clearEntities(){
 		if(clipboard != null){
-			for(Vector2D coords : clipboard.getRegion().getChunks()){
+			for(BlockVector2 coords : clipboard.getRegion().getChunks()){
 				coords = coords.add(-(clipboard.getRegion().getMinimumPoint().getBlockX() >> 4),-(clipboard.getRegion().getMinimumPoint().getBlockZ() >> 4));
 				coords = coords.add((this.getBaseLocation().getBlockX() >> 4),(this.getBaseLocation().getBlockZ() >> 4));
 				Chunk chunk = this.getBaseLocation().getWorld().getChunkAt(coords.getBlockX(),coords.getBlockZ());
@@ -165,7 +170,6 @@ public class GameArenaRegion {
 					}
 				}
 			}
-
 		}
 	}
 
@@ -178,7 +182,7 @@ public class GameArenaRegion {
 		private EditSession editSession;
 
 		private boolean build = false;
-		private HashMap<Vector,BaseBlock> blocks = new HashMap<>();
+		private HashMap<BlockVector3,BaseBlock> blocks = new HashMap<>();
 
 		public SchemaStages(Clipboard clipboard,Location location){
 			this.clipboard = clipboard;
@@ -211,16 +215,16 @@ public class GameArenaRegion {
 			for(int x=clipboard.getRegion().getMinimumPoint().getBlockX();x<=clipboard.getRegion().getMaximumPoint().getBlockX();x++){
 				for(int y=clipboard.getRegion().getMinimumPoint().getBlockY();y<=clipboard.getRegion().getMaximumPoint().getBlockY();y++){
 					for(int z=clipboard.getRegion().getMinimumPoint().getBlockZ();z<=clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
-						BlockVector pt = new BlockVector(x,y,z);
+						BlockVector3 pt = BlockVector3.at(x,y,z);
 						BaseBlock block = clipboard.getFullBlock(pt);
 						boolean place = false;
 						if(stage == 1 && !shouldPlaceLast(BukkitAdapter.adapt(block.getBlockType())) && !shouldPlaceFinal(BukkitAdapter.adapt(block.getBlockType()))) place = true;
 						else if(stage == 2 && shouldPlaceLast(BukkitAdapter.adapt(block.getBlockType()))) place = true;
 						else if(stage == 3 && shouldPlaceFinal(BukkitAdapter.adapt(block.getBlockType()))) place = true;
 						if(place){
-							Vector pos = pt.add(-clipboard.getRegion().getMinimumPoint().getBlockX(),-clipboard.getRegion().getMinimumPoint().getBlockY(),-clipboard.getRegion().getMinimumPoint().getBlockZ());
+							BlockVector3 pos = pt.add(-clipboard.getRegion().getMinimumPoint().getBlockX(),-clipboard.getRegion().getMinimumPoint().getBlockY(),-clipboard.getRegion().getMinimumPoint().getBlockZ());
 							pos = pos.add(location.getBlockX(),location.getBlockY(),location.getBlockZ());
-							pos = pos.add(clipboard.getRegion().getMinimumPoint().subtract(new Vector(location.getBlockX(),location.getBlockY(),location.getBlockZ())));
+							pos = pos.add(clipboard.getRegion().getMinimumPoint().subtract(BlockVector3.at(location.getBlockX(),location.getBlockY(),location.getBlockZ())));
 							blocks.put(pos,block);
 							if(blocks.size() >= maxBlocksPerRun){
 								nextPaste();
@@ -243,7 +247,7 @@ public class GameArenaRegion {
 			Bukkit.getScheduler().callSyncMethod(RealCraft.getInstance(),new Callable<Void>(){
 				@Override
 				public Void call(){
-					for(java.util.Map.Entry<Vector,BaseBlock> map : blocks.entrySet()){
+					for(java.util.Map.Entry<BlockVector3,BaseBlock> map : blocks.entrySet()){
 						if(!map.getValue().hasNbtData()){
 							location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setType(BukkitAdapter.adapt(map.getValue().getBlockType()),false);
 							location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setBlockData(BukkitAdapter.adapt(map.getValue()),false);
@@ -370,8 +374,18 @@ public class GameArenaRegion {
 
 	private static final HashSet<Material> shouldPlaceFinal = new HashSet<Material>();
 	static {
-		shouldPlaceFinal.add(Material.SIGN);
-		shouldPlaceFinal.add(Material.WALL_SIGN);
+		shouldPlaceFinal.add(Material.ACACIA_SIGN);
+		shouldPlaceFinal.add(Material.BIRCH_SIGN);
+		shouldPlaceFinal.add(Material.DARK_OAK_SIGN);
+		shouldPlaceFinal.add(Material.JUNGLE_SIGN);
+		shouldPlaceFinal.add(Material.OAK_SIGN);
+		shouldPlaceFinal.add(Material.SPRUCE_SIGN);
+		shouldPlaceFinal.add(Material.ACACIA_WALL_SIGN);
+		shouldPlaceFinal.add(Material.BIRCH_WALL_SIGN);
+		shouldPlaceFinal.add(Material.DARK_OAK_WALL_SIGN);
+		shouldPlaceFinal.add(Material.JUNGLE_WALL_SIGN);
+		shouldPlaceFinal.add(Material.OAK_WALL_SIGN);
+		shouldPlaceFinal.add(Material.SPRUCE_WALL_SIGN);
 		shouldPlaceFinal.add(Material.PISTON_HEAD);
 		shouldPlaceFinal.add(Material.MOVING_PISTON);
 		shouldPlaceFinal.add(Material.ACACIA_DOOR);

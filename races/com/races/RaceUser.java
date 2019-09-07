@@ -3,7 +3,7 @@ package com.races;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.TreeSpecies;
-import org.bukkit.craftbukkit.v1_13_R2.entity.CraftHorse;
+import org.bukkit.craftbukkit.v1_14_R1.entity.CraftHorse;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.games.player.GamePlayer;
 
-import net.minecraft.server.v1_13_R2.GenericAttributes;
+import net.minecraft.server.v1_14_R1.GenericAttributes;
 import realcraft.share.utils.RandomUtil;
 
 public class RaceUser {

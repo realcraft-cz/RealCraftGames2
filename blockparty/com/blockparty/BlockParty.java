@@ -12,7 +12,8 @@ import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.RandomUtil;
 import com.games.utils.StringUtil;
-import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.Vector3;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -39,8 +40,8 @@ public class BlockParty extends Game {
 	private BlockPartyPickup pickup;
 	private Material currentBlock;
 
-	private Vector minLoc;
-	private Vector maxLoc;
+	private BlockVector3 minLoc;
+	private BlockVector3 maxLoc;
 	private Location spectatorLocation;
 	private Location gameLocation;
 
@@ -109,18 +110,18 @@ public class BlockParty extends Game {
 		this.loadRoundInventory(currentBlock);
 	}
 
-	public Vector getMinLoc(){
+	public BlockVector3 getMinLoc(){
 		if(minLoc == null){
 			Location location = LocationUtil.getConfigLocation(this.getConfig(),"minLoc");
-			minLoc = new Vector(location.getBlockX(),location.getBlockY(),location.getBlockZ());
+			minLoc = BlockVector3.at(location.getBlockX(),location.getBlockY(),location.getBlockZ());
 		}
 		return minLoc;
 	}
 
-	public Vector getMaxLoc(){
+	public BlockVector3 getMaxLoc(){
 		if(maxLoc == null){
 			Location location = LocationUtil.getConfigLocation(this.getConfig(),"maxLoc");
-			maxLoc = new Vector(location.getBlockX(),location.getBlockY(),location.getBlockZ());
+			maxLoc = BlockVector3.at(location.getBlockX(),location.getBlockY(),location.getBlockZ());
 		}
 		return maxLoc;
 	}
@@ -380,7 +381,7 @@ public class BlockParty extends Game {
 	public Location getStartLocation(int index,int max){
 		Location location = this.getGameLocation().clone();
 		double angle = index*(2*Math.PI)/max;
-		Vector vector = new Vector(Math.cos(angle),0,Math.sin(angle)).multiply(4.0);
+		Vector3 vector = Vector3.at(Math.cos(angle),0,Math.sin(angle)).multiply(4.0);
 		location.add(vector.getX(),vector.getY(),vector.getZ());
 		location.setDirection(this.getGameLocation().getDirection());
 		location = this.setLocationLookingAt(location,this.getGameLocation());

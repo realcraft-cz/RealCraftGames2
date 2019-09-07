@@ -294,7 +294,7 @@ public class DominateListeners implements Listener {
 		if(game.getState().isLobby()) return;
 		Location location = new Location(event.getWorld(),event.getChunk().getX()*16,game.getArena().getRegion().getMinLocation().getY(),event.getChunk().getZ()*16);
 		if(game.getArena().getRegion().isLocationInside(location)){
-			event.setCancelled(true);
+			event.getChunk().setForceLoaded(true);
 		}
 	}
 }
