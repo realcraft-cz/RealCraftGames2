@@ -103,6 +103,12 @@ public class GameArenaRegion {
 				&& vector.getBlockZ() >= this.getMinLocation().getBlockZ() && vector.getBlockZ() <= this.getMaxLocation().getBlockZ());
 	}
 
+	public boolean isLocationInsideClipboard(Location location){
+		return (location.getBlockX() >= clipboard.getRegion().getMinimumPoint().getBlockX() && location.getBlockX() <= clipboard.getRegion().getMaximumPoint().getBlockX()
+				&& location.getBlockY() >= clipboard.getRegion().getMinimumPoint().getBlockY() && location.getBlockY() <= clipboard.getRegion().getMaximumPoint().getBlockY()
+				&& location.getBlockZ() >= clipboard.getRegion().getMinimumPoint().getBlockZ() && location.getBlockZ() <= clipboard.getRegion().getMaximumPoint().getBlockZ());
+	}
+
 	public void initWorld(){
 		if(this.getWorld() == null){
 			WorldCreator creator = new WorldCreator("world_"+arena.getId());

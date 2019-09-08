@@ -16,6 +16,8 @@ import java.util.Map;
 
 public class BedWarsArena extends GameArena {
 
+	private BedWarsArenaRegion region = new BedWarsArenaRegion(this);
+
 	private HashMap<BedWarsTeamType,Location> spawns = new HashMap<>();
 	private HashMap<BedWarsTeamType,Location> beds = new HashMap<>();
 	private ArrayList<Block> playerBlocks = new ArrayList<>();
@@ -34,6 +36,10 @@ public class BedWarsArena extends GameArena {
 
 	public Location getTeamBed(BedWarsTeamType type){
 		return beds.get(type);
+	}
+
+	public BedWarsArenaRegion getRegion(){
+		return region;
 	}
 
 	@Override
