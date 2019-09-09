@@ -9,10 +9,7 @@ import com.games.utils.Glow;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.TippedArrow;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -69,7 +66,7 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 	public void ProjectileLaunchEvent(ProjectileLaunchEvent event){
 		Projectile entity = event.getEntity();
 		if(entity.getShooter() instanceof Player && ((Player)entity.getShooter()).equals(this.getPlayer())){
-			if(entity instanceof TippedArrow && ((TippedArrow)entity).getBasePotionData().getType() == PotionType.SPEED){
+			if(entity.getType() == EntityType.ARROW && ((Arrow)entity).getBasePotionData().getType() == PotionType.SPEED){
 				if(!this.trigger(entity)) event.setCancelled(true);
 			}
 		}

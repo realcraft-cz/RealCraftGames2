@@ -233,6 +233,7 @@ public class BlockPartyListeners implements Listener {
 			if(event.getPlayer().getLocation().getY() < BlockParty.MINY){
 				event.getPlayer().setFallDistance(0);
 				event.getPlayer().getWorld().strikeLightningEffect(event.getPlayer().getLocation());
+				event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(),Sound.ENTITY_LIGHTNING_BOLT_THUNDER,1f,1f);
 				event.getPlayer().teleport(game.getSpectatorLocation());
 				game.getGamePlayer(event.getPlayer()).setState(GamePlayerState.SPECTATOR);
 				game.getGamePlayer(event.getPlayer()).toggleSpectator();
