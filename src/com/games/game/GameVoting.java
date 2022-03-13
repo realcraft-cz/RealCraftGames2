@@ -5,7 +5,7 @@ import com.games.arena.GameArena;
 import com.games.player.GamePlayer;
 import com.games.utils.RandomUtil;
 import com.games.utils.StringUtil;
-import com.games.utils.Title;
+import realcraft.bukkit.utils.Title;
 import com.gmail.filoghost.holographicdisplays.api.Hologram;
 import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import org.bukkit.Bukkit;

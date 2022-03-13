@@ -1,17 +1,14 @@
 package com.races;
 
+import com.games.player.GamePlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.TreeSpecies;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftHorse;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
 import org.bukkit.inventory.ItemStack;
-
-import com.games.player.GamePlayer;
-
-import net.minecraft.server.v1_14_R1.GenericAttributes;
 import realcraft.share.utils.RandomUtil;
 
 public class RaceUser {
@@ -117,7 +114,7 @@ public class RaceUser {
 		horse.setInvulnerable(true);
 		horse.getInventory().setSaddle(new ItemStack(Material.SADDLE));
 		horse.setColor(Horse.Color.values()[RandomUtil.getRandomInteger(0,Horse.Color.values().length-1)]);
-		((CraftHorse)horse).getHandle().getAttributeInstance(GenericAttributes.MOVEMENT_SPEED).setValue(0.4d);
+		horse.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.4d);
 		horse.addPassenger(gPlayer.getPlayer());
 	}
 

@@ -18,7 +18,7 @@ import com.dominate.Dominate;
 import com.dominate.DominateUser;
 import com.games.Games;
 import com.games.player.GamePlayer;
-import com.games.utils.Title;
+import realcraft.bukkit.utils.Title;
 
 public abstract class DominateSkill implements Listener, Runnable {
 

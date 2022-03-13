@@ -417,6 +417,11 @@ public class GameListeners implements Listener {
 			event.setCancelled(true);
 			return;
 		}
+		else if(event.getMessage().equalsIgnoreCase("/clearentities") && event.getPlayer().hasPermission("group.Manazer")){
+			game.getArena().getRegion().clearEntities();
+			event.setCancelled(true);
+			return;
+		}
 		if(!event.getPlayer().hasPermission("group.Admin")){
 			event.setCancelled(true);
 		}
@@ -443,7 +448,6 @@ public class GameListeners implements Listener {
 		game.getLeaderboard().update();
 		game.getStats().addGame(game.getStartPlayers());
 		game.getArena().resetRegion();
-		game.sendGamePartyEnd();
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
 			gPlayer.getPlayer().resetPlayerTime();

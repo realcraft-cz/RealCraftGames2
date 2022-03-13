@@ -1,19 +1,15 @@
 package com.bedwars.specials;
 
-import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftEntity;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.TNTPrimed;
-
 import com.bedwars.BedWars;
 import com.bedwars.BedWarsTeam;
 import com.games.game.GameState;
 import com.games.player.GamePlayer;
-
-import net.minecraft.server.v1_14_R1.EntityInsentient;
-import net.minecraft.server.v1_14_R1.GenericAttributes;
+import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Sheep;
+import org.bukkit.entity.TNTPrimed;
 
 public class BedWarsSpecialSheep extends BedWarsSpecialTeam {
 
@@ -49,8 +45,9 @@ public class BedWarsSpecialSheep extends BedWarsSpecialTeam {
 	public void run(){
 		GamePlayer gPlayer = this.getNearestEnemy(sheep.getLocation());
 		if(gPlayer != null && !sheep.isDead()){
-			((EntityInsentient) ((CraftEntity)sheep).getHandle()).getAttributeInstance(GenericAttributes.FOLLOW_RANGE).setValue(128);
-			((EntityInsentient) ((CraftEntity)sheep).getHandle()).getNavigation().a(((CraftEntity)gPlayer.getPlayer()).getHandle(),2);
+			((Sheep)sheep).getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(128);
+			((Sheep)sheep).setTarget(gPlayer.getPlayer());
+			//((EntityInsentient) ((CraftEntity)sheep).getHandle()).getNavigation().a(((CraftEntity)gPlayer.getPlayer()).getHandle(),2);
 		}
 		if(this.getGame().getState() != GameState.INGAME || sheep.isDead() || tnt.isDead()){
 			this.cancelTask();

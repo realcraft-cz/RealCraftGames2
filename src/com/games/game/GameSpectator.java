@@ -7,10 +7,9 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.ReflectionUtils;
 import com.games.utils.SkinUtil;
 import com.games.utils.SkinUtil.Skin;
-import net.minecraft.server.v1_14_R1.PacketPlayOutPlayerInfo;
+import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -64,8 +63,8 @@ public class GameSpectator implements Listener {
 							GamePlayer gPlayer = game.getGamePlayer(player);
 							if(gPlayer != null && gPlayer.getState() == GamePlayerState.SPECTATOR && !gPlayer.isLeaving()){
 								PacketPlayOutPlayerInfo packet = (PacketPlayOutPlayerInfo) event.getPacket().getHandle();
-								PacketPlayOutPlayerInfo.EnumPlayerInfoAction action = (PacketPlayOutPlayerInfo.EnumPlayerInfoAction) ReflectionUtils.getField(packet.getClass(),true,"a").get(packet);
-								if(action == PacketPlayOutPlayerInfo.EnumPlayerInfoAction.REMOVE_PLAYER){
+								PacketPlayOutPlayerInfo.EnumPlayerInfoAction action = (PacketPlayOutPlayerInfo.EnumPlayerInfoAction) realcraft.bukkit.utils.ReflectionUtils.getField(packet.getClass(),true,"a").get(packet);
+								if(action == PacketPlayOutPlayerInfo.EnumPlayerInfoAction.e){
 									event.setCancelled(true);
 								}
 							}

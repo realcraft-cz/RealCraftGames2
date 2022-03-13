@@ -6,7 +6,7 @@ import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.Title;
+import realcraft.bukkit.utils.Title;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;

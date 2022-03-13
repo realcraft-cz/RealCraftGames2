@@ -2,7 +2,7 @@ package com.dominate;
 
 import com.games.Games;
 import com.games.player.GamePlayer;
-import com.games.utils.Title;
+import realcraft.bukkit.utils.Title;
 import org.bukkit.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;

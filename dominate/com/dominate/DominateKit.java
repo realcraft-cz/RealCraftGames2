@@ -6,9 +6,9 @@ import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.Glow;
-import net.minecraft.server.v1_14_R1.PacketPlayOutEntityDestroy;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.*;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -103,7 +103,7 @@ public class DominateKit implements Listener {
 
 	public void despawnForPlayer(GamePlayer gPlayer){
 		spawned.put(gPlayer,false);
-		((CraftPlayer)gPlayer.getPlayer()).getHandle().playerConnection.sendPacket(new PacketPlayOutEntityDestroy(stand.getEntityId()));
+		((CraftPlayer)gPlayer.getPlayer()).getHandle().b.a(new PacketPlayOutEntityDestroy(stand.getEntityId()));
 	}
 
 	public boolean isSpawnedForPlayer(GamePlayer gPlayer){

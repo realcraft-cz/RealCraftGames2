@@ -102,7 +102,7 @@ public class DominateSkillWeb extends DominateSkill {
 		id ++;
 		PacketPlayOutBlockBreakAnimation packet = new PacketPlayOutBlockBreakAnimation(this.getPlayer().getEntityId(),new BlockPosition(block.getLocation().getBlockX(),block.getLocation().getBlockY(),block.getLocation().getBlockZ()),stage);
 		for(GamePlayer gPlayer : this.getGame().getPlayers()){
-			((CraftPlayer)gPlayer.getPlayer()).getHandle().playerConnection.sendPacket(packet);
+			((CraftPlayer)gPlayer.getPlayer()).getHandle().b.a(packet);
 		}
 	}*/
 

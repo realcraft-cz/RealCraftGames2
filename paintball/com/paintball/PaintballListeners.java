@@ -7,7 +7,7 @@ import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.RandomUtil;
-import com.games.utils.Title;
+import realcraft.bukkit.utils.Title;
 import com.paintball.PaintballTeam.PaintballTeamType;
 import com.paintball.specials.PaintballSpecial;
 import org.bukkit.*;

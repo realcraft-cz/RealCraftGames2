@@ -3,17 +3,21 @@ package com.hidenseek;
 import com.games.player.GamePlayer;
 import com.games.utils.Glow;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
-import net.minecraft.server.v1_14_R1.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.decoration.EntityArmorStand;
+import net.minecraft.world.entity.item.EntityFallingBlock;
+import net.minecraft.world.level.World;
+import net.minecraft.world.level.block.state.IBlockData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftFallingBlock;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_18_R2.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftFallingBlock;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
@@ -239,7 +243,7 @@ public class HidenSeekUser {
 							if(!player2.equals(gPlayer.getPlayer())){
 								player2.sendBlockChange(gPlayer.getPlayer().getLocation().getBlock().getLocation(),this.getBlock().getBlockData());
 								PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(this.getEntityId());
-								((CraftPlayer)player2).getHandle().playerConnection.sendPacket(packet);
+								((CraftPlayer)player2).getHandle().b.a(packet);
 							}
 						}
 						Particles.BLOCK_CRACK.display(Bukkit.createBlockData(this.getBlock().getMaterial()),0.3f,0.3f,0.3f,0.0f,64,origBlock.getLocation().add(0.5,0.7,0.5),64);
@@ -369,8 +373,13 @@ public class HidenSeekUser {
 		}
 
 		@Override
-		public NBTTagCompound save(NBTTagCompound nbttagcompound){
+		public NBTTagCompound f(NBTTagCompound nbttagcompound){
 			return null;
+		}
+
+		@Override
+		public boolean d_() {
+			return super.d_();
 		}
 	}
 
@@ -392,7 +401,7 @@ public class HidenSeekUser {
 		}
 
 		@Override
-		public NBTTagCompound save(NBTTagCompound nbttagcompound){
+		public NBTTagCompound f(NBTTagCompound nbttagcompound){
 			return null;
 		}
 	}

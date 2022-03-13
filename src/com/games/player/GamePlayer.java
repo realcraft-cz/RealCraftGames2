@@ -1,20 +1,18 @@
 package com.games.player;
 
+import com.games.Games;
+import com.games.events.GamePlayerStateChangeEvent;
+import com.games.game.Game;
+import com.games.game.GameSpectator.SpectatorHotbarItem;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import com.games.Games;
-import com.games.events.GamePlayerStateChangeEvent;
-import com.games.game.Game;
-import com.games.game.GameSpectator.SpectatorHotbarItem;
-import com.games.utils.BorderUtil;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
-
 import realcraft.bukkit.RealCraft;
+import realcraft.bukkit.utils.BorderUtil;
 import realcraft.share.ServerType;
 
 public class GamePlayer {

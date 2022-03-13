@@ -168,6 +168,7 @@ public class GameArenaRegion {
 			for(BlockVector2 coords : clipboard.getRegion().getChunks()){
 				coords = coords.add(-(clipboard.getRegion().getMinimumPoint().getBlockX() >> 4),-(clipboard.getRegion().getMinimumPoint().getBlockZ() >> 4));
 				coords = coords.add((this.getBaseLocation().getBlockX() >> 4),(this.getBaseLocation().getBlockZ() >> 4));
+				coords = coords.add(BlockVector2.at((clipboard.getRegion().getMinimumPoint().getBlockX() >> 4) - (this.getBaseLocation().getBlockX() >> 4),(clipboard.getRegion().getMinimumPoint().getBlockZ() >> 4) - (this.getBaseLocation().getBlockZ() >> 4)));
 				Chunk chunk = this.getBaseLocation().getWorld().getChunkAt(coords.getBlockX(),coords.getBlockZ());
 				if(!chunk.isLoaded()) chunk.load();
 				for(org.bukkit.entity.Entity entity : chunk.getEntities()){

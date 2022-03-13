@@ -5,7 +5,7 @@ import com.dominate.DominateUser;
 import com.dominate.DominateUtils;
 import com.games.Games;
 import com.games.game.GameState;
-import com.games.utils.Title;
+import realcraft.bukkit.utils.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
