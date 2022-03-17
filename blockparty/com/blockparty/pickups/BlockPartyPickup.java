@@ -11,7 +11,7 @@ import com.games.player.GamePlayer;
 import com.games.utils.RandomUtil;
 
 import realcraft.bukkit.utils.Particles;
-import ru.beykerykt.lightapi.LightAPI;
+import realcraft.bukkit.wrappers.LightApi;
 
 public abstract class BlockPartyPickup implements Runnable {
 
@@ -48,7 +48,7 @@ public abstract class BlockPartyPickup implements Runnable {
 		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 			@Override
 			public void run(){
-				LightAPI.updateChunk(location,Bukkit.getOnlinePlayers());
+				LightApi.updateChunk(location,Bukkit.getOnlinePlayers());
 			}
 		},5);
 	}

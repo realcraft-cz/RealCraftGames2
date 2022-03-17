@@ -67,15 +67,6 @@
       </library>
     </orderEntry>
     <orderEntry type="module-library">
-      <library name="Essentials-2.x-SNAPSHOT.jar">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../Essentials-2.x-SNAPSHOT.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
       <library name="citizens-2.0.21-SNAPSHOT.jar">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/../citizens-2.0.21-SNAPSHOT.jar!/" />
@@ -93,11 +84,20 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="worldedit-bukkit-7.0.1" level="project" />
-    <orderEntry type="library" name="LightAPI-fork-3.3.2" level="project" />
     <orderEntry type="library" name="authlib-1.5.21" level="project" />
-    <orderEntry type="library" name="spigot-1.18.2-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="bungeecord" level="project" />
+    <orderEntry type="library" name="worldedit-bukkit-7.2.9" level="project" />
+    <orderEntry type="library" name="LightAPI-Bukkit-5.1.0" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../EssentialsX-2.19.4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="spigot-1.18.2-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="spigot-api-1.18.2-R0.1-20220311.235123-14" level="project" />
   </component>
 </module>

@@ -6,8 +6,6 @@ import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.FireworkUtil;
-import realcraft.bukkit.utils.Title;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -28,7 +26,9 @@ import org.bukkit.inventory.ItemStack;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.FireworkUtil;
 import realcraft.bukkit.utils.Particles;
+import realcraft.bukkit.utils.Title;
 
 import java.util.Random;
 

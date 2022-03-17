@@ -10,6 +10,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Sheep;
 import org.bukkit.entity.TNTPrimed;
+import realcraft.bukkit.utils.EntityUtil;
 
 public class BedWarsSpecialSheep extends BedWarsSpecialTeam {
 
@@ -46,8 +47,7 @@ public class BedWarsSpecialSheep extends BedWarsSpecialTeam {
 		GamePlayer gPlayer = this.getNearestEnemy(sheep.getLocation());
 		if(gPlayer != null && !sheep.isDead()){
 			((Sheep)sheep).getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(128);
-			((Sheep)sheep).setTarget(gPlayer.getPlayer());
-			//((EntityInsentient) ((CraftEntity)sheep).getHandle()).getNavigation().a(((CraftEntity)gPlayer.getPlayer()).getHandle(),2);
+			EntityUtil.navigate(sheep, gPlayer.getPlayer(), 2);
 		}
 		if(this.getGame().getState() != GameState.INGAME || sheep.isDead() || tnt.isDead()){
 			this.cancelTask();

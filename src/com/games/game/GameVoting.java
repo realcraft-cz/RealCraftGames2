@@ -5,9 +5,7 @@ import com.games.arena.GameArena;
 import com.games.player.GamePlayer;
 import com.games.utils.RandomUtil;
 import com.games.utils.StringUtil;
-import realcraft.bukkit.utils.Title;
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import me.filoghost.holographicdisplays.api.beta.hologram.VisibilitySettings;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -17,6 +15,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import realcraft.bukkit.utils.LocationUtil;
 import realcraft.bukkit.utils.Particles;
+import realcraft.bukkit.utils.Title;
+import realcraft.bukkit.wrappers.HologramsApi;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -169,15 +169,15 @@ public class GameVoting {
 
 		private ArrayList<Location> effectLocations = new ArrayList<Location>();
 
-		private Hologram hologram;
+		private HologramsApi.Hologram hologram;
 
 		public GameVoteboard(Location center,Location location1,Location location2){
 			this.center = center;
 			this.location1 = location1;
 			this.location2 = location2;
-			this.hologram = HologramsAPI.createHologram(Games.getInstance(),this.center.clone().add(0.0,1.0,0.0));
+			this.hologram = HologramsApi.createHologram(this.center.clone().add(0.0,1.0,0.0));
 			this.hologram.insertTextLine(0,"§l0 hlasu");
-			this.hologram.getVisibilityManager().setVisibleByDefault(false);
+			this.hologram.getVisibilityManager().setGlobalVisibility(VisibilitySettings.Visibility.HIDDEN);
 
 			double minZ = Math.min(location1.getBlockZ(),location2.getBlockZ());
 			double maxZ = Math.max(location1.getBlockZ(),location2.getBlockZ())+1;
@@ -204,7 +204,7 @@ public class GameVoting {
 		public void setArena(GameArena arena,boolean hologram){
 			this.arena = arena;
 			this.drawArena();
-			if(game.getArenas().size() > 1) this.hologram.getVisibilityManager().setVisibleByDefault(true);
+			if(game.getArenas().size() > 1) this.hologram.getVisibilityManager().setGlobalVisibility(VisibilitySettings.Visibility.VISIBLE);
 			this.updateVotes();
 		}
 

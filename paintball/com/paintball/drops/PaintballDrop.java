@@ -3,7 +3,6 @@ package com.paintball.drops;
 import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.FireworkUtil;
 import com.games.utils.RandomUtil;
 import com.paintball.Paintball;
 import org.bukkit.*;
@@ -17,6 +16,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import realcraft.bukkit.utils.FireworkUtil;
 import realcraft.bukkit.utils.ItemUtil;
 import realcraft.bukkit.utils.Particles;
 

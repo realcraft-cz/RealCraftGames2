@@ -77,7 +77,7 @@ public class HidenSeekListeners implements Listener {
 				Player player = event.getPlayer();
 				if(game.getGamePlayer(player).getState() != GamePlayerState.SPECTATOR){
 					if(event.getPacketType() == PacketType.Play.Client.USE_ENTITY){
-						if(event.getPacket().getEntityUseActions().read(0) == EntityUseAction.ATTACK){
+						if(event.getPacket().getEnumEntityUseActions().read(0).getAction() == EntityUseAction.ATTACK){
 							for(HidenSeekUser user : game.getUsers()){
 								if(event.getPacket().getIntegers().read(0) == user.getEntityId()){
 									Bukkit.getServer().getScheduler().runTask(Games.getInstance(),new Runnable(){

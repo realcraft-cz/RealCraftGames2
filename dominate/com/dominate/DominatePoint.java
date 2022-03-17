@@ -2,11 +2,11 @@ package com.dominate;
 
 import com.dominate.DominateTeam.DominateTeamType;
 import com.games.player.GamePlayer;
-import com.games.utils.FireworkUtil;
 import org.bukkit.*;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import realcraft.bukkit.utils.FireworkUtil;
 import realcraft.bukkit.utils.MaterialUtil;
 import realcraft.bukkit.utils.Particles;
 

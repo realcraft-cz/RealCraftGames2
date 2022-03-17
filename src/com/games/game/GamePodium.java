@@ -4,8 +4,6 @@ import com.games.Games;
 import com.games.events.GameEndEvent;
 import com.games.utils.SkinUtil;
 import com.games.utils.SkinUtil.Skin;
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -19,6 +17,7 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.EulerAngle;
 import realcraft.bukkit.utils.ItemUtil;
+import realcraft.bukkit.wrappers.HologramsApi;
 
 import java.util.List;
 import java.util.Map;
@@ -119,13 +118,13 @@ public abstract class GamePodium implements Listener {
 		private String name;
 		private Location location;
 		private ArmorStand stand;
-		private Hologram hologram;
+		private HologramsApi.Hologram hologram;
 		private ItemStack head = new ItemStack(Material.PLAYER_HEAD);
 
 		public GamePodiumStand(GamePodiumStandType type,Location location){
 			this.type = type;
 			this.location = location;
-			this.hologram = HologramsAPI.createHologram(Games.getInstance(),location.clone().add(0.0,2.0,0.0));
+			this.hologram = HologramsApi.createHologram(location.clone().add(0.0,2.0,0.0));
 			this.spawn();
 		}
 

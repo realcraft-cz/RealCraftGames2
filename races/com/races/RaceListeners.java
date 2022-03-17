@@ -10,7 +10,6 @@ import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.FireworkUtil;
 import com.races.RaceCheckpoint.RaceCheckpointType;
 import com.races.arenas.RaceArena.RaceBarrier;
 import net.minecraft.network.protocol.game.PacketPlayInSteerVehicle;
@@ -32,6 +31,7 @@ import org.bukkit.event.vehicle.VehicleExitEvent;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
+import realcraft.bukkit.utils.FireworkUtil;
 import realcraft.bukkit.utils.RandomUtil;
 import realcraft.bukkit.utils.Title;
 
