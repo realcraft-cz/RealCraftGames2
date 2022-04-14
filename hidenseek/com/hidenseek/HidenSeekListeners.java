@@ -14,7 +14,6 @@ import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import realcraft.bukkit.utils.Title;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -22,11 +21,8 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -41,6 +37,7 @@ import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
 import realcraft.bukkit.utils.Particles;
+import realcraft.bukkit.utils.Title;
 
 public class HidenSeekListeners implements Listener {
 
@@ -237,13 +234,13 @@ public class HidenSeekListeners implements Listener {
 					}
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
 					if(block.getType() == Material.WATER){
-						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,1*25,1),true);
+						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,5*25,1),true);
 					}
 				}
 				else if(game.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.HIDERS){
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
 					if(block.getType() == Material.WATER){
-						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,1*25,1),true);
+						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,5*25,1),true);
 						gPlayer.getPlayer().damage(2);
 					}
 				}
@@ -336,6 +333,7 @@ public class HidenSeekListeners implements Listener {
 					return;
 				}
 				event.setDamage(6);
+				gAttacker.getPlayer().spawnParticle(Particle.CRIT, gPlayer.getPlayer().getLocation().add(0, 1, 0), 20, 0.2f, 0.4f, 0.2f, 0.4f);
 				game.getUser(gPlayer).setSolid(false);
 			}
 			else if(game.getTeams().getPlayerTeam(gAttacker).getType() == HidenSeekTeamType.HIDERS) event.setDamage(2);

@@ -49,9 +49,13 @@ public abstract class GamePodium implements Listener {
 	public GamePodiumStand[] getStands(){
 		if(stands == null){
 			int index = 0;
-			stands = new GamePodiumStand[3];
+			stands = new GamePodiumStand[0];
 			List<Map<String, Object>> tempLocations = (List<Map<String, Object>>) Games.getInstance().getConfig().get("podiums."+type.toString()+".locations");
+			if (game.getConfig().isSet("podiums."+type.toString()+".locations")) {
+				tempLocations = (List<Map<String, Object>>) game.getConfig().get("podiums."+type.toString()+".locations");
+			}
 			if(tempLocations != null && !tempLocations.isEmpty()){
+				stands = new GamePodiumStand[tempLocations.size()];
 				for(Map<String, Object> location : tempLocations){
 					double x = Double.valueOf(location.get("x").toString());
 					double y = Double.valueOf(location.get("y").toString());
@@ -180,6 +184,16 @@ public abstract class GamePodium implements Listener {
 				stand.getEquipment().setBoots(new ItemStack(Material.GOLDEN_BOOTS));
 			}
 			else if(type == GamePodiumStandType.THIRD){
+				stand.getEquipment().setChestplate(new ItemStack(Material.IRON_CHESTPLATE));
+				stand.getEquipment().setLeggings(new ItemStack(Material.IRON_LEGGINGS));
+				stand.getEquipment().setBoots(new ItemStack(Material.IRON_BOOTS));
+			}
+			else if(type == GamePodiumStandType.FOURTH){
+				stand.getEquipment().setChestplate(new ItemStack(Material.CHAINMAIL_CHESTPLATE));
+				stand.getEquipment().setLeggings(new ItemStack(Material.CHAINMAIL_LEGGINGS));
+				stand.getEquipment().setBoots(new ItemStack(Material.CHAINMAIL_BOOTS));
+			}
+			else if(type == GamePodiumStandType.FIFTH){
 				stand.getEquipment().setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE));
 				stand.getEquipment().setLeggings(new ItemStack(Material.LEATHER_LEGGINGS));
 				stand.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));
@@ -202,11 +216,11 @@ public abstract class GamePodium implements Listener {
 	}
 
 	public enum GamePodiumStandType {
-		FIRST, SECOND, THIRD;
+		FIRST, SECOND, THIRD, FOURTH, FIFTH;
 	}
 
 	public enum GamePodiumType {
-		LEFT, RIGHT;
+		LEFT, RIGHT, CENTER;
 
 		public String toString(){
 			return this.name().toLowerCase();
@@ -216,6 +230,7 @@ public abstract class GamePodium implements Listener {
 			switch(this){
 				case LEFT: return 1;
 				case RIGHT: return 2;
+				case CENTER: return 3;
 			}
 			return 0;
 		}

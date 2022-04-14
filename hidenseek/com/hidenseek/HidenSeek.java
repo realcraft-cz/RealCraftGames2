@@ -69,7 +69,7 @@ public class HidenSeek extends Game {
 							HidenSeek.this.getUser(gPlayer).runDisguiseCountdown();
 						}
 					}
-					if(cycleTime == 20) cycleTime = 0;
+					if(cycleTime >= 20) cycleTime = 0;
 				}
 			}
 		},1,1);

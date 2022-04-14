@@ -21,13 +21,17 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import realcraft.bukkit.sitting.Sitting;
 import realcraft.bukkit.utils.LocationUtil;
 import realcraft.bukkit.utils.MaterialUtil;
 import realcraft.bukkit.utils.Particles;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +42,7 @@ public class BlockParty extends Game {
 	private BlockPartyScoreboard scoreboard;
 	private BlockPartyBossBar bossbar;
 	private BlockPartyPickup pickup;
+	private HashMap<BlockPartyPickupType, BlockPartyPickup> pickups = new HashMap<>();
 	private Material currentBlock;
 
 	private BlockVector3 minLoc;
@@ -58,15 +63,31 @@ public class BlockParty extends Game {
 		new BlockPartyListeners(this);
 		this.scoreboard = new BlockPartyScoreboard(this);
 		this.bossbar = new BlockPartyBossBar(this);
-		new BlockPartyPodium(this,GamePodiumType.LEFT);
-		new BlockPartyPodium(this,GamePodiumType.RIGHT);
+		new BlockPartyPodium(this,GamePodiumType.CENTER);
 		BlockPartyArena arena = new BlockPartyArena(this,0);
+		arena.initWorld();
 		this.setArena(arena);
 		this.addArena(arena);
+
+		this._loadPickups();
+
+		new Sitting();
+
+		Bukkit.getScheduler().runTaskLater(Games.getInstance(), new Runnable() {
+			@Override
+			public void run() {
+				BlockParty.this._loadCracks();
+			}
+		}, 40);
 	}
 
 	public BlockPartyArena getArena(){
 		return (BlockPartyArena) super.getArena();
+	}
+
+	public GamePlayer getGamePlayer(Player player){
+		if(!players.containsKey(player.getName())) players.put(player.getName(),new BlockPartyPlayer(player,this));
+		return players.get(player.getName());
 	}
 
 	public BlockPartyState getRoundState(){
@@ -134,6 +155,19 @@ public class BlockParty extends Game {
 	public Location getGameLocation(){
 		if(gameLocation == null) gameLocation = LocationUtil.getConfigLocation(this.getConfig(),"gameSpawn");
 		return gameLocation;
+	}
+
+	private void _loadCracks(){
+		if (this.getConfig().getConfigurationSection("cracks") == null) {
+			return;
+		}
+
+		for (String key : this.getConfig().getConfigurationSection("cracks").getKeys(false)) {
+			ConfigurationSection section = this.getConfig().getConfigurationSection("cracks." + key);
+			Location minLoc = LocationUtil.getConfigLocation(section, "minLoc");
+			Location maxLoc = LocationUtil.getConfigLocation(section, "maxLoc");
+			new BlockPartyCrack(this, minLoc, maxLoc);
+		}
 	}
 
 	public GamePlayer getWinner(){
@@ -278,18 +312,17 @@ public class BlockParty extends Game {
 	}
 
 	private BlockPartyPickup getRandomPickup(){
-		switch(BlockPartyPickupType.getRandomType()){
-			case JUMP: return new BlockPartyPickupJump(this);
-			case BLINDNESS: return new BlockPartyPickupBlindness(this);
-			case COLORBLINDNESS: return new BlockPartyPickupColorBlindness(this);
-			case SNOWBALLS: return new BlockPartyPickupSnowballs(this);
-			case SHOVELS: return new BlockPartyPickupShovels(this);
-			case SILVERFISH: return new BlockPartyPickupSilverfish(this);
-			case BABYZOMBIE: return new BlockPartyPickupBabyzombie(this);
-			case ACID: return new BlockPartyPickupAcid(this);
-			case THUNDERSTORM: return new BlockPartyPickupThunderstorm(this);
+		return pickups.get(BlockPartyPickupType.getRandomType());
+	}
+
+	private void _loadPickups() {
+		for (BlockPartyPickupType type : BlockPartyPickupType.values()) {
+			try {
+				pickups.put(type, (BlockPartyPickup) type.getClazz().getConstructor(BlockParty.class).newInstance(this));
+			} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e){
+				e.printStackTrace();
+			}
 		}
-		return null;
 	}
 
 	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){
@@ -562,7 +595,7 @@ public class BlockParty extends Game {
 		@Override
 		public void update(){
 			GameStatsType type = GameStatsType.WINS;
-			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type);
+			ArrayList<GameStatsScore> scores = this.getGame().getStats().getScores(type, 5);
 			int index = 0;
 			for(GamePodiumStand stand : this.getStands()){
 				if(scores.size() <= index) continue;

@@ -1,17 +1,12 @@
 package com.blockparty.pickups;
 
-import org.bukkit.Bukkit;
+import com.blockparty.BlockParty;
+import com.games.player.GamePlayer;
+import com.games.utils.RandomUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-
-import com.blockparty.BlockParty;
-import com.games.Games;
-import com.games.player.GamePlayer;
-import com.games.utils.RandomUtil;
-
 import realcraft.bukkit.utils.Particles;
-import realcraft.bukkit.wrappers.LightApi;
 
 public abstract class BlockPartyPickup implements Runnable {
 
@@ -45,37 +40,49 @@ public abstract class BlockPartyPickup implements Runnable {
 	public void remove(){
 		if(location.getBlock().getType() == Material.BEACON) Particles.SPELL_WITCH.display(0.2f,0.2f,0.2f,0.5f,16,location.clone().add(0.5f,0.5f,0.5f),64);
 		location.getBlock().setType(Material.AIR);
-		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
-			@Override
-			public void run(){
-				LightApi.updateChunk(location,Bukkit.getOnlinePlayers());
-			}
-		},5);
 	}
 
 	public abstract void activate(GamePlayer gPlayer);
 	public abstract void clear();
 
-	public enum BlockPartyPickupType {
-		JUMP, BLINDNESS, COLORBLINDNESS, SNOWBALLS, SHOVELS, SILVERFISH, BABYZOMBIE, ACID, THUNDERSTORM;
+	public static enum BlockPartyPickupType {
+
+		BLINDNESS 			(BlockPartyPickupBlindness.class, 			"§faktivoval §7§lslepotu"),
+		COLORBLINDNESS 		(BlockPartyPickupColorBlindness.class, 		"§faktivoval §a§lb§c§la§3§lr§e§lv§d§lo§7§lslepost"),
+		SNOWBALLS 			(BlockPartyPickupSnowballs.class, 			"§frozhazel §b§lsnehove koule§f, kryjte se!"),
+		SHOVELS 			(BlockPartyPickupShovels.class, 			"§frozhazel §e§llopaty§f, podkopej ostatni!"),
+		SILVERFISH 			(BlockPartyPickupSilverfish.class, 			"§fvypustil §3§lsilverfishe§f, utikejte!"),
+		BABYZOMBIE 			(BlockPartyPickupBabyzombie.class, 			"§fvypustil §2§lmale zombiky§f, brante se!"),
+		ACID 				(BlockPartyPickupAcid.class, 				"§frozlil §6§lkyselinu§f, dejte pozor!"),
+		THUNDERSTORM 		(BlockPartyPickupThunderstorm.class, 		"§fseslal §9§lbourku§f, dejte pozor!"),
+		PUMPKIN 			(BlockPartyPickupPumpkin.class, 			"§fnasadil vsem na hlavu §6§ldyni§f"),
+		CONFUSION 			(BlockPartyPickupConfusion.class, 			"§faktivoval §d§lnevolnost§f"),
+		LEVITATION 			(BlockPartyPickupLevitation.class, 			"§faktivoval §f§llevitaci§f"),
+		BEES	 			(BlockPartyPickupBees.class, 				"§fvypustil §e§lvcely§f, pozor na ne!"),
+		SKELETONS 			(BlockPartyPickupSkeletons.class, 			"§fvypustil §7§lskeletony§f, pozor na sipy!"),
+		;
+
+		private final Class<?> clazz;
+		private final String message;
+
+		private BlockPartyPickupType(Class<?> clazz, String message) {
+			this.clazz = clazz;
+			this.message = message;
+		}
+
+		public Class<?> getClazz(){
+			return clazz;
+		}
 
 		public String getMessage(){
-			switch(this){
-				case JUMP: return "§fziskal §d§lvysoke skoky";
-				case BLINDNESS: return "§faktivoval §7§lslepotu";
-				case COLORBLINDNESS: return "§faktivoval §a§lb§c§la§3§lr§e§lv§d§lo§7§lslepost";
-				case SNOWBALLS: return "§frozhazel §b§lsnehove koule§f, kryjte se!";
-				case SHOVELS: return "§frozhazel §e§llopaty§f, podkopej ostatni!";
-				case SILVERFISH: return "§fvypustil §3§lsilverfishe§f, utikejte!";
-				case BABYZOMBIE: return "§fvypustil §2§lmale zombiky§f, brante se!";
-				case ACID: return "§frozlil §6§lkyselinu§f, dejte pozor!";
-				case THUNDERSTORM: return "§fseslal §9§lbourku§f, dejte pozor!";
-				default:break;
-			}
-			return null;
+			return message;
 		}
 
 		public static BlockPartyPickupType getRandomType(){
+			//return BlockPartyPickupType.PUMPKIN;
+			if (true) {
+				return BlockPartyPickupType.SKELETONS;
+			}
 			return BlockPartyPickupType.values()[RandomUtil.getRandomInteger(0,BlockPartyPickupType.values().length-1)];
 		}
 	}

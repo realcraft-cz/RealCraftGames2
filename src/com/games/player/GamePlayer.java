@@ -17,7 +17,7 @@ import realcraft.share.ServerType;
 
 public class GamePlayer {
 
-	private Player player;
+	protected Player player;
 	private Game game;
 	private GamePlayerState state;
 	private GamePlayerSettings settings;

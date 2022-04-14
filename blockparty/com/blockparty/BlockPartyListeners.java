@@ -10,7 +10,9 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -214,6 +216,9 @@ public class BlockPartyListeners implements Listener {
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
+		if (event.getDamager() instanceof Snowball) {
+			event.setDamage(0.1);
+		}
 		if(event.getEntity() instanceof Player && event.getDamager() instanceof Player){
 			event.setCancelled(true);
 		}
@@ -229,14 +234,18 @@ public class BlockPartyListeners implements Listener {
 	@EventHandler(ignoreCancelled = true)
 	public void PlayerMoveEvent(PlayerMoveEvent event){
 		if(game.getState().isLobby()) return;
-		if(game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.DEFAULT){
-			if(event.getPlayer().getLocation().getY() < BlockParty.MINY){
+		if(event.getPlayer().getLocation().getY() < BlockParty.MINY) {
+			if (game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.DEFAULT) {
 				event.getPlayer().setFallDistance(0);
 				event.getPlayer().getWorld().strikeLightningEffect(event.getPlayer().getLocation());
-				event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(),Sound.ENTITY_LIGHTNING_BOLT_THUNDER,1f,1f);
+				event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 4f, 1f);
 				event.getPlayer().teleport(game.getSpectatorLocation());
+				event.getPlayer().playSound(game.getSpectatorLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 1f, 1f);
 				game.getGamePlayer(event.getPlayer()).setState(GamePlayerState.SPECTATOR);
 				game.getGamePlayer(event.getPlayer()).toggleSpectator();
+			} else if (game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR) {
+				event.getPlayer().setFallDistance(0);
+				event.getPlayer().teleport(game.getSpectatorLocation());
 			}
 		}
 	}
@@ -260,6 +269,14 @@ public class BlockPartyListeners implements Listener {
 				event.getPlayer().getInventory().remove(event.getItem().getType());
 				block.getWorld().playSound(event.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
 			}
+		}
+	}
+
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void PlayerInteractEvent2(PlayerInteractEvent event){
+		Block block = event.getClickedBlock();
+		if (block != null && block.getType() == Material.NOTE_BLOCK){
+			event.setCancelled(false);
 		}
 	}
 

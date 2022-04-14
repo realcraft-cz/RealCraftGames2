@@ -1,6 +1,14 @@
 package com.games.game;
 
+import com.games.Games;
+import com.games.events.GameEndEvent;
+import com.games.events.GameRegionLoadEvent;
+import com.games.events.GameStateChangeEvent;
+import com.games.exceptions.GameMaintenanceException;
+import com.games.exceptions.GameMaxPlayersException;
 import com.games.exceptions.GameNotLoadedException;
+import com.games.player.GamePlayer;
+import com.games.player.GamePlayerState;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -9,62 +17,24 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Furnace;
-import org.bukkit.entity.Animals;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockCanBuildEvent;
-import org.bukkit.event.block.BlockFadeEvent;
-import org.bukkit.event.block.BlockGrowEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.BlockSpreadEvent;
-import org.bukkit.event.block.LeavesDecayEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityInteractEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingBreakEvent.RemoveCause;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
-import org.bukkit.event.player.PlayerBedEnterEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerEggThrowEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.material.Door;
 import org.bukkit.material.Gate;
 import org.bukkit.material.TrapDoor;
 import org.bukkit.util.Vector;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
-
-import com.games.Games;
-import com.games.events.GameEndEvent;
-import com.games.events.GameRegionLoadEvent;
-import com.games.events.GameStateChangeEvent;
-import com.games.exceptions.GameMaintenanceException;
-import com.games.exceptions.GameMaxPlayersException;
-import com.games.player.GamePlayer;
-import com.games.player.GamePlayerState;
-
 import realcraft.bukkit.anticheat.AntiCheat;
 import realcraft.bukkit.lobby.LobbyMenu;
 import realcraft.bukkit.utils.LocationUtil;
@@ -126,10 +96,6 @@ public class GameListeners implements Listener {
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
-	public void PlayerChangedWorldEvent(PlayerChangedWorldEvent event){
-	}
-
-	@EventHandler(priority=EventPriority.LOW)
 	public void PlayerDeathEvent(PlayerDeathEvent event){
 		GamePlayer gPlayer = game.getGamePlayer(event.getEntity());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Games.getInstance(),new Runnable(){
@@ -162,18 +128,20 @@ public class GameListeners implements Listener {
 	}
 
 	@EventHandler(priority=EventPriority.LOW)
-	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
-		if(game.getState() != GameState.INGAME && (!(event.getDamager() instanceof Player) || ((Player)event.getDamager()).getGameMode() != GameMode.CREATIVE)) event.setCancelled(true);
-		if(event.getDamager() instanceof Player && game.getGamePlayer((Player)event.getDamager()).getState() == GamePlayerState.SPECTATOR) event.setCancelled(true);
-		if(event.getEntity() instanceof ItemFrame){
-			if(event.getDamager() instanceof Player){
+	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+		if (game.getState() != GameState.INGAME && (!(event.getDamager() instanceof Player) || ((Player) event.getDamager()).getGameMode() != GameMode.CREATIVE))
+			event.setCancelled(true);
+		if (event.getDamager() instanceof Player && game.getGamePlayer((Player) event.getDamager()).getState() == GamePlayerState.SPECTATOR)
+			event.setCancelled(true);
+		if (event.getEntity() instanceof ItemFrame) {
+			if (event.getDamager() instanceof Player) {
 				Player player = (Player) event.getDamager();
-				if(player.getGameMode() != GameMode.CREATIVE){
+				if (player.getGameMode() != GameMode.CREATIVE) {
 					event.setCancelled(true);
 				}
-				if(game.getState().isLobby()) game.getVoting().clickVoting(game.getGamePlayer((Player)event.getDamager()),event.getEntity().getLocation().getBlock().getLocation());
-			}
-			else event.setCancelled(true);
+				if (game.getState().isLobby())
+					game.getVoting().clickVoting(game.getGamePlayer((Player) event.getDamager()), event.getEntity().getLocation().getBlock().getLocation());
+			} else event.setCancelled(true);
 		}
 	}
 
@@ -358,7 +326,7 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void PlayerMoveEvent(PlayerMoveEvent event){
-		if(game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR){
+		if(game.getGamePlayer(event.getPlayer()).getState() == GamePlayerState.SPECTATOR && event.getPlayer().getAllowFlight()){
 			AntiCheat.exempt(event.getPlayer(),1000);
 			if(event.getPlayer().getLocation().getBlockY() < 0){
 				event.getPlayer().setAllowFlight(true);
@@ -447,7 +415,6 @@ public class GameListeners implements Listener {
 		game.getVoting().resetVoting();
 		game.getLeaderboard().update();
 		game.getStats().addGame(game.getStartPlayers());
-		game.getArena().resetRegion();
 		for(GamePlayer gPlayer : game.getPlayers()){
 			gPlayer.resetPlayer();
 			gPlayer.getPlayer().resetPlayerTime();
@@ -460,6 +427,7 @@ public class GameListeners implements Listener {
 		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 			@Override
 			public void run(){
+				game.getArena().resetRegion();
 				game.getArena().getRegion().clearEntities();
 			}
 		},20);

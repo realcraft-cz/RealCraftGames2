@@ -32,7 +32,7 @@ public class BlockPartyPickupSilverfish extends BlockPartyPickup {
 		for(GamePlayer gPlayer2 : this.getGame().getGamePlayers()){
 			if(gPlayer2 == gPlayer) continue;
 			Silverfish entity = (Silverfish)this.getGame().getArena().getWorld().spawnEntity(this.getLocation(),EntityType.SILVERFISH);
-			entity.setVelocity(new Vector(random.nextDouble()-0.5,random.nextDouble()/4,random.nextDouble()-0.5).multiply(1.5).add(new Vector(0,0.5,0)));
+			entity.setVelocity(new Vector(random.nextDouble()-0.5,random.nextDouble()/4,random.nextDouble()-0.5).multiply(1.0).add(new Vector(0,0.5,0)));
 			entity.setNoDamageTicks(40);
 			entity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED).setBaseValue(0.4);
 			entity.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(64);

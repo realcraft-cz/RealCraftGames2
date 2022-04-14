@@ -41,6 +41,7 @@ public class BlockPartyPickupSnowballs extends BlockPartyPickup {
 					Item item = BlockPartyPickupSnowballs.this.getLocation().getWorld().dropItem(BlockPartyPickupSnowballs.this.getLocation(),itemStack);
 					item.setPickupDelay(20);
 					item.setVelocity(new Vector(random.nextDouble()-0.5,random.nextDouble()/4,random.nextDouble()-0.5).add(new Vector(0,0.4,0)));
+					item.setGlowing(true);
 					items.add(item);
 				}
 			},i*2);

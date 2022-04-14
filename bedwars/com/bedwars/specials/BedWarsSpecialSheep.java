@@ -47,7 +47,7 @@ public class BedWarsSpecialSheep extends BedWarsSpecialTeam {
 		GamePlayer gPlayer = this.getNearestEnemy(sheep.getLocation());
 		if(gPlayer != null && !sheep.isDead()){
 			((Sheep)sheep).getAttribute(Attribute.GENERIC_FOLLOW_RANGE).setBaseValue(128);
-			EntityUtil.navigate(sheep, gPlayer.getPlayer(), 2);
+			EntityUtil.navigate(sheep, gPlayer.getPlayer().getLocation(), 2);
 		}
 		if(this.getGame().getState() != GameState.INGAME || sheep.isDead() || tnt.isDead()){
 			this.cancelTask();

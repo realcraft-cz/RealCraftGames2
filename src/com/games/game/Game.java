@@ -47,7 +47,7 @@ public abstract class Game implements Runnable {
 	private GameArena arena;
 	private FileConfiguration config;
 
-	private HashMap<String,GamePlayer> players = new HashMap<String,GamePlayer>();
+	protected HashMap<String,GamePlayer> players = new HashMap<String,GamePlayer>();
 	private HashMap<Integer,GameArena> arenas = new HashMap<Integer,GameArena>();
 	private HashMap<String,Long> playersPremiumOffers = new HashMap<String,Long>();
 	private Location lobbyLocation;
@@ -299,7 +299,13 @@ public abstract class Game implements Runnable {
 	}
 
 	public Location getLobbyLocation(){
-		if(lobbyLocation == null) lobbyLocation = LocationUtil.getConfigLocation(Games.getInstance().getConfig(),"lobby");
+		if(lobbyLocation == null) {
+			if (this.getConfig().isSet("lobby")) {
+				lobbyLocation = LocationUtil.getConfigLocation(this.getConfig(), "lobby");
+			} else {
+				lobbyLocation = LocationUtil.getConfigLocation(Games.getInstance().getConfig(), "lobby");
+			}
+		}
 		return lobbyLocation;
 	}
 
@@ -418,6 +424,15 @@ public abstract class Game implements Runnable {
 					Games.getEssentials().getUser(gPlayer.getPlayer()).setDisplayNick();
 				}
 			},5);
+
+			if (Bukkit.getOnlinePlayers().size() == 1) {
+				Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+					@Override
+					public void run(){
+						Game.this.getLeaderboard().update();
+					}
+				}, 20);
+			}
 		} else {
 			gPlayer.setState(GamePlayerState.SPECTATOR);
 			Bukkit.getServer().getPluginManager().callEvent(new GamePlayerJoinEvent(this,gPlayer));
@@ -533,6 +548,10 @@ public abstract class Game implements Runnable {
 	}
 
 	public void sendPremiumOffer(GamePlayer gPlayer){
+		if (true) {
+			return;
+		}
+
 		Player player = gPlayer.getPlayer();
 		if(Users.getUser(player).getRank().isMaximum(UserRank.HRAC) && this.getLastPlayerPremiumOffer(gPlayer)+(PREMIUM_OFFER_TIMEOUT*1000) < System.currentTimeMillis()){
 			Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){

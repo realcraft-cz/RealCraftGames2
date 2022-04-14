@@ -1,17 +1,15 @@
 package com.games.game;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-
-import org.bukkit.Bukkit;
-
 import com.games.Games;
 import com.games.player.GamePlayer;
-
+import org.bukkit.Bukkit;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.database.DB;
 import realcraft.bukkit.users.Users;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class GameStats {
 

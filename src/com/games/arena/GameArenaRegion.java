@@ -2,29 +2,30 @@ package com.games.arena;
 
 import com.games.events.GameRegionLoadEvent;
 import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.ChunkGenerator;
+import org.bukkit.generator.WorldInfo;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import realcraft.bukkit.RealCraft;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 public class GameArenaRegion {
@@ -33,7 +34,10 @@ public class GameArenaRegion {
 	private static final int Z_OFFSET = 1000;
 
 	private GameArena arena;
-	private Clipboard clipboard;
+	private byte[] regionBytes;
+	private Set<BlockVector2> regionChunks;
+	private BlockVector3 regionMinPoint;
+	private BlockVector3 regionMaxPoint;
 
 	private Location baseLoc;
 	private Location centerLoc;
@@ -104,29 +108,50 @@ public class GameArenaRegion {
 	}
 
 	public boolean isLocationInsideClipboard(Location location){
-		return (location.getBlockX() >= clipboard.getRegion().getMinimumPoint().getBlockX() && location.getBlockX() <= clipboard.getRegion().getMaximumPoint().getBlockX()
-				&& location.getBlockY() >= clipboard.getRegion().getMinimumPoint().getBlockY() && location.getBlockY() <= clipboard.getRegion().getMaximumPoint().getBlockY()
-				&& location.getBlockZ() >= clipboard.getRegion().getMinimumPoint().getBlockZ() && location.getBlockZ() <= clipboard.getRegion().getMaximumPoint().getBlockZ());
+		return (location.getBlockX() >= regionMinPoint.getBlockX() && location.getBlockX() <= regionMaxPoint.getBlockX()
+				&& location.getBlockY() >= regionMinPoint.getBlockY() && location.getBlockY() <= regionMaxPoint.getBlockY()
+				&& location.getBlockZ() >= regionMinPoint.getBlockZ() && location.getBlockZ() <= regionMaxPoint.getBlockZ());
 	}
 
-	public void initWorld(){
-		if(this.getWorld() == null){
-			WorldCreator creator = new WorldCreator("world_"+arena.getId());
-			creator.type(WorldType.FLAT);
-			creator.environment(arena.getEnvironment());
-			creator.generator(new CustomGenerator(arena.getBiome()));
-			World world = Bukkit.getServer().createWorld(creator);
-			arena.setWorld(world);
+	public void createWorld() {
+		if (this.getWorld() != null) {
+			return;
 		}
-		this.getWorld().setDifficulty(Difficulty.HARD);
-		this.getWorld().setPVP(true);
-		this.getWorld().setAutoSave(true);
-		this.getWorld().setFullTime(arena.getTime());
-		this.getWorld().setMonsterSpawnLimit(0);
-		this.getWorld().setGameRule(GameRule.DO_DAYLIGHT_CYCLE,false);
-		this.getWorld().setGameRule(GameRule.DO_WEATHER_CYCLE,false);
-		this.getWorld().setGameRule(GameRule.DO_MOB_SPAWNING,false);
-		this.getWorld().setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS,false);
+
+		WorldCreator creator = new WorldCreator("world_" + arena.getId());
+		creator.type(WorldType.FLAT);
+		creator.environment(arena.getEnvironment());
+		creator.generator(new CustomGenerator(arena.getBiome()));
+
+		World world = Bukkit.getServer().createWorld(creator);
+		if (world == null) {
+			throw new RuntimeException("World world_" + arena.getId() + " failed to create");
+		}
+
+		world.setKeepSpawnInMemory(false);
+		world.setDifficulty(Difficulty.HARD);
+		world.setPVP(true);
+		world.setAutoSave(true);
+		world.setFullTime(arena.getTime());
+		world.setMonsterSpawnLimit(0);
+		world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE,false);
+		world.setGameRule(GameRule.DO_WEATHER_CYCLE,false);
+		world.setGameRule(GameRule.DO_MOB_SPAWNING,false);
+		world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS,false);
+
+		arena.setWorld(world);
+	}
+
+	protected void _removeWorld() {
+		if (this.getWorld() == null) {
+			return;
+		}
+
+		if (!Bukkit.getServer().unloadWorld(this.getWorld(), false)) {
+			throw new RuntimeException("World world_" + arena.getId() + " failed to unload");
+		}
+
+		arena.setWorld(null);
 	}
 
 	public void reset(){
@@ -134,47 +159,53 @@ public class GameArenaRegion {
 	}
 
 	public void reset(boolean async){
-		if(async) new SchemaStages(clipboard,this.getBaseLocation());
-		else {
-			for(int x=clipboard.getRegion().getMinimumPoint().getBlockX();x<=clipboard.getRegion().getMaximumPoint().getBlockX();x++){
-				for(int y=clipboard.getRegion().getMinimumPoint().getBlockY();y<=clipboard.getRegion().getMaximumPoint().getBlockY();y++){
-					for(int z=clipboard.getRegion().getMinimumPoint().getBlockZ();z<=clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
-						BlockVector3 pt = BlockVector3.at(x,y,z);
-						BaseBlock block = clipboard.getFullBlock(pt);
-						BlockVector3 pos = pt.add(-clipboard.getRegion().getMinimumPoint().getBlockX(),-clipboard.getRegion().getMinimumPoint().getBlockY(),-clipboard.getRegion().getMinimumPoint().getBlockZ());
-						pos = pos.add(this.getBaseLocation().getBlockX(),this.getBaseLocation().getBlockY(),this.getBaseLocation().getBlockZ());
-						this.getBaseLocation().getWorld().getBlockAt(pos.getBlockX(),pos.getBlockY(),pos.getBlockZ()).setType(BukkitAdapter.adapt(block.getBlockType()),false);
-						this.getBaseLocation().getWorld().getBlockAt(pos.getBlockX(),pos.getBlockY(),pos.getBlockZ()).setBlockData(BukkitAdapter.adapt(block),false);
-					}
-				}
-			}
-			arena.setLoaded(true);
-		}
+		new SchemaStages(this._getClipboard(),this.getBaseLocation());
 	}
 
 	public void load(byte[] bytes){
+		regionBytes = bytes;
+	}
+
+	protected Clipboard _getClipboard() {
 		try {
-			BuiltInClipboardFormat format = BuiltInClipboardFormat.SPONGE_SCHEMATIC;
-			ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-			ClipboardReader reader = format.getReader(bais);
-			clipboard = reader.read();
+			ByteArrayInputStream bais = new ByteArrayInputStream(regionBytes);
+			ClipboardReader reader = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getReader(bais);
+			Clipboard clipboard = reader.read();
+
+			this._initClipboardPoints(clipboard);
+			this._initClipboardChunks(clipboard);
+
+			return clipboard;
 		} catch (IOException e){
 			e.printStackTrace();
 		}
+
+		return null;
+	}
+
+	protected void _initClipboardPoints(Clipboard clipboard) {
+		regionMinPoint = clipboard.getRegion().getMinimumPoint();
+		regionMaxPoint = clipboard.getRegion().getMaximumPoint();
+	}
+
+	protected void _initClipboardChunks(Clipboard clipboard) {
+		regionChunks = clipboard.getRegion().getChunks();
 	}
 
 	public void clearEntities(){
-		if(clipboard != null){
-			for(BlockVector2 coords : clipboard.getRegion().getChunks()){
-				coords = coords.add(-(clipboard.getRegion().getMinimumPoint().getBlockX() >> 4),-(clipboard.getRegion().getMinimumPoint().getBlockZ() >> 4));
-				coords = coords.add((this.getBaseLocation().getBlockX() >> 4),(this.getBaseLocation().getBlockZ() >> 4));
-				coords = coords.add(BlockVector2.at((clipboard.getRegion().getMinimumPoint().getBlockX() >> 4) - (this.getBaseLocation().getBlockX() >> 4),(clipboard.getRegion().getMinimumPoint().getBlockZ() >> 4) - (this.getBaseLocation().getBlockZ() >> 4)));
-				Chunk chunk = this.getBaseLocation().getWorld().getChunkAt(coords.getBlockX(),coords.getBlockZ());
-				if(!chunk.isLoaded()) chunk.load();
-				for(org.bukkit.entity.Entity entity : chunk.getEntities()){
-					if(!(entity instanceof Player)){
-						entity.remove();
-					}
+		if (regionChunks == null) {
+			return;
+		}
+
+		for(BlockVector2 coords : regionChunks){
+			coords = coords.add(-(regionMinPoint.getBlockX() >> 4),-(regionMinPoint.getBlockZ() >> 4));
+			coords = coords.add((this.getBaseLocation().getBlockX() >> 4),(this.getBaseLocation().getBlockZ() >> 4));
+			coords = coords.add(BlockVector2.at((regionMinPoint.getBlockX() >> 4) - (this.getBaseLocation().getBlockX() >> 4),(regionMinPoint.getBlockZ() >> 4) - (this.getBaseLocation().getBlockZ() >> 4)));
+			Chunk chunk = this.getBaseLocation().getWorld().getChunkAt(coords.getBlockX(),coords.getBlockZ());
+			if(!chunk.isLoaded()) chunk.load();
+			for(org.bukkit.entity.Entity entity : chunk.getEntities()){
+				if(!(entity instanceof Player)){
+					entity.remove();
 				}
 			}
 		}
@@ -194,7 +225,7 @@ public class GameArenaRegion {
 		public SchemaStages(Clipboard clipboard,Location location){
 			this.clipboard = clipboard;
 			this.location = location;
-			this.editSession = WorldEdit.getInstance().getEditSessionFactory().getEditSession(new BukkitWorld(location.getWorld()),-1);
+			this.editSession = WorldEdit.getInstance().newEditSession(new BukkitWorld(location.getWorld()));
 			this.start();
 		}
 
@@ -259,14 +290,10 @@ public class GameArenaRegion {
 							location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setType(BukkitAdapter.adapt(map.getValue().getBlockType()),false);
 							location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setBlockData(BukkitAdapter.adapt(map.getValue()),false);
 						} else {
-							try {
-								editSession.setBlock(map.getKey(),map.getValue());
-							} catch (MaxChangedBlocksException e){
-								e.printStackTrace();
-							}
+							editSession.smartSetBlock(map.getKey(),map.getValue());
 						}
 					}
-					editSession.commit();
+					Operations.completeBlindly(editSession.commit());
 					blocks.clear();
 					build = false;
 					return null;
@@ -448,7 +475,7 @@ public class GameArenaRegion {
 		return shouldPlaceFinal.contains(type);
 	}
 
-	private class CustomGenerator extends ChunkGenerator {
+	public class CustomGenerator extends ChunkGenerator {
 
 		private Biome biome;
 
@@ -464,13 +491,41 @@ public class GameArenaRegion {
 		@Override
 		public ChunkData generateChunkData(World world,Random random,int cx,int cz,BiomeGrid biomeGrid){
 			ChunkData data = this.createChunkData(world);
-			for(int x=0;x<16;x++){
-				for(int z=0;z<16;z++){
-					biomeGrid.setBiome(x,z,biome);
-				}
+
+			if(cx == 0 && cz == 0) {
+				data.setBlock(0, 64, 0, Material.BEDROCK);
 			}
-			if(cx == 0 && cz == 0) data.setBlock(0,64,0,Material.BEDROCK);
+
+			/*for (int x = 0;x < 16;x++) {
+				for (int y = world.getMinHeight();y < world.getMaxHeight();y++) {
+					for (int z = 0;z < 16;z++) {
+
+						BlockVector3 pt = BlockVector3.at((cx << 4) + x, y, (cz << 4) + z);
+						if (!clipboard.getRegion().contains(pt)) {
+							continue;
+						}
+
+						data.setBlock(x, y, z, BukkitAdapter.adapt(clipboard.getFullBlock(pt)));
+					}
+				}
+			}*/
+
 			return data;
+		}
+
+		@Override
+		public @Nullable BiomeProvider getDefaultBiomeProvider(@NotNull WorldInfo worldInfo) {
+			return new BiomeProvider() {
+				@Override
+				public @NotNull Biome getBiome(@NotNull WorldInfo worldInfo, int i, int i1, int i2) {
+					return biome;
+				}
+
+				@Override
+				public @NotNull List<Biome> getBiomes(@NotNull WorldInfo worldInfo) {
+					return new ArrayList<>(List.of(biome));
+				}
+			};
 		}
 
 		@Override

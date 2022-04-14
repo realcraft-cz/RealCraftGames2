@@ -3,23 +3,20 @@ package com.hidenseek;
 import com.games.player.GamePlayer;
 import com.games.utils.Glow;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.entity.decoration.EntityArmorStand;
-import net.minecraft.world.entity.item.EntityFallingBlock;
-import net.minecraft.world.level.World;
-import net.minecraft.world.level.block.state.IBlockData;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_18_R2.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_18_R2.entity.CraftFallingBlock;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.craftbukkit.v1_18_R2.entity.CraftArmorStand;
 import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
@@ -45,11 +42,10 @@ public class HidenSeekUser {
 	private boolean weaponActive = true;
 	private long weaponTime = 0;
 
-	private int entityId;
 	private boolean solid = false;
 	private DisguiseType type;
-	private HidenSeekArmorStand stand;
-	private HidenSeekFallingBlock block;
+	private ArmorStand stand;
+	private FallingBlock block;
 	private Block origBlock;
 
 	public HidenSeekUser(HidenSeek game,GamePlayer gPlayer){
@@ -123,15 +119,15 @@ public class HidenSeekUser {
 	}
 
 	public int getEntityId(){
-		return entityId;
+		return block != null ? block.getEntityId() : 0;
 	}
 
 	public Block getOriginalBlock(){
 		return origBlock;
 	}
 
-	public CraftFallingBlock getBlock(){
-		return ((CraftFallingBlock) this.block.getBukkitEntity());
+	public FallingBlock getBlock(){
+		return this.block;
 	}
 
 	public boolean isSolid(){
@@ -166,36 +162,44 @@ public class HidenSeekUser {
 		this.cancelDisguise();
 		type = DisguiseType.BLOCK;
 
-		stand = new HidenSeekArmorStand(((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle(),gPlayer.getPlayer().getLocation().getX(),gPlayer.getPlayer().getLocation().getY()-0.70,gPlayer.getPlayer().getLocation().getZ());
-		stand.noclip = true;
-		stand.setNoGravity(true);
-		stand.setInvisible(true);
-		stand.setSmall(true);
-		((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle().addEntity(stand,SpawnReason.CUSTOM);
-		IBlockData ibd = ((CraftBlock)baseBlock).getNMS();
-		block = new HidenSeekFallingBlock(((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle(),gPlayer.getPlayer().getLocation().getX(),gPlayer.getPlayer().getLocation().getY(),gPlayer.getPlayer().getLocation().getZ(),ibd);
-		block.dropItem = false;
-		((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle().addEntity(block,SpawnReason.CUSTOM);
-		this.entityId = block.getId();
-		stand.getBukkitEntity().setPassenger(block.getBukkitEntity());
+		this._spawnStand(gPlayer.getPlayer().getLocation().add(0, -0.7, 0));
+		this._spawnBlock(gPlayer.getPlayer().getLocation(), baseBlock.getBlockData());
 
 		for(Player player2 : Bukkit.getOnlinePlayers()){
 			if(!player2.equals(gPlayer.getPlayer())){
 				player2.hidePlayer(gPlayer.getPlayer());
 			}
 		}
+
 		gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY,Integer.MAX_VALUE,2,false,false));
 	}
 
+	protected void _spawnStand(Location location) {
+		stand = (ArmorStand) gPlayer.getPlayer().getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+		stand.setInvulnerable(true);
+		stand.setInvisible(true);
+		stand.setGravity(false);
+		stand.setPersistent(false);
+		stand.setSmall(true);
+	}
+
+	protected void _spawnBlock(Location location, BlockData blockData) {
+		block = gPlayer.getPlayer().getWorld().spawnFallingBlock(location, blockData);
+		block.setGravity(false);
+		block.setInvulnerable(true);
+		block.setPersistent(false);
+		block.setDropItem(false);
+
+		stand.addPassenger(block);
+	}
+
 	public void respawnBlock(Location location){
-		stand.getBukkitEntity().eject();
-		IBlockData ibd = block.getBlock();
-		if(block != null) block.remove();
-		block = new HidenSeekFallingBlock(((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle(),location.getX(),location.getY(),location.getZ(),ibd);
-		block.dropItem = false;
-		((CraftWorld)gPlayer.getPlayer().getWorld()).getHandle().addEntity(block,SpawnReason.CUSTOM);
-		this.entityId = block.getId();
-		stand.getBukkitEntity().setPassenger(block.getBukkitEntity());
+		stand.eject();
+
+		BlockData blockData = block.getBlockData();
+		block.remove();
+
+		this._spawnBlock(location, blockData);
 	}
 
 	/*public void disguiseEntity(Entity original){
@@ -217,7 +221,7 @@ public class HidenSeekUser {
 			}
 		}
 		if(block != null) block.remove();
-		if(stand != null) stand.getBukkitEntity().remove();
+		if(stand != null) stand.remove();
 	}
 
 	public void reset(){
@@ -246,6 +250,7 @@ public class HidenSeekUser {
 								((CraftPlayer)player2).getHandle().b.a(packet);
 							}
 						}
+
 						Particles.BLOCK_CRACK.display(Bukkit.createBlockData(this.getBlock().getMaterial()),0.3f,0.3f,0.3f,0.0f,64,origBlock.getLocation().add(0.5,0.7,0.5),64);
 						gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_STONE_PLACE,1,1);
 						this.solid = true;
@@ -256,11 +261,13 @@ public class HidenSeekUser {
 		} else {
 			if(this.isSolid()){
 				if(origBlock != null){
-					for(Player player2 : Bukkit.getOnlinePlayers()){
-						player2.sendBlockChange(origBlock.getLocation(),origBlock.getBlockData());
-					}
-					this.respawnBlock(origBlock.getLocation());
+					Location location = origBlock.getLocation();
+					BlockData data = origBlock.getBlockData();
 					origBlock = null;
+					for(Player player2 : Bukkit.getOnlinePlayers()){
+						player2.sendBlockChange(location,data);
+					}
+					this.respawnBlock(location);
 					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_BAT_HURT,1f,1f);
 				}
 				this.solid = false;
@@ -278,9 +285,22 @@ public class HidenSeekUser {
 				loc.setX(origBlock.getX()+0.5);
 				loc.setY(origBlock.getY()-0.74);
 				loc.setZ(origBlock.getZ()+0.5);
+			} else {
+				loc.add(0.0,-0.70,0.0);
 			}
-			else loc.add(0.0,-0.70,0.0);
-			stand.setPosition(loc.getX(),loc.getY(),loc.getZ());
+
+			if (stand != null && stand.isDead()) {
+				this._spawnStand(loc);
+			}
+
+			if (block != null && block.isDead()) {
+				this._spawnBlock(loc, block.getBlockData());
+			}
+
+			stand.setTicksLived(1);
+			block.setTicksLived(1);
+
+			((CraftArmorStand)stand).getHandle().c(loc.getX(), loc.getY(), loc.getZ());
 		}
 	}
 
@@ -365,44 +385,5 @@ public class HidenSeekUser {
 
 	public enum DisguiseType {
 		BLOCK, ENTITY
-	}
-
-	public class HidenSeekArmorStand extends EntityArmorStand {
-		public HidenSeekArmorStand(World world, double d0, double d1, double d2){
-			super(world, d0, d1, d2);
-		}
-
-		@Override
-		public NBTTagCompound f(NBTTagCompound nbttagcompound){
-			return null;
-		}
-
-		@Override
-		public boolean d_() {
-			return super.d_();
-		}
-	}
-
-	public class HidenSeekFallingBlock extends EntityFallingBlock {
-		private boolean dead = false;
-
-		public HidenSeekFallingBlock(World world, double d0, double d1, double d2, IBlockData iblockdata) {
-			super(world, d0, d1, d2, iblockdata);
-		}
-
-		public void remove(){
-			this.dead = true;
-			super.getBukkitEntity().remove();
-		}
-
-		@Override
-		public void die(){
-			if(this.dead) super.die();
-		}
-
-		@Override
-		public NBTTagCompound f(NBTTagCompound nbttagcompound){
-			return null;
-		}
 	}
 }

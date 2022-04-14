@@ -98,8 +98,8 @@ public abstract class GameArena {
 		try {
 			if(rs.next()){
 				name = rs.getString("map_name");
-				this._loadData(new GameArenaData(this,rs.getString("map_data")));
 				this.loadRegion(rs.getBlob("map_region"));
+				this._loadData(new GameArenaData(this,rs.getString("map_data")));
 				this.loadImage(rs.getBlob("map_image"));
 			}
 			rs.close();
@@ -112,7 +112,7 @@ public abstract class GameArena {
 		time.loadData(data);
 		biome.loadData(data);
 		environment.loadData(data);
-		this.getRegion().initWorld();
+		this.getRegion().createWorld();
 		spectator.loadData(data);
 		this.loadData(data);
 	}

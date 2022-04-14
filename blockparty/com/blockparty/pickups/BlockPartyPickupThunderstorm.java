@@ -41,6 +41,7 @@ public class BlockPartyPickupThunderstorm extends BlockPartyPickup {
 				location.getWorld().strikeLightning(location);
 				Particles.LAVA.display(1f,1f,1f,0f,4,location,64);
 				location.getWorld().playSound(location,Sound.BLOCK_FIRE_EXTINGUISH,1f,1f);
+				location.getWorld().playSound(location,Sound.ENTITY_LIGHTNING_BOLT_THUNDER,2f,1f);
 				List<Block> blocks = this.getNearbyBlocks(location,1,false,false);
 				for(final Block block : blocks){
 					Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){

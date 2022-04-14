@@ -41,8 +41,13 @@ public class GameLeaderboard {
 	private Location[] getLocations(){
 		if(locations == null){
 			locations = new Location[2];
-			locations[0] = LocationUtil.getConfigLocation(Games.getInstance().getConfig(),"leaderboard.minLoc");
-			locations[1] = LocationUtil.getConfigLocation(Games.getInstance().getConfig(),"leaderboard.maxLoc");
+			if (game.getConfig().isSet("leaderboard.minLoc")) {
+				locations[0] = LocationUtil.getConfigLocation(game.getConfig(), "leaderboard.minLoc");
+				locations[1] = LocationUtil.getConfigLocation(game.getConfig(), "leaderboard.maxLoc");
+			} else {
+				locations[0] = LocationUtil.getConfigLocation(Games.getInstance().getConfig(), "leaderboard.minLoc");
+				locations[1] = LocationUtil.getConfigLocation(Games.getInstance().getConfig(), "leaderboard.maxLoc");
+			}
 		}
 		return locations;
 	}
@@ -60,7 +65,7 @@ public class GameLeaderboard {
 		boolean xDiff = (location1.getBlockX() < location2.getBlockX());
 		boolean zDiff = (location1.getBlockZ() < location2.getBlockZ());
 		int y = (location1.getBlockY() > location2.getBlockY() ? location1.getBlockY() : location2.getBlockY());
-		while(y >= location1.getBlockZ()){
+		while(y >= location1.getBlockY()){
 			int x = location1.getBlockX();
 			while(xDiff ? x <= location2.getBlockX() : x >= location2.getBlockX()){
 				int z = location1.getBlockZ();

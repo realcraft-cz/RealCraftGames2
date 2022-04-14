@@ -12,8 +12,8 @@ public class BedWarsArenaRegion extends GameArenaRegion {
 	}
 
 	public void reset(boolean async){
-		this.resetOuterRegion();
 		super.reset(async);
+		this.resetOuterRegion();
 	}
 
 	private void resetOuterRegion(){

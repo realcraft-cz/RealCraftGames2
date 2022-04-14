@@ -9,9 +9,6 @@ import com.games.game.GameState;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import realcraft.bukkit.utils.Title;
-import net.citizensnpcs.api.event.NPCLeftClickEvent;
-import net.citizensnpcs.api.event.NPCRightClickEvent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Bed;
@@ -29,10 +26,8 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
@@ -40,6 +35,7 @@ import realcraft.bukkit.users.Users;
 import realcraft.bukkit.utils.ItemUtil;
 import realcraft.bukkit.utils.LocationUtil;
 import realcraft.bukkit.utils.MaterialUtil;
+import realcraft.bukkit.utils.Title;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -452,22 +448,26 @@ public class BedWarsListeners implements Listener {
 		}
 	}
 
-	@EventHandler
-	public void NPCRightClickEvent(NPCRightClickEvent event){
-		GamePlayer gPlayer = game.getGamePlayer(event.getClicker());
-		if(gPlayer.getState() != GamePlayerState.SPECTATOR){
-			if(event.getNPC().getEntity().getType() == EntityType.VILLAGER){
+	@EventHandler(priority= EventPriority.LOW)
+	public void PlayerInteractEntityEvent(PlayerInteractEntityEvent event){
+		if(event.getHand().equals(EquipmentSlot.HAND) && event.getRightClicked().getType() == EntityType.VILLAGER){
+			event.setCancelled(true);
+			GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
+			if(gPlayer.getState() != GamePlayerState.SPECTATOR) {
 				game.getShop().open(gPlayer);
 			}
 		}
 	}
 
-	@EventHandler
-	public void NPCLeftClickEvent(NPCLeftClickEvent event){
-		GamePlayer gPlayer = game.getGamePlayer(event.getClicker());
-		if(gPlayer.getState() != GamePlayerState.SPECTATOR){
-			if(event.getNPC().getEntity().getType() == EntityType.VILLAGER){
-				game.getShop().open(gPlayer);
+	@EventHandler(priority=EventPriority.LOW)
+	public void EntityDamageByEntityEvent(EntityDamageByEntityEvent event){
+		if(event.getEntity().getType() == EntityType.VILLAGER){
+			event.setCancelled(true);
+			if(event.getDamager() instanceof Player){
+				GamePlayer gPlayer = game.getGamePlayer((Player)event.getDamager());
+				if(gPlayer.getState() != GamePlayerState.SPECTATOR) {
+					game.getShop().open(gPlayer);
+				}
 			}
 		}
 	}

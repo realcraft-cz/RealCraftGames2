@@ -2,10 +2,15 @@ package com.blockparty;
 
 import com.games.utils.RandomUtil;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
 import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
+import com.sk89q.worldedit.extent.transform.BlockTransformExtent;
+import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
+import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.math.transform.AffineTransform;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -69,7 +74,21 @@ public class BlockPartyFloor {
 					BuiltInClipboardFormat format = BuiltInClipboardFormat.SPONGE_SCHEMATIC;
 					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
 					ClipboardReader reader = format.getReader(bais);
-					clipboard = reader.read();
+					Clipboard clipboard = reader.read();
+
+					AffineTransform transform = new AffineTransform();
+					transform = transform.rotateY(-90);
+					transform = transform.rotateX(0);
+					transform = transform.rotateZ(0);
+
+					BlockTransformExtent extent = new BlockTransformExtent(clipboard, transform);
+					Clipboard target = new BlockArrayClipboard(clipboard.getRegion());
+					target.setOrigin(clipboard.getOrigin());
+					ForwardExtentCopy copy = new ForwardExtentCopy(extent, clipboard.getRegion(), clipboard.getOrigin().add(15, 0, 15), target, clipboard.getOrigin().add(15, 0, 15));
+					copy.setTransform(transform);
+					Operations.completeBlindly(copy);
+
+					this.clipboard = target;
 				} catch (IOException e){
 					e.printStackTrace();
 				}
