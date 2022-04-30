@@ -14,6 +14,7 @@ import com.games.utils.StringUtil;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -151,20 +152,13 @@ public class HidenSeek extends Game {
 				gPlayer.getPlayer().getInventory().setItem(1,itemStack);
 			}
 
+			gPlayer.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(100);
+
 			itemStack = new ItemStack(Material.IRON_AXE,1);
 			gPlayer.getPlayer().getInventory().setItem(0,itemStack);
 
-			itemStack = new ItemStack(Material.IRON_HELMET,1);
-			gPlayer.getPlayer().getInventory().setHelmet(itemStack);
-
-	        itemStack = new ItemStack(Material.IRON_CHESTPLATE,1);
-	        gPlayer.getPlayer().getInventory().setChestplate(itemStack);
-
-	        itemStack = new ItemStack(Material.IRON_LEGGINGS,1);
-	        gPlayer.getPlayer().getInventory().setLeggings(itemStack);
-
-	        itemStack = new ItemStack(Material.IRON_BOOTS,1);
-	        gPlayer.getPlayer().getInventory().setBoots(itemStack);
+			itemStack = new ItemStack(Material.CHAINMAIL_CHESTPLATE,1);
+			gPlayer.getPlayer().getInventory().setChestplate(itemStack);
 
 	        gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
 	        gPlayer.getPlayer().removePotionEffect(PotionEffectType.INVISIBILITY);
@@ -253,55 +247,61 @@ public class HidenSeek extends Game {
 
 	public boolean isBlockValid(Material material){
 		switch(material){
-			case ANVIL: return true;
-			case BOOKSHELF: return true;
-			case CAKE: return true;
-			case COAL_BLOCK: return true;
-			case COAL_ORE: return true;
-			case DIAMOND_BLOCK: return true;
-			case DIAMOND_ORE: return true;
-			case DISPENSER: return true;
-			case DROPPER: return true;
-			case EMERALD_BLOCK: return true;
-			case EMERALD_ORE: return true;
-			case FURNACE: return true;
-			case GOLD_BLOCK: return true;
-			case GOLD_ORE: return true;
-			case HAY_BLOCK: return true;
-			case IRON_BLOCK: return true;
-			case IRON_ORE: return true;
-			case JACK_O_LANTERN: return true;
-			case JUKEBOX: return true;
-			case LAPIS_BLOCK: return true;
-			case LAPIS_ORE: return true;
-			case MELON: return true;
-			case NOTE_BLOCK: return true;
-			case PUMPKIN: return true;
-			case CARVED_PUMPKIN: return true;
-			case REDSTONE_LAMP: return true;
-			case REDSTONE_ORE: return true;
-			case SLIME_BLOCK: return true;
-			case SPONGE: return true;
-			case TNT: return true;
-			case CRAFTING_TABLE: return true;
-			case WHITE_WOOL: return true;
-			case ORANGE_WOOL: return true;
-			case MAGENTA_WOOL: return true;
-			case LIGHT_BLUE_WOOL: return true;
-			case YELLOW_WOOL: return true;
-			case LIME_WOOL: return true;
-			case PINK_WOOL: return true;
-			case GRAY_WOOL: return true;
-			case LIGHT_GRAY_WOOL: return true;
-			case CYAN_WOOL: return true;
-			case PURPLE_WOOL: return true;
-			case BLUE_WOOL: return true;
-			case BROWN_WOOL: return true;
-			case GREEN_WOOL: return true;
-			case RED_WOOL: return true;
-			case BLACK_WOOL: return true;
-			default: return false;
+			case ANVIL:
+			case BARREL:
+			case BLAST_FURNACE:
+			case BOOKSHELF:
+			case CAKE:
+			case COAL_BLOCK:
+			case COAL_ORE:
+			case DIAMOND_BLOCK:
+			case DIAMOND_ORE:
+			case DISPENSER:
+			case DROPPER:
+			case EMERALD_BLOCK:
+			case EMERALD_ORE:
+			case FURNACE:
+			case GOLD_BLOCK:
+			case GOLD_ORE:
+			case HAY_BLOCK:
+			case IRON_BLOCK:
+			case IRON_ORE:
+			case JACK_O_LANTERN:
+			case JUKEBOX:
+			case LAPIS_BLOCK:
+			case LAPIS_ORE:
+			case LECTERN:
+			case MELON:
+			case NOTE_BLOCK:
+			case PUMPKIN:
+			case CARVED_PUMPKIN:
+			case REDSTONE_LAMP:
+			case REDSTONE_ORE:
+			case SLIME_BLOCK:
+			case SMOKER:
+			case SPONGE:
+			case TNT:
+			case CRAFTING_TABLE:
+			case WHITE_WOOL:
+			case ORANGE_WOOL:
+			case MAGENTA_WOOL:
+			case LIGHT_BLUE_WOOL:
+			case YELLOW_WOOL:
+			case LIME_WOOL:
+			case PINK_WOOL:
+			case GRAY_WOOL:
+			case LIGHT_GRAY_WOOL:
+			case CYAN_WOOL:
+			case PURPLE_WOOL:
+			case BLUE_WOOL:
+			case BROWN_WOOL:
+			case GREEN_WOOL:
+			case RED_WOOL:
+			case BLACK_WOOL:
+				return true;
 		}
+
+		return false;
 	}
 
 	public boolean isEntityValid(EntityType entity){

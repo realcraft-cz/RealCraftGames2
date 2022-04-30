@@ -59,9 +59,8 @@ public class HidenSeekTeams {
 	public void autoBalancingTeams(){
 		Random generator = new Random();
 		ArrayList<String> randomSeekers = new ArrayList<String>();
-		int seekers = 3;
-		if(game.getGamePlayers().size() <= 6) seekers = 1;
-		else if(game.getGamePlayers().size() <= 11) seekers = 2;
+		int seekers = 2;
+		if(game.getGamePlayers().size() <= 10) seekers = 1;
 		Object [] values = game.getGamePlayers().toArray();
 		for(int i=0;i<seekers;i++){
 			GamePlayer gPlayer = (GamePlayer) values[generator.nextInt(values.length)];
@@ -79,9 +78,8 @@ public class HidenSeekTeams {
 
 	public void autoBalancingAfterLeft(){
 		Random generator = new Random();
-		int seekers = 3;
-		if(game.getGamePlayers().size() <= 6) seekers = 1;
-		else if(game.getGamePlayers().size() <= 11) seekers = 2;
+		int seekers = 2;
+		if(game.getGamePlayers().size() <= 10) seekers = 1;
 		if(game.getGamePlayers().size() > 0 && seekersTeam.getPlayers().size() < seekers){
 			ArrayList<String> randomSeekers = new ArrayList<String>();
 			Object [] values = hidersTeam.getPlayers().toArray();
