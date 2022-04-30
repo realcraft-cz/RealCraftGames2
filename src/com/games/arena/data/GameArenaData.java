@@ -12,7 +12,7 @@ public class GameArenaData {
 
 	public GameArenaData(GameArena arena,String data){
 		this.arena = arena;
-		JsonElement element = new JsonParser().parse(data);
+		JsonElement element = JsonParser.parseString(data);
 		if(element.isJsonObject()) objects = element.getAsJsonObject();
 		else objects = new JsonObject();
 	}

@@ -14,7 +14,7 @@ public class BlockPartyPickupLevitation extends BlockPartyPickup {
 	@Override
 	public void activate(GamePlayer gPlayer){
 		for(GamePlayer gPlayer2 : this.getGame().getGamePlayers()){
-			gPlayer2.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 6 * 20, 1));
+			gPlayer2.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, 8 * 20, 1));
 		}
 	}
 

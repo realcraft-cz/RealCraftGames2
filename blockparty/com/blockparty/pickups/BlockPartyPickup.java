@@ -79,10 +79,6 @@ public abstract class BlockPartyPickup implements Runnable {
 		}
 
 		public static BlockPartyPickupType getRandomType(){
-			//return BlockPartyPickupType.PUMPKIN;
-			if (true) {
-				return BlockPartyPickupType.SKELETONS;
-			}
 			return BlockPartyPickupType.values()[RandomUtil.getRandomInteger(0,BlockPartyPickupType.values().length-1)];
 		}
 	}

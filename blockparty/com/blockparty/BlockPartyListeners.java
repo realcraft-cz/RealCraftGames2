@@ -27,6 +27,7 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
+import realcraft.bukkit.lobby.LobbyMenu;
 import realcraft.bukkit.users.Users;
 import realcraft.bukkit.utils.FireworkUtil;
 import realcraft.bukkit.utils.Particles;
@@ -81,12 +82,34 @@ public class BlockPartyListeners implements Listener {
 		}
 	}
 
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void GameEndEvent(GameEndEvent event){
+		event.setCancelled(true);
+
+		game.setState(GameState.LOBBY);
+		game.getLeaderboard().update();
+		game.getStats().addGame(game.getStartPlayers());
 		for(GamePlayer gPlayer : game.getPlayers()){
+			if (gPlayer.getState() == GamePlayerState.DEFAULT) {
+				gPlayer.getPlayer().teleport(game.getLobbyLocation());
+			}
+			gPlayer.resetPlayer();
+			gPlayer.getPlayer().resetPlayerTime();
+			gPlayer.getPlayer().getInventory().setItem(0, LobbyMenu.getItem());
+			game.getLobbyScoreboard().updateForPlayer(gPlayer);
+			game.getLobbyBossBar().updateForPlayer(gPlayer);
 			game.getScoreboard().updateForPlayer(gPlayer);
 			game.getBossBar().updateForPlayer(gPlayer);
+			game.sendPremiumOffer(gPlayer);
 		}
+
+		Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
+			@Override
+			public void run(){
+				game.getArena().resetRegion();
+				game.getArena().getRegion().clearEntities();
+			}
+		},20);
 	}
 
 	@EventHandler

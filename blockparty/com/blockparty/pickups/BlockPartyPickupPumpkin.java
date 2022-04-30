@@ -17,7 +17,7 @@ public class BlockPartyPickupPumpkin extends BlockPartyPickup {
 	public void activate(GamePlayer gPlayer){
 		ItemStack item = new ItemStack(Material.CARVED_PUMPKIN);
 		for(GamePlayer gPlayer2 : this.getGame().getGamePlayers()){
-			gPlayer.getPlayer().getInventory().setItem(EquipmentSlot.HEAD, item);
+			gPlayer2.getPlayer().getInventory().setItem(EquipmentSlot.HEAD, item);
 			gPlayer2.getPlayer().playSound(gPlayer2.getPlayer().getLocation(),Sound.ENTITY_WITCH_DRINK,1f,1f);
 		}
 	}

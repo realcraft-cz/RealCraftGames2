@@ -1,6 +1,6 @@
 package com.blockparty;
 
-import com.blockparty.pickups.*;
+import com.blockparty.pickups.BlockPartyPickup;
 import com.blockparty.pickups.BlockPartyPickup.BlockPartyPickupType;
 import com.games.Games;
 import com.games.game.*;
@@ -26,7 +26,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import realcraft.bukkit.sitting.Sitting;
 import realcraft.bukkit.utils.LocationUtil;
 import realcraft.bukkit.utils.MaterialUtil;
 import realcraft.bukkit.utils.Particles;
@@ -71,7 +70,7 @@ public class BlockParty extends Game {
 
 		this._loadPickups();
 
-		new Sitting();
+		//new Sitting(); //TODO: fix dismount
 
 		Bukkit.getScheduler().runTaskLater(Games.getInstance(), new Runnable() {
 			@Override

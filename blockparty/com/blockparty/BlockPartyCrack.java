@@ -17,7 +17,7 @@ import java.util.HashMap;
 public class BlockPartyCrack implements Runnable {
 
 	private static final int BLOCK_MAX_DAMAGE = 9;
-	private static final int BLOCK_MAX_STEP = 75;
+	private static final int BLOCK_MAX_STEP = 70;
 
 	private BlockParty game;
 	private BlockLocation minLoc;
@@ -66,7 +66,7 @@ public class BlockPartyCrack implements Runnable {
 	private void _runBlocks() {
 		ticks ++;
 
-		if (ticks == 4) {
+		if (ticks >= 3) {
 			ticks = 0;
 			state = this._hasPlayersInside() ? BlockPartyCrackState.ACTIVE : BlockPartyCrackState.NONE;
 
@@ -84,7 +84,7 @@ public class BlockPartyCrack implements Runnable {
 
 				if (block.getStep() == BLOCK_MAX_DAMAGE + 2) {
 					block.destroy();
-				} else if (block.getStep() == BLOCK_MAX_STEP) {
+				} else if (block.getStep() >= BLOCK_MAX_STEP) {
 					block.create();
 					this._sendBlockDamage(block.getBlock().getLocation(), 10);
 				} else if (block.getStep() == 1) {
@@ -107,7 +107,7 @@ public class BlockPartyCrack implements Runnable {
 		BlockPartyCrackBlock block = blockList.get(RandomUtil.getRandomInteger(0, blockList.size() - 1));
 
 		if (block.getStep() != 0) {
-			if (recursionStep > blocks.size()) {
+			if (recursionStep > (blocks.size() * 2)) {
 				return null;
 			}
 

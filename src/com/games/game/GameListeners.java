@@ -409,7 +409,7 @@ public class GameListeners implements Listener {
 		}
 	}
 
-	@EventHandler(priority=EventPriority.LOW)
+	@EventHandler(priority=EventPriority.LOW,ignoreCancelled = true)
 	public void GameEndEvent(GameEndEvent event){
 		game.setState(GameState.LOBBY);
 		game.getVoting().resetVoting();
