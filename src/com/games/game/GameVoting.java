@@ -5,7 +5,7 @@ import com.games.arena.GameArena;
 import com.games.player.GamePlayer;
 import com.games.utils.RandomUtil;
 import com.games.utils.StringUtil;
-import me.filoghost.holographicdisplays.api.beta.hologram.VisibilitySettings;
+import me.filoghost.holographicdisplays.api.hologram.VisibilitySettings;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
