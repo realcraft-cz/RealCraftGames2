@@ -80,6 +80,8 @@
     </orderEntry>
     <orderEntry type="library" name="LightAPI-Bukkit-5.2.0" level="project" />
     <orderEntry type="library" name="worldedit-bukkit-7.2.10-SNAPSHOT-dist" level="project" />
+    <orderEntry type="library" name="spigot-1.19-R0.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="HolographicDisplays-3.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: io.papermc.paper:paper-api:1.19-R0.1-SNAPSHOT" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.guava:guava:31.0.1-jre" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.guava:failureaccess:1.0.1" level="project" />
@@ -109,7 +111,5 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm-commons:9.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm-tree:9.2" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.ow2.asm:asm-analysis:9.2" level="project" />
-    <orderEntry type="library" name="spigot-1.19-R0.1-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="HolographicDisplays-3.0.0-SNAPSHOT" level="project" />
   </component>
 </module>
