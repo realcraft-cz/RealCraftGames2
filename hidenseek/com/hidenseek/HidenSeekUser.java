@@ -111,6 +111,7 @@ public class HidenSeekUser {
 		weaponTime = System.currentTimeMillis();
 		if(weaponDamage >= 100){
 			weaponDamage = 120;
+			gPlayer.getPlayer().setCooldown(Material.IRON_AXE, 40);
 			gPlayer.getPlayer().setGameMode(GameMode.ADVENTURE);
 			gPlayer.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(0);
 			if (gPlayer.getPlayer().getInventory().getItem(0) != null) {
@@ -312,7 +313,7 @@ public class HidenSeekUser {
 
 	public void runTracker(){
 		ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-		if(itemStack.getType() == Material.COMPASS){
+		if(itemStack.getType() == Material.RECOVERY_COMPASS){
 			double distance = this.getDistanceOfNearestHider(gPlayer);
 			int tmpTracker = 10;
 			if(distance < 4.0) tmpTracker = 2;

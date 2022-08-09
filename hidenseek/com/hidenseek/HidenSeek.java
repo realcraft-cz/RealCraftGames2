@@ -145,7 +145,7 @@ public class HidenSeek extends Game {
 		}
 		else if(this.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.SEEKERS){
 			if(this.getGameTime() <= 60){
-				itemStack = new ItemStack(Material.COMPASS,1);
+				itemStack = new ItemStack(Material.RECOVERY_COMPASS,1);
 				meta = itemStack.getItemMeta();
 				meta.setDisplayName("§b§lLokalizator");
 				itemStack.setItemMeta(meta);
