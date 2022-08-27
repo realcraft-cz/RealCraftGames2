@@ -2,6 +2,7 @@ package com.hidenseek;
 
 import com.games.player.GamePlayer;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
+import realcraft.bukkit.RealCraft;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -69,7 +70,7 @@ public class HidenSeekTeams {
 		}
 		for(GamePlayer gPlayer : game.getGamePlayers()){
 			if(randomSeekers.contains(gPlayer.getPlayer().getName())){
-				this.setPlayerTeam(gPlayer,seekersTeam);
+				this.setPlayerTeam(gPlayer, RealCraft.isTestServer() ? hidersTeam : seekersTeam);
 			} else {
 				this.setPlayerTeam(gPlayer,hidersTeam);
 			}

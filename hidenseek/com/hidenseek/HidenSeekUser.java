@@ -19,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import realcraft.bukkit.utils.LocationUtil;
 import realcraft.bukkit.utils.Particles;
 
 public class HidenSeekUser {
@@ -123,7 +124,7 @@ public class HidenSeekUser {
 	}
 
 	public boolean isWeaponActive(){
-		return gPlayer.getPlayer().getGameMode() == GameMode.ADVENTURE;
+		return gPlayer.getPlayer().getGameMode() == GameMode.SURVIVAL;
 	}
 
 	public int getEntityId(){
@@ -233,7 +234,7 @@ public class HidenSeekUser {
 	}
 
 	public void reset(){
-		fireworkTime = System.currentTimeMillis()+(40*1000);
+		fireworkTime = System.currentTimeMillis()+(30*1000);
 		fireworks = 5;
 		solidCountdown = 5;
 		solid = false;
@@ -247,7 +248,7 @@ public class HidenSeekUser {
 		if(solid){
 			if(!this.isSolid()){
 				Block block = gPlayer.getPlayer().getLocation().getBlock();
-				if(block.getType() == Material.AIR || block.getType() == Material.WATER){
+				if((block.getType() == Material.AIR || block.getType() == Material.WATER) && !LocationUtil.isSimilar(block.getLocation(), game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getSpawnLocation())){
 					if(solid == true){
 						origBlock = block;
 						for(Player player2 : Bukkit.getOnlinePlayers()){
@@ -313,7 +314,7 @@ public class HidenSeekUser {
 
 	public void runTracker(){
 		ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-		if(itemStack.getType() == Material.RECOVERY_COMPASS){
+		if(itemStack.getType() == Material.CLOCK){
 			double distance = this.getDistanceOfNearestHider(gPlayer);
 			int tmpTracker = 10;
 			if(distance < 4.0) tmpTracker = 2;
@@ -382,7 +383,7 @@ public class HidenSeekUser {
 			gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 			Block block = gPlayer.getPlayer().getLocation().getBlock();
 			gPlayer.getPlayer().setExp(1-(solidCountdown/5.0f));
-			if((block.getType() == Material.AIR || block.getType() == Material.WATER) && block.getRelative(BlockFace.DOWN).getType() != Material.AIR){
+			if((block.getType() == Material.AIR || block.getType() == Material.WATER) && block.getRelative(BlockFace.DOWN).getType() != Material.AIR && !LocationUtil.isSimilar(block.getLocation(), game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getSpawnLocation())){
 				if(solidCountdown == 0) this.setSolid(true);
 				else solidCountdown --;
 			}

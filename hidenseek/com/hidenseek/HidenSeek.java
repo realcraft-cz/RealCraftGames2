@@ -56,11 +56,9 @@ public class HidenSeek extends Game {
 					for(GamePlayer gPlayer : HidenSeek.this.getTeams().getTeam(HidenSeekTeamType.HIDERS).getPlayers()){
 						HidenSeek.this.getUser(gPlayer).run();
 					}
-					for(GamePlayer gPlayer : HidenSeek.this.getTeams().getTeam(HidenSeekTeamType.SEEKERS).getPlayers()){
-						HidenSeek.this.getUser(gPlayer).updateWeaponDamage();
-					}
 					if(cycleTime%2 == 0){
 						for(GamePlayer gPlayer : HidenSeek.this.getTeams().getTeam(HidenSeekTeamType.SEEKERS).getPlayers()){
+							HidenSeek.this.getUser(gPlayer).updateWeaponDamage();
 							HidenSeek.this.getUser(gPlayer).runTracker();
 							HidenSeek.this.getUser(gPlayer).runWeaponDamage();
 						}
@@ -121,6 +119,7 @@ public class HidenSeek extends Game {
 				meta.addEnchant(Enchantment.KNOCKBACK,2,false);
 				itemStack.setItemMeta(meta);
 				gPlayer.getPlayer().getInventory().setItem(0,itemStack);
+				return;
 			}
 
 			itemStack = new ItemStack(Material.SLIME_BALL,1);
@@ -135,17 +134,19 @@ public class HidenSeek extends Game {
 			itemStack.setItemMeta(meta);
 			gPlayer.getPlayer().getInventory().setItem(4,itemStack);
 
-			itemStack = new ItemStack(Material.FIREWORK_ROCKET,5);
+			itemStack = new ItemStack(Material.RED_CANDLE,5);
 			meta = itemStack.getItemMeta();
-			meta.setDisplayName("§e§lOhnostroj §r§7(+20 coins)");
+			meta.setDisplayName("§c§lPetarda");
 			itemStack.setItemMeta(meta);
 			gPlayer.getPlayer().getInventory().setItem(5,itemStack);
+
+			gPlayer.getPlayer().setCooldown(Material.RED_CANDLE, 30 * 20);
 
 			gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
 		}
 		else if(this.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.SEEKERS){
 			if(this.getGameTime() <= 60){
-				itemStack = new ItemStack(Material.RECOVERY_COMPASS,1);
+				itemStack = new ItemStack(Material.CLOCK,1);
 				meta = itemStack.getItemMeta();
 				meta.setDisplayName("§b§lLokalizator");
 				itemStack.setItemMeta(meta);
@@ -254,22 +255,28 @@ public class HidenSeek extends Game {
 			case CAKE:
 			case COAL_BLOCK:
 			case COAL_ORE:
+			case DEEPSLATE_COAL_ORE:
 			case DIAMOND_BLOCK:
 			case DIAMOND_ORE:
+			case DEEPSLATE_DIAMOND_ORE:
 			case DISPENSER:
 			case DROPPER:
 			case EMERALD_BLOCK:
 			case EMERALD_ORE:
+			case DEEPSLATE_EMERALD_ORE:
 			case FURNACE:
 			case GOLD_BLOCK:
 			case GOLD_ORE:
+			case DEEPSLATE_GOLD_ORE:
 			case HAY_BLOCK:
 			case IRON_BLOCK:
 			case IRON_ORE:
+			case DEEPSLATE_IRON_ORE:
 			case JACK_O_LANTERN:
 			case JUKEBOX:
 			case LAPIS_BLOCK:
 			case LAPIS_ORE:
+			case DEEPSLATE_LAPIS_ORE:
 			case LECTERN:
 			case MELON:
 			case NOTE_BLOCK:
@@ -277,6 +284,7 @@ public class HidenSeek extends Game {
 			case CARVED_PUMPKIN:
 			case REDSTONE_LAMP:
 			case REDSTONE_ORE:
+			case DEEPSLATE_REDSTONE_ORE:
 			case SLIME_BLOCK:
 			case SMOKER:
 			case SPONGE:
