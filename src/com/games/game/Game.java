@@ -99,13 +99,13 @@ public abstract class Game implements Runnable {
 		}
 		if(!this.isMaintenance()){
 			Bukkit.getScheduler().scheduleSyncRepeatingTask(Games.getInstance(),this,20,20);
-			Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
+			Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 				@Override
 				public void run(){
 					gameVoting.resetVoting();
 					gameLeaderboard.update();
 				}
-			});
+			}, 40);
 			Bukkit.getScheduler().runTask(Games.getInstance(),new Runnable(){
 				@Override
 				public void run(){

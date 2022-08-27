@@ -2,6 +2,7 @@ package com.hidenseek;
 
 import com.games.player.GamePlayer;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
+import realcraft.bukkit.RealCraft;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -59,9 +60,8 @@ public class HidenSeekTeams {
 	public void autoBalancingTeams(){
 		Random generator = new Random();
 		ArrayList<String> randomSeekers = new ArrayList<String>();
-		int seekers = 3;
-		if(game.getGamePlayers().size() <= 6) seekers = 1;
-		else if(game.getGamePlayers().size() <= 11) seekers = 2;
+		int seekers = 2;
+		if(game.getGamePlayers().size() <= 10) seekers = 1;
 		Object [] values = game.getGamePlayers().toArray();
 		for(int i=0;i<seekers;i++){
 			GamePlayer gPlayer = (GamePlayer) values[generator.nextInt(values.length)];
@@ -70,7 +70,7 @@ public class HidenSeekTeams {
 		}
 		for(GamePlayer gPlayer : game.getGamePlayers()){
 			if(randomSeekers.contains(gPlayer.getPlayer().getName())){
-				this.setPlayerTeam(gPlayer,seekersTeam);
+				this.setPlayerTeam(gPlayer, RealCraft.isTestServer() ? hidersTeam : seekersTeam);
 			} else {
 				this.setPlayerTeam(gPlayer,hidersTeam);
 			}
@@ -79,9 +79,8 @@ public class HidenSeekTeams {
 
 	public void autoBalancingAfterLeft(){
 		Random generator = new Random();
-		int seekers = 3;
-		if(game.getGamePlayers().size() <= 6) seekers = 1;
-		else if(game.getGamePlayers().size() <= 11) seekers = 2;
+		int seekers = 2;
+		if(game.getGamePlayers().size() <= 10) seekers = 1;
 		if(game.getGamePlayers().size() > 0 && seekersTeam.getPlayers().size() < seekers){
 			ArrayList<String> randomSeekers = new ArrayList<String>();
 			Object [] values = hidersTeam.getPlayers().toArray();

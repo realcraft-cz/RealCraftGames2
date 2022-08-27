@@ -4,10 +4,8 @@ import com.games.player.GamePlayer;
 import com.games.utils.Glow;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
 import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -21,6 +19,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import realcraft.bukkit.utils.LocationUtil;
 import realcraft.bukkit.utils.Particles;
 
 public class HidenSeekUser {
@@ -39,7 +38,6 @@ public class HidenSeekUser {
 	private int solidCountdown = 5;
 	private int tracker = 1;
 	private int weaponDamage = 0;
-	private boolean weaponActive = true;
 	private long weaponTime = 0;
 
 	private boolean solid = false;
@@ -102,20 +100,31 @@ public class HidenSeekUser {
 	}
 
 	public void useWeapon(){
-		if(weaponActive){
-			weaponDamage += WEAPON_DAMAGE;
-			weaponTime = System.currentTimeMillis();
-			if(weaponDamage >= 100){
-				weaponDamage = 100;
-				weaponActive = false;
-				gPlayer.getPlayer().getInventory().remove(Material.IRON_AXE);
-				gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
+		if (gPlayer.getPlayer().getGameMode() == GameMode.ADVENTURE) {
+			return;
+		}
+
+		if(weaponTime+(WEAPON_TIMEOUT*2) >= System.currentTimeMillis()){
+			return;
+		}
+
+		weaponDamage += WEAPON_DAMAGE;
+		weaponTime = System.currentTimeMillis();
+		if(weaponDamage >= 100){
+			weaponDamage = 120;
+			gPlayer.getPlayer().setCooldown(Material.IRON_AXE, 40);
+			gPlayer.getPlayer().setGameMode(GameMode.ADVENTURE);
+			gPlayer.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(0);
+			if (gPlayer.getPlayer().getInventory().getItem(0) != null) {
+				gPlayer.getPlayer().getInventory().getItem(0).setDurability((short)250);
 			}
+			gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
+			gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.BLOCK_FIRE_EXTINGUISH,1f,1f);
 		}
 	}
 
 	public boolean isWeaponActive(){
-		return weaponActive;
+		return gPlayer.getPlayer().getGameMode() == GameMode.SURVIVAL;
 	}
 
 	public int getEntityId(){
@@ -225,13 +234,12 @@ public class HidenSeekUser {
 	}
 
 	public void reset(){
-		fireworkTime = System.currentTimeMillis()+(40*1000);
+		fireworkTime = System.currentTimeMillis()+(30*1000);
 		fireworks = 5;
 		solidCountdown = 5;
 		solid = false;
 		spawnTime = 0;
 		weaponDamage = 0;
-		weaponActive = true;
 	}
 
 	@SuppressWarnings("deprecation")
@@ -240,7 +248,7 @@ public class HidenSeekUser {
 		if(solid){
 			if(!this.isSolid()){
 				Block block = gPlayer.getPlayer().getLocation().getBlock();
-				if(block.getType() == Material.AIR || block.getType() == Material.WATER){
+				if((block.getType() == Material.AIR || block.getType() == Material.WATER) && !LocationUtil.isSimilar(block.getLocation(), game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getSpawnLocation())){
 					if(solid == true){
 						origBlock = block;
 						for(Player player2 : Bukkit.getOnlinePlayers()){
@@ -306,7 +314,7 @@ public class HidenSeekUser {
 
 	public void runTracker(){
 		ItemStack itemStack = gPlayer.getPlayer().getInventory().getItemInMainHand();
-		if(itemStack.getType() == Material.COMPASS){
+		if(itemStack.getType() == Material.CLOCK){
 			double distance = this.getDistanceOfNearestHider(gPlayer);
 			int tmpTracker = 10;
 			if(distance < 4.0) tmpTracker = 2;
@@ -329,13 +337,16 @@ public class HidenSeekUser {
 
 	public void runWeaponDamage(){
 		if(weaponTime+WEAPON_TIMEOUT < System.currentTimeMillis()){
-			weaponDamage -= 1;
-			if(weaponDamage <= 0){
-				weaponDamage = 0;
-				if(!weaponActive){
-					weaponActive = true;
-					gPlayer.getPlayer().getInventory().setItem(0,new ItemStack(Material.IRON_AXE));
-					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_PICKUP,1,1);
+			if (weaponDamage > 0) {
+				weaponDamage -= 1;
+				if (weaponDamage <= 100) {
+					if (gPlayer.getPlayer().getGameMode() == GameMode.ADVENTURE) {
+						gPlayer.getPlayer().setGameMode(GameMode.SURVIVAL);
+						gPlayer.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_SPEED).setBaseValue(100);
+						if (gPlayer.getPlayer().getInventory().getItem(0) != null) {
+							gPlayer.getPlayer().getInventory().getItem(0).setDurability((short)0);
+						}
+					}
 				}
 			}
 		}
@@ -343,7 +354,7 @@ public class HidenSeekUser {
 	}
 
 	public void updateWeaponDamage(){
-		gPlayer.getPlayer().setExp(weaponDamage*0.01f);
+		gPlayer.getPlayer().setExp((Math.min(weaponDamage, 100)) * 0.01f);
 	}
 
 	private double getDistanceOfNearestHider(GamePlayer gPlayer){
@@ -372,7 +383,7 @@ public class HidenSeekUser {
 			gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 			Block block = gPlayer.getPlayer().getLocation().getBlock();
 			gPlayer.getPlayer().setExp(1-(solidCountdown/5.0f));
-			if((block.getType() == Material.AIR || block.getType() == Material.WATER) && block.getRelative(BlockFace.DOWN).getType() != Material.AIR){
+			if((block.getType() == Material.AIR || block.getType() == Material.WATER) && block.getRelative(BlockFace.DOWN).getType() != Material.AIR && !LocationUtil.isSimilar(block.getLocation(), game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getSpawnLocation())){
 				if(solidCountdown == 0) this.setSolid(true);
 				else solidCountdown --;
 			}

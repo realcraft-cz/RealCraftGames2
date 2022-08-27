@@ -21,8 +21,11 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -30,13 +33,12 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.coins.Coins;
 import realcraft.bukkit.users.Users;
-import realcraft.bukkit.utils.Particles;
 import realcraft.bukkit.utils.Title;
 
 public class HidenSeekListeners implements Listener {
@@ -219,7 +221,7 @@ public class HidenSeekListeners implements Listener {
 		if(game.getState() == GameState.INGAME){
 			if(game.getTeams().getActiveTeams().size() < 2 && !RealCraft.isTestServer()) game.setState(GameState.ENDING);
 			for(GamePlayer gPlayer : game.getPlayers()){
-				if(gPlayer.getState() == GamePlayerState.SPECTATOR || gPlayer.getSettings().getLong("died")+(20*1000) >= System.currentTimeMillis()) continue;
+				if(gPlayer.getState() == GamePlayerState.SPECTATOR) continue;
 				ItemStack item = gPlayer.getPlayer().getInventory().getItem(0);
 				if(item != null && item.getType() != Material.AIR && item.getType() != Material.IRON_AXE && item.getDurability() != (byte)0){
 					gPlayer.getPlayer().updateInventory();
@@ -227,19 +229,23 @@ public class HidenSeekListeners implements Listener {
 				gPlayer.getPlayer().setFoodLevel(20);
 				gPlayer.getPlayer().setSaturation(0);
 				if(game.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.SEEKERS){
-					if(game.getUser(gPlayer).getSpawnTime() > 0 && game.getUser(gPlayer).getSpawnTime() < System.currentTimeMillis()){
-						game.getUser(gPlayer).setSpawnTime(0);
-						gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_HORSE_ARMOR,1,1);
-						gPlayer.getPlayer().teleport(game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getSpawnLocation());
+					if(game.getUser(gPlayer).getSpawnTime() > 0){
+						if (game.getUser(gPlayer).getSpawnTime() < System.currentTimeMillis()) {
+							game.getUser(gPlayer).setSpawnTime(0);
+							gPlayer.getPlayer().getWorld().playSound(gPlayer.getPlayer().getLocation(), Sound.ENTITY_HORSE_ARMOR, 1, 1);
+							gPlayer.getPlayer().teleport(game.getTeams().getTeam(HidenSeekTeamType.HIDERS).getSpawnLocation());
+						} else {
+							Title.showActionTitle(gPlayer.getPlayer(),"§fZbyva §e"+Math.round(((game.getUser(gPlayer).getSpawnTime()-System.currentTimeMillis())/1000)+1)+" sekund§f do respawnu");
+						}
 					}
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
-					if(block.getType() == Material.WATER){
+					if(block.getType() == Material.WATER || block.getType() == Material.LAVA){
 						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,5*25,1),true);
 					}
 				}
 				else if(game.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.HIDERS){
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
-					if(block.getType() == Material.WATER){
+					if(block.getType() == Material.WATER || block.getType() == Material.LAVA){
 						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,5*25,1),true);
 						gPlayer.getPlayer().damage(2);
 					}
@@ -265,6 +271,11 @@ public class HidenSeekListeners implements Listener {
 				}
 			}
 			else if(game.getGameTime() == 60){
+				for (GamePlayer gPlayer : game.getPlayers()) {
+					game.sendMessage("§ePosledni minuta!");
+					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(), Sound.ITEM_GOAT_HORN_SOUND_0, 1000f, 1f);
+				}
+
 				for(GamePlayer gPlayer : game.getTeams().getTeam(HidenSeekTeamType.SEEKERS).getPlayers()){
 					game.loadGameInventory(gPlayer);
 					gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_PICKUP,1,1);
@@ -330,6 +341,7 @@ public class HidenSeekListeners implements Listener {
 			if(game.getTeams().getPlayerTeam(gAttacker).getType() == HidenSeekTeamType.SEEKERS){
 				if(!game.getUser(gAttacker).isWeaponActive() || gAttacker.getPlayer().getInventory().getItemInMainHand().getType() != Material.IRON_AXE){
 					event.setCancelled(true);
+					System.out.println(game.getUser(gAttacker).isWeaponActive());
 					return;
 				}
 				event.setDamage(6);
@@ -369,6 +381,7 @@ public class HidenSeekListeners implements Listener {
 								game.getUser(gPlayer).disguiseBlock(block);
 								gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_BAT_HURT,1f,1f);
 								game.getUser(gPlayer).setBlockTime(System.currentTimeMillis()+(10*1000));
+								gPlayer.getPlayer().setCooldown(Material.SLIME_BALL, 10*20);
 							} else {
 								gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
 								Title.showActionTitle(event.getPlayer(),"§c\u2716 §fNelze se promenit za tento blok §c\u2716");
@@ -383,7 +396,7 @@ public class HidenSeekListeners implements Listener {
 				else if(itemStack.getType() == Material.SUGAR){
 					if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 						if(game.getUser(gPlayer).getMeowTime() < System.currentTimeMillis()){
-							Particles.NOTE.display(0.5f,0.5f,0.5f,0f,8,gPlayer.getPlayer().getLocation().clone().add(0,1,0),128);
+							gPlayer.getPlayer().getWorld().spawnParticle(Particle.NOTE, gPlayer.getPlayer().getLocation().add(0, 1, 0), 8, 0.4, 0.4, 0.4, 1f);
 							gPlayer.getPlayer().getLocation().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_CAT_AMBIENT,0.1f,1.0f);
 							gPlayer.getPlayer().getLocation().getWorld().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_CAT_AMBIENT,0.1f,1.0f);
 							game.getUser(gPlayer).setMeowTime(System.currentTimeMillis()+1000);
@@ -391,33 +404,67 @@ public class HidenSeekListeners implements Listener {
 					}
 					event.setCancelled(true);
 				}
-				else if(itemStack.getType() == Material.FIREWORK_ROCKET){
+				else if(itemStack.getType() == Material.RED_CANDLE){
 					if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
 						if(game.getUser(gPlayer).getFireworkTime() < System.currentTimeMillis()){
-							Firework firework = (Firework) gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getLocation(),EntityType.FIREWORK);
-							FireworkMeta fireworkMeta = firework.getFireworkMeta();
-							fireworkMeta.clearEffects();
-							fireworkMeta.setPower(1);
-							FireworkEffect.Builder fireworkEffect = FireworkEffect.builder();
-							fireworkEffect.with(FireworkEffect.Type.BALL_LARGE);
-							fireworkEffect.flicker(true);
-							fireworkEffect.trail(false);
-							fireworkEffect.withColor(Color.YELLOW);
-							fireworkMeta.addEffect(fireworkEffect.build());
-							firework.setFireworkMeta(fireworkMeta);
+							Item firecracker = gPlayer.getPlayer().getWorld().dropItem(gPlayer.getPlayer().getEyeLocation(), new ItemStack(Material.RED_CANDLE));
+							firecracker.setPickupDelay(Integer.MAX_VALUE);
+							firecracker.setVelocity(gPlayer.getPlayer().getLocation().getDirection().multiply(0.4).add(gPlayer.getPlayer().getVelocity()));
+							firecracker.getWorld().playSound(firecracker.getLocation(), Sound.ENTITY_TNT_PRIMED, 1f, 1f);
+
+							new BukkitRunnable() {
+								private int count;
+
+								@Override
+								public void run() {
+									if (firecracker.getTicksLived() > 10*20) {
+										firecracker.remove();
+										this.cancel();
+										return;
+									}
+
+									if (firecracker.isOnGround()) {
+										count ++;
+
+										if (count < 6) {
+											firecracker.getWorld().spawnParticle(Particle.SMOKE_NORMAL, firecracker.getLocation().add(0, 0.8, 0), 4, 0, 0.1, 0, 0);
+											return;
+										}
+
+										if (count == 6) {
+											firecracker.getWorld().playSound(firecracker.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 3f, 1f);
+											firecracker.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, firecracker.getLocation().add(0, 0.2, 0), 1, 0, 0, 0, 0);
+										}
+
+										if (count == 7 || count == 8 || count == 9) {
+											firecracker.getWorld().playSound(firecracker.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 3f, 1f);
+											firecracker.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, firecracker.getLocation().add(0, 0.2, 0), 8, 0.2, 0.2, 0.2, 0.1f);
+											firecracker.getWorld().spawnParticle(Particle.WAX_ON, firecracker.getLocation().add(0, 0.2, 0), 8, 0.2, 0.2, 0.2, 10f);
+											firecracker.getWorld().spawnParticle(Particle.LAVA, firecracker.getLocation().add(0, 0.2, 0), 4, 0.2, 0.2, 0.2, 1f);
+										}
+
+										if (!firecracker.isDead()) {
+											firecracker.remove();
+										}
+
+										if (count >= 9) {
+											this.cancel();
+										}
+									}
+								}
+							}.runTaskTimer(Games.getInstance(), 6, 6);
+
+							gPlayer.getPlayer().setCooldown(Material.RED_CANDLE, 30 * 20);
 							game.getUser(gPlayer).setFireworkTime(System.currentTimeMillis()+(30*1000));
 							game.getUser(gPlayer).setFireworks(game.getUser(gPlayer).getFireworks()-1);
 							itemStack.setAmount(game.getUser(gPlayer).getFireworks());
 							gPlayer.getPlayer().getInventory().setItem(5,itemStack);
 							if(game.getUser(gPlayer).getFireworks() == 0){
 								int coins = Users.getUser(gPlayer.getPlayer()).giveCoins(20);
-								game.sendMessage(gPlayer,"§eZiskal jsi §a+"+coins+" coins §eza vypusteni ohnostroju");
+								game.sendMessage(gPlayer,"§eZiskal jsi §a+"+coins+" coins §eza odpaleni petard");
 							} else {
-								Title.showActionTitle(event.getPlayer(),"§fVypust vsech §e5 ohnostroju§f a ziskej §a+20 coins",6*20);
+								Title.showActionTitle(event.getPlayer(),"§fOdpal vsech §e5 petard§f a ziskej §a+20 coins",6*20);
 							}
-						} else {
-							gPlayer.getPlayer().playSound(gPlayer.getPlayer().getLocation(),Sound.ENTITY_ITEM_BREAK,1f,1f);
-							Title.showActionTitle(event.getPlayer(),"§c\u2716 §fOhnostroj muzes pouzit za "+Math.round((game.getUser(gPlayer).getFireworkTime()-System.currentTimeMillis())/1000)+" sekund §c\u2716");
 						}
 					}
 					event.setCancelled(true);

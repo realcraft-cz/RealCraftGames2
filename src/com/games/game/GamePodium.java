@@ -200,7 +200,7 @@ public abstract class GamePodium implements Listener {
 			}
 			if(GamePodium.this.getType() == GamePodiumType.LEFT) stand.setHeadPose(new EulerAngle(0,Math.toRadians(-10),0));
 			else if(GamePodium.this.getType() == GamePodiumType.RIGHT) stand.setHeadPose(new EulerAngle(0,Math.toRadians(10),0));
-			for(Entity entity : stand.getNearbyEntities(0.2,0.2,0.2)){
+			for(Entity entity : stand.getNearbyEntities(0.5,0.5,0.5)){
 				if(entity.getType() == EntityType.ARMOR_STAND){
 					entity.remove();
 				}
