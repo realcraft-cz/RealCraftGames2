@@ -11,9 +11,10 @@ import com.games.game.GameStats.GameStatsScore;
 import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.Glow;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Team;
@@ -114,7 +115,8 @@ public class Dominate extends Game {
 		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.RED),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(DominateTeamType.RED.getChatColor()+"§l"+DominateTeamType.RED.toName());
-		if(team != null && team.getType() == DominateTeamType.RED) meta.addEnchant(Glow.getGlow(),10,true);
+		if(team != null && team.getType() == DominateTeamType.RED) meta.addEnchant(Enchantment.LURE,10,true);
+		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(7,itemStack);
 
@@ -123,7 +125,8 @@ public class Dominate extends Game {
 		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.BLUE),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(DominateTeamType.BLUE.getChatColor()+"§l"+DominateTeamType.BLUE.toName());
-		if(team != null && team.getType() == DominateTeamType.BLUE) meta.addEnchant(Glow.getGlow(),10,true);
+		if(team != null && team.getType() == DominateTeamType.BLUE) meta.addEnchant(Enchantment.LURE,10,true);
+		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 	}

@@ -240,13 +240,13 @@ public class HidenSeekListeners implements Listener {
 					}
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
 					if(block.getType() == Material.WATER || block.getType() == Material.LAVA){
-						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,5*25,1),true);
+						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA,5*25,1),true);
 					}
 				}
 				else if(game.getTeams().getPlayerTeam(gPlayer).getType() == HidenSeekTeamType.HIDERS){
 					Block block = gPlayer.getPlayer().getLocation().getBlock();
 					if(block.getType() == Material.WATER || block.getType() == Material.LAVA){
-						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,5*25,1),true);
+						gPlayer.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA,5*25,1),true);
 						gPlayer.getPlayer().damage(2);
 					}
 				}
@@ -354,7 +354,7 @@ public class HidenSeekListeners implements Listener {
 		else if(event.getDamager() instanceof Player && event.getEntity() instanceof Animals){
 			event.setCancelled(true);
 		}
-		else if(event.getEntity().getType() == EntityType.ARMOR_STAND || event.getEntity().getType() == EntityType.FIREWORK){
+		else if(event.getEntity().getType() == EntityType.ARMOR_STAND || event.getEntity().getType() == EntityType.FIREWORK_ROCKET){
 			event.setCancelled(true);
 		}
 	}
@@ -427,18 +427,18 @@ public class HidenSeekListeners implements Listener {
 										count ++;
 
 										if (count < 6) {
-											firecracker.getWorld().spawnParticle(Particle.SMOKE_NORMAL, firecracker.getLocation().add(0, 0.8, 0), 4, 0, 0.1, 0, 0);
+											firecracker.getWorld().spawnParticle(Particle.SMOKE, firecracker.getLocation().add(0, 0.8, 0), 4, 0, 0.1, 0, 0);
 											return;
 										}
 
 										if (count == 6) {
 											firecracker.getWorld().playSound(firecracker.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 3f, 1f);
-											firecracker.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, firecracker.getLocation().add(0, 0.2, 0), 1, 0, 0, 0, 0);
+											firecracker.getWorld().spawnParticle(Particle.EXPLOSION, firecracker.getLocation().add(0, 0.2, 0), 1, 0, 0, 0, 0);
 										}
 
 										if (count == 7 || count == 8 || count == 9) {
 											firecracker.getWorld().playSound(firecracker.getLocation(), Sound.ENTITY_FIREWORK_ROCKET_TWINKLE, 3f, 1f);
-											firecracker.getWorld().spawnParticle(Particle.FIREWORKS_SPARK, firecracker.getLocation().add(0, 0.2, 0), 8, 0.2, 0.2, 0.2, 0.1f);
+											firecracker.getWorld().spawnParticle(Particle.FIREWORK, firecracker.getLocation().add(0, 0.2, 0), 8, 0.2, 0.2, 0.2, 0.1f);
 											firecracker.getWorld().spawnParticle(Particle.WAX_ON, firecracker.getLocation().add(0, 0.2, 0), 8, 0.2, 0.2, 0.2, 10f);
 											firecracker.getWorld().spawnParticle(Particle.LAVA, firecracker.getLocation().add(0, 0.2, 0), 4, 0.2, 0.2, 0.2, 1f);
 										}

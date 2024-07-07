@@ -1,20 +1,19 @@
 package com.hidenseek;
 
 import com.games.player.GamePlayer;
-import com.games.utils.Glow;
 import com.hidenseek.HidenSeekTeam.HidenSeekTeamType;
-import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
+import io.papermc.paper.entity.TeleportFlag;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftArmorStand;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
@@ -254,8 +253,9 @@ public class HidenSeekUser {
 						for(Player player2 : Bukkit.getOnlinePlayers()){
 							if(!player2.equals(gPlayer.getPlayer())){
 								player2.sendBlockChange(gPlayer.getPlayer().getLocation().getBlock().getLocation(),this.getBlock().getBlockData());
-								PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(this.getEntityId());
-								((CraftPlayer)player2).getHandle().b.a(packet);
+								// TODO
+								/*PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(this.getEntityId());
+								((CraftPlayer)player2).getHandle().b.a(packet);*/
 							}
 						}
 
@@ -308,7 +308,8 @@ public class HidenSeekUser {
 			stand.setTicksLived(1);
 			block.setTicksLived(1);
 
-			((CraftArmorStand)stand).getHandle().c(loc.getX(), loc.getY(), loc.getZ());
+			stand.teleport(loc, TeleportFlag.EntityState.RETAIN_PASSENGERS);
+			// ((CraftArmorStand)stand).getHandle().c(loc.getX(), loc.getY(), loc.getZ());
 		}
 	}
 
@@ -377,7 +378,8 @@ public class HidenSeekUser {
 			ItemStack itemStack = this.getItemStack();
 			ItemMeta meta = itemStack.getItemMeta();
 			if(meta != null){
-				if(solidCountdown == 0) meta.addEnchant(Glow.getGlow(),10,true);
+				if(solidCountdown == 0) meta.addEnchant(Enchantment.LURE,10,true);
+				meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 				itemStack.setItemMeta(meta);
 			}
 			gPlayer.getPlayer().getInventory().setItem(8,itemStack);

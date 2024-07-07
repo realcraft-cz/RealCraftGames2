@@ -58,7 +58,7 @@ public class DominateEmerald implements Listener {
 		item.setVelocity(new Vector(0,0,0));
 		item.teleport(this.getLocation());
 		for(Entity entity : item.getNearbyEntities(2.0,2.0,2.0)){
-			if(entity.getType() == EntityType.DROPPED_ITEM){
+			if(entity.getType() == EntityType.ITEM){
 				if(((Item)entity).getItemStack().getType() == Material.EMERALD){
 					entity.remove();
 				}

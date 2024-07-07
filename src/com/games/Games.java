@@ -1,26 +1,23 @@
 package com.games;
 
-import java.io.File;
-import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-
 import com.bedwars.BedWars;
 import com.blockparty.BlockParty;
 import com.dominate.Dominate;
 import com.earth2me.essentials.Essentials;
-import com.games.utils.Glow;
 import com.hidenseek.HidenSeek;
 import com.paintball.Paintball;
 import com.races.Races;
 import com.ragemode.RageMode;
-
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.database.DB;
 import realcraft.share.ServerType;
+
+import java.io.File;
+import java.util.List;
 
 public class Games extends JavaPlugin {
 
@@ -48,7 +45,6 @@ public class Games extends JavaPlugin {
 
 	public void onEnable(){
 		instance = this;
-		Glow.registerGlow();
 		Bukkit.getScheduler().runTask(this,new Runnable(){
 			@Override
 			public void run(){

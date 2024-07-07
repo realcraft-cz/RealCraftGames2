@@ -13,11 +13,12 @@ import com.games.game.GameType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.FormatUtil;
-import com.games.utils.Glow;
 import com.games.utils.StringUtil;
 import com.paintball.PaintballTeam.PaintballTeamType;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Team;
@@ -107,7 +108,8 @@ public class Paintball extends Game {
 		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.RED),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(PaintballTeamType.RED.getChatColor()+"§l"+PaintballTeamType.RED.toName());
-		if(team != null && team.getType() == PaintballTeamType.RED) meta.addEnchant(Glow.getGlow(),10,true);
+		if(team != null && team.getType() == PaintballTeamType.RED) meta.addEnchant(Enchantment.LURE,10,true);
+		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(7,itemStack);
 
@@ -116,7 +118,8 @@ public class Paintball extends Game {
 		itemStack = new ItemStack(MaterialUtil.getWool(DyeColor.BLUE),amount);
 		meta = itemStack.getItemMeta();
 		meta.setDisplayName(PaintballTeamType.BLUE.getChatColor()+"§l"+PaintballTeamType.BLUE.toName());
-		if(team != null && team.getType() == PaintballTeamType.BLUE) meta.addEnchant(Glow.getGlow(),10,true);
+		if(team != null && team.getType() == PaintballTeamType.BLUE) meta.addEnchant(Enchantment.LURE,10,true);
+		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		itemStack.setItemMeta(meta);
 		gPlayer.getPlayer().getInventory().setItem(8,itemStack);
 	}
@@ -129,7 +132,7 @@ public class Paintball extends Game {
 		if(respawn) gPlayer.getPlayer().getInventory().setHeldItemSlot(0);
 		PaintballUser user = this.getUser(gPlayer);
 		gPlayer.getPlayer().getInventory().setItem(0,new ItemStack(Material.SNOWBALL,user.getPistols()));
-		gPlayer.getPlayer().getInventory().setItem(1,new ItemStack(Material.EGG,user.getGrenades()));
+		gPlayer.getPlayer().getInventory().setItem(1,user.getGrenades() > 0 ? new ItemStack(Material.EGG,user.getGrenades()) : null);
 	}
 
 	public HashMap<Integer,SpectatorMenuItem> getSpectatorMenuItems(){

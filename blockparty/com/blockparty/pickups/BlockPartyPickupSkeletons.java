@@ -26,7 +26,7 @@ public class BlockPartyPickupSkeletons extends BlockPartyPickup {
 	public void activate(GamePlayer gPlayer){
 		this.getLocation().getWorld().playSound(this.getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 2f);
 		this.getLocation().getWorld().playSound(this.getLocation(), Sound.ENTITY_STRAY_AMBIENT, 1f, 1f);
-		Particles.EXPLOSION_LARGE.display(0,0,0,0,1,this.getLocation(),128);
+		Particles.EXPLOSION.display(0,0,0,0,1,this.getLocation(),128);
 		Particles.FIREWORKS_SPARK.display(0.3f,0.3f,0.3f,0.2f,32,this.getLocation().clone().add(0.5,0.5,0.5),64);
 		Random random = new Random();
 		for(GamePlayer gPlayer2 : this.getGame().getGamePlayers()){

@@ -11,18 +11,15 @@ import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.StringUtil;
-import realcraft.bukkit.utils.Title;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
 import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import realcraft.bukkit.RealCraft;
 import realcraft.bukkit.lobby.LobbyAutoParkour;
@@ -30,6 +27,7 @@ import realcraft.bukkit.lobby.LobbyMenu;
 import realcraft.bukkit.minihry.GamesReminder;
 import realcraft.bukkit.users.Users;
 import realcraft.bukkit.utils.LocationUtil;
+import realcraft.bukkit.utils.Title;
 import realcraft.share.ServerType;
 import realcraft.share.users.UserRank;
 
@@ -456,10 +454,10 @@ public abstract class Game implements Runnable {
 		if(this.getState() == GameState.STARTING && this.getPlayers().size() < this.getMinPlayers()){
 			this.setState(GameState.LOBBY);
 		}
-		for(GamePlayer gPlayer2 : this.getPlayers()){
+		/*for(GamePlayer gPlayer2 : this.getPlayers()){
 			PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.e,((CraftPlayer)gPlayer.getPlayer()).getHandle());
 			((CraftPlayer)gPlayer2.getPlayer()).getHandle().b.a(packet);
-		}
+		}*/
 		Bukkit.getServer().getPluginManager().callEvent(new GamePlayerLeaveEvent(this,gPlayer));
 	}
 
@@ -529,6 +527,10 @@ public abstract class Game implements Runnable {
 	}
 
 	public void sendGameStartingReminder(){
+		if (lobbyTimeDefault <= 10) {
+			return;
+		}
+
 		Bukkit.getServer().getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 			@Override
 			public void run(){

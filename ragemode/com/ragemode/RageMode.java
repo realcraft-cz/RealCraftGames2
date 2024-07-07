@@ -62,8 +62,8 @@ public class RageMode extends Game {
 
 	public void loadInventory(GamePlayer gPlayer){
 		ItemStack item = new ItemStack(Material.BOW,1);
-		item.addEnchantment(Enchantment.ARROW_INFINITE,1);
-		item.addEnchantment(Enchantment.DURABILITY,3);
+		item.addEnchantment(Enchantment.INFINITY,1);
+		item.addEnchantment(Enchantment.UNBREAKING,3);
 		gPlayer.getPlayer().getInventory().clear();
 		gPlayer.getPlayer().getInventory().addItem(item);
 		gPlayer.getPlayer().getInventory().setItem(8,new ItemStack(Material.ARROW,1));

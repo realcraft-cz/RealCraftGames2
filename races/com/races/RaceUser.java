@@ -3,7 +3,6 @@ package com.races;
 import com.games.player.GamePlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.TreeSpecies;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Boat;
 import org.bukkit.entity.EntityType;
@@ -92,7 +91,7 @@ public class RaceUser {
 	private void equipBoat(){
 		this.clearBoat();
 		boat = (Boat) gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getLocation(),EntityType.BOAT);
-		boat.setWoodType(TreeSpecies.REDWOOD);
+		boat.setBoatType(Boat.Type.SPRUCE);
 		boat.addPassenger(gPlayer.getPlayer());
 	}
 

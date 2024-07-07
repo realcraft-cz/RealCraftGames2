@@ -4,7 +4,8 @@ import com.games.utils.RandomUtil;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.extent.clipboard.BlockArrayClipboard;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.extent.transform.BlockTransformExtent;
 import com.sk89q.worldedit.function.operation.ForwardExtentCopy;
@@ -18,7 +19,6 @@ import realcraft.bukkit.database.DB;
 import realcraft.bukkit.utils.MaterialUtil;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,9 +50,9 @@ public class BlockPartyFloor {
 
 	public Material getRandomBlock(){
 		ArrayList<Material> types = new ArrayList<>();
-		for(int x = clipboard.getRegion().getMinimumPoint().getBlockX();x <= clipboard.getRegion().getMaximumPoint().getBlockX();x++){
-			for(int y = clipboard.getRegion().getMinimumPoint().getBlockY();y <= clipboard.getRegion().getMaximumPoint().getBlockY();y++){
-				for(int z = clipboard.getRegion().getMinimumPoint().getBlockZ();z <= clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
+		for(int x = clipboard.getRegion().getMinimumPoint().x();x <= clipboard.getRegion().getMaximumPoint().x();x++){
+			for(int y = clipboard.getRegion().getMinimumPoint().y();y <= clipboard.getRegion().getMaximumPoint().y();y++){
+				for(int z = clipboard.getRegion().getMinimumPoint().z();z <= clipboard.getRegion().getMaximumPoint().z();z++){
 					Material type = BukkitAdapter.adapt(clipboard.getFullBlock(BlockVector3.at(x,y,z)).getBlockType());
 					if(!types.contains(type) && MaterialUtil.isTerracotta(type)){
 						types.add(type);
@@ -71,9 +71,11 @@ public class BlockPartyFloor {
 				byte[] bytes = blob.getBytes(1,(int)blob.length());
 				blob.free();
 				try {
-					BuiltInClipboardFormat format = BuiltInClipboardFormat.SPONGE_SCHEMATIC;
-					ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-					ClipboardReader reader = format.getReader(bais);
+					ClipboardFormat format = ClipboardFormats.findByInputStream(() -> new ByteArrayInputStream(bytes));
+					if (format == null) {
+						throw new RuntimeException("Unsupported schematic format for map_id " + this.id);
+					}
+					ClipboardReader reader = format.getReader(new ByteArrayInputStream(bytes));
 					Clipboard clipboard = reader.read();
 
 					AffineTransform transform = new AffineTransform();
@@ -89,7 +91,9 @@ public class BlockPartyFloor {
 					Operations.completeBlindly(copy);
 
 					this.clipboard = target;
-				} catch (IOException e){
+				} catch (RuntimeException e) {
+					System.out.println(e.getMessage());
+				} catch (Exception e){
 					e.printStackTrace();
 				}
 			}
@@ -100,12 +104,12 @@ public class BlockPartyFloor {
 	}
 
 	public void reset(){
-		for(int x = clipboard.getRegion().getMinimumPoint().getBlockX();x <= clipboard.getRegion().getMaximumPoint().getBlockX();x++){
-			for(int y = clipboard.getRegion().getMinimumPoint().getBlockY();y <= clipboard.getRegion().getMaximumPoint().getBlockY();y++){
-				for(int z = clipboard.getRegion().getMinimumPoint().getBlockZ();z <= clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
+		for(int x = clipboard.getRegion().getMinimumPoint().x();x <= clipboard.getRegion().getMaximumPoint().x();x++){
+			for(int y = clipboard.getRegion().getMinimumPoint().y();y <= clipboard.getRegion().getMaximumPoint().y();y++){
+				for(int z = clipboard.getRegion().getMinimumPoint().z();z <= clipboard.getRegion().getMaximumPoint().z();z++){
 					BaseBlock block = clipboard.getFullBlock(BlockVector3.at(x,y,z));
-					Location location = new Location(arena.getWorld(),x-clipboard.getRegion().getMinimumPoint().getBlockX(),y-clipboard.getRegion().getMinimumPoint().getBlockY(),z-clipboard.getRegion().getMinimumPoint().getBlockZ());
-					location.add(arena.getGame().getMinLoc().getBlockX(),arena.getGame().getMinLoc().getBlockY(),arena.getGame().getMinLoc().getBlockZ());
+					Location location = new Location(arena.getWorld(),x-clipboard.getRegion().getMinimumPoint().x(),y-clipboard.getRegion().getMinimumPoint().y(),z-clipboard.getRegion().getMinimumPoint().z());
+					location.add(arena.getGame().getMinLoc().x(),arena.getGame().getMinLoc().y(),arena.getGame().getMinLoc().z());
 					location.getBlock().setType(BukkitAdapter.adapt(block.getBlockType()));
 				}
 			}

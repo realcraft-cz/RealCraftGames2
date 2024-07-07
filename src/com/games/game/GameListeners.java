@@ -210,7 +210,7 @@ public class GameListeners implements Listener {
 
 	@EventHandler(priority=EventPriority.LOW)
 	public void EntityExplodeEvent(EntityExplodeEvent event){
-		if(game.getState().isLobby() && event.getEntityType() == EntityType.PRIMED_TNT) event.blockList().clear();
+		if(game.getState().isLobby() && event.getEntityType() == EntityType.TNT) event.blockList().clear();
 	}
 
 	@EventHandler(priority=EventPriority.LOW)

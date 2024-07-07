@@ -5,11 +5,11 @@ import com.dominate.DominateUser;
 import com.dominate.DominateUtils;
 import com.games.Games;
 import com.games.game.GameState;
-import com.games.utils.Glow;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
@@ -17,6 +17,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionType;
@@ -142,7 +143,8 @@ public class DominateSkillArrowFire extends DominateSkill {
 
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.addEnchant(Glow.getGlow(),1,true);
+			meta.addEnchant(Enchantment.LURE,1,true);
+			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		} else {
@@ -152,7 +154,7 @@ public class DominateSkillArrowFire extends DominateSkill {
 			}
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.removeEnchant(Glow.getGlow());
+			meta.removeEnchant(Enchantment.LURE);
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		}

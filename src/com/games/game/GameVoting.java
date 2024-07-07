@@ -5,7 +5,6 @@ import com.games.arena.GameArena;
 import com.games.player.GamePlayer;
 import com.games.utils.RandomUtil;
 import com.games.utils.StringUtil;
-import me.filoghost.holographicdisplays.api.hologram.VisibilitySettings;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -177,7 +176,7 @@ public class GameVoting {
 			this.location2 = location2;
 			this.hologram = HologramsApi.createHologram(this.center.clone().add(0.0,1.0,0.0));
 			this.hologram.insertTextLine(0,"§l0 hlasu");
-			this.hologram.getVisibilityManager().setGlobalVisibility(VisibilitySettings.Visibility.HIDDEN);
+			this.hologram.disable();
 
 			double minZ = Math.min(location1.getBlockZ(),location2.getBlockZ());
 			double maxZ = Math.max(location1.getBlockZ(),location2.getBlockZ())+1;
@@ -204,7 +203,7 @@ public class GameVoting {
 		public void setArena(GameArena arena,boolean hologram){
 			this.arena = arena;
 			this.drawArena();
-			if(game.getArenas().size() > 1) this.hologram.getVisibilityManager().setGlobalVisibility(VisibilitySettings.Visibility.VISIBLE);
+			if(game.getArenas().size() > 1) this.hologram.enable();
 			this.updateVotes();
 		}
 

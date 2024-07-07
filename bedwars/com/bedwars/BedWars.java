@@ -11,7 +11,8 @@ import com.games.game.GameStats.GameStatsType;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.FormatUtil;
-import com.games.utils.Glow;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Team;
@@ -101,7 +102,8 @@ public class BedWars extends Game {
 			itemStack = new ItemStack(MaterialUtil.getWool(team.getType().getDyeColor()));
 			meta = itemStack.getItemMeta();
 			meta.setDisplayName(team.getType().getChatColor()+"§l"+team.getType().toName());
-			if(pTeam != null && pTeam.getType() == team.getType()) meta.addEnchant(Glow.getGlow(),10,true);
+			if(pTeam != null && pTeam.getType() == team.getType()) meta.addEnchant(Enchantment.LURE,1,true);
+			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			itemStack.setItemMeta(meta);
 			gPlayer.getPlayer().getInventory().setItem(index++,itemStack);
 		}

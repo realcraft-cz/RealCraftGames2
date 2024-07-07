@@ -26,7 +26,7 @@ public class BlockPartyPickupAcid extends BlockPartyPickup {
 	@Override
 	public void activate(GamePlayer gPlayer){
 		radius = 0;
-		Particles.EXPLOSION_LARGE.display(0,0,0,0,1,this.getLocation(),128);
+		Particles.EXPLOSION.display(0,0,0,0,1,this.getLocation(),128);
 		this.run();
 	}
 

@@ -29,7 +29,7 @@ public class BedWarsSpecialSheep extends BedWarsSpecialTeam {
     	((Sheep)sheep).setInvulnerable(true);
     	((Sheep)sheep).setRemoveWhenFarAway(false);
     	((Sheep)sheep).setColor(this.getTeam().getType().getDyeColor());
-    	tnt = gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getLocation(),EntityType.PRIMED_TNT);
+    	tnt = gPlayer.getPlayer().getWorld().spawnEntity(gPlayer.getPlayer().getLocation(),EntityType.TNT);
     	((TNTPrimed)tnt).setFuseTicks(8*20);
     	((TNTPrimed)tnt).setIsIncendiary(false);
     	sheep.addPassenger(tnt);

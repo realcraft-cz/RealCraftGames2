@@ -175,7 +175,7 @@ public class RageModeListeners implements Listener {
 			Player player = (Player)event.getEntity();
 			player.setGlowing(true);
 			player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,60,1),true);
-			player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW,40,1),true);
+			player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,40,1),true);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Games.getInstance(),new Runnable(){
 				@Override
 				public void run(){
@@ -286,7 +286,7 @@ public class RageModeListeners implements Listener {
                     if(game.getGamePlayer((Player)entity).getState() == GamePlayerState.SPECTATOR) continue;
                     ((Player)entity).setGlowing(true);
                     ((Player)entity).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,60,1),true);
-                    ((Player)entity).addPotionEffect(new PotionEffect(PotionEffectType.SLOW,40,1),true);
+                    ((Player)entity).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,40,1),true);
                     Bukkit.getScheduler().scheduleSyncDelayedTask(Games.getInstance(),new Runnable(){
 						@Override
 						public void run(){

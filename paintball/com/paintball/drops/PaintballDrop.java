@@ -79,7 +79,7 @@ public abstract class PaintballDrop implements Runnable, Listener {
 			if(location.getY() > this.location.getY()-1){
 				Particles.BLOCK_CRACK.display(Bukkit.createBlockData(Material.EMERALD_ORE),0.3f,0.5f,0.3f,0.0f,4,stand.getEyeLocation(),64);
 				if(stand.getTicksLived()%3 == 0) location.getWorld().playSound(location,Sound.ENTITY_CHICKEN_EGG,1f,1f);
-				if(stand.getTicksLived()%5 == 0) Particles.EXPLOSION_LARGE.display(0,0,0,0,1,stand.getEyeLocation(),128);
+				if(stand.getTicksLived()%5 == 0) Particles.EXPLOSION.display(0,0,0,0,1,stand.getEyeLocation(),128);
 			}
 			location.setYaw(location.getYaw()+10);
 			if(location.getY() > this.location.getY()-1) location.add(0,-0.1,0);
@@ -87,7 +87,7 @@ public abstract class PaintballDrop implements Runnable, Listener {
 
 			if(stand.getTicksLived() <= LIVETIME_TICKS) Bukkit.getScheduler().runTaskLater(Games.getInstance(),this,1);
 			else {
-				Particles.EXPLOSION_LARGE.display(0,0,0,0,1,stand.getEyeLocation(),64);
+				Particles.EXPLOSION.display(0,0,0,0,1,stand.getEyeLocation(),64);
 				this.clear();
 			}
 		}
@@ -101,7 +101,7 @@ public abstract class PaintballDrop implements Runnable, Listener {
 				if(gPlayer.getPlayer().getLocation().distanceSquared(stand.getEyeLocation().clone().add(0,-1,0)) < 3){
 					game.sendMessage(game.getTeams().getPlayerTeam(gPlayer).getType().getChatColor()+event.getPlayer().getName()+" "+this.getType().getMessage());
 					FireworkUtil.spawnFirework(stand.getEyeLocation(),FireworkEffect.Type.BALL,Color.LIME,false,false);
-					Particles.EXPLOSION_LARGE.display(0,0,0,0,1,stand.getEyeLocation(),64);
+					Particles.EXPLOSION.display(0,0,0,0,1,stand.getEyeLocation(),64);
 					Bukkit.getScheduler().runTaskLater(Games.getInstance(),new Runnable(){
 						@Override
 						public void run(){

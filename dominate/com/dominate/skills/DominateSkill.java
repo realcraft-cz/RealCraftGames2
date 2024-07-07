@@ -1,5 +1,9 @@
 package com.dominate.skills;
 
+import com.dominate.Dominate;
+import com.dominate.DominateUser;
+import com.games.Games;
+import com.games.player.GamePlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -10,14 +14,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
 import org.bukkit.scheduler.BukkitTask;
-
-import com.dominate.Dominate;
-import com.dominate.DominateUser;
-import com.games.Games;
-import com.games.player.GamePlayer;
 import realcraft.bukkit.utils.Title;
 
 public abstract class DominateSkill implements Listener, Runnable {
@@ -256,17 +254,17 @@ public abstract class DominateSkill implements Listener, Runnable {
 			ItemStack item = new ItemStack(this.getMaterial(),this.getAmount());
 			if(this == ARROW_FIRE){
 				PotionMeta potionMeta = (PotionMeta)item.getItemMeta();
-				potionMeta.setBasePotionData(new PotionData(PotionType.FIRE_RESISTANCE));
+				potionMeta.setBasePotionType(PotionType.FIRE_RESISTANCE);
 				item.setItemMeta(potionMeta);
 			}
 			else if(this == ARROW_EXPLOSIVE){
 				PotionMeta potionMeta = (PotionMeta)item.getItemMeta();
-				potionMeta.setBasePotionData(new PotionData(PotionType.WEAKNESS));
+				potionMeta.setBasePotionType(PotionType.WEAKNESS);
 				item.setItemMeta(potionMeta);
 			}
 			else if(this == ARROW_BLINDNESS){
 				PotionMeta potionMeta = (PotionMeta)item.getItemMeta();
-				potionMeta.setBasePotionData(new PotionData(PotionType.SPEED));
+				potionMeta.setBasePotionType(PotionType.SWIFTNESS);
 				item.setItemMeta(potionMeta);
 			}
 			return item;

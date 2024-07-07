@@ -4,12 +4,12 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.games.utils.SkinUtil;
 import com.games.utils.SkinUtil.Skin;
-import net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,6 +28,7 @@ import realcraft.bukkit.utils.ItemUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class GameSpectator implements Listener {
@@ -57,7 +58,23 @@ public class GameSpectator implements Listener {
 			public void onPacketSending(PacketEvent event){
 				if(event.getPacketType() == PacketType.Play.Server.PLAYER_INFO){
 					try {
-						UUID uuid = event.getPacket().getPlayerInfoDataLists().read(0).get(0).getProfile().getUUID();
+						List<PlayerInfoData> playerInfoDataList = event.getPacket().getPlayerInfoDataLists().read(0);
+
+						if (playerInfoDataList != null && !playerInfoDataList.isEmpty()) {
+							for (PlayerInfoData playerInfoData : playerInfoDataList) {
+								if (playerInfoData == null) {
+									return;
+								}
+								UUID uuid = playerInfoData.getProfile().getUUID();
+								// Do something with the UUID
+								System.out.println("Processing player with UUID: " + uuid);
+							}
+						} else {
+							// Handle the case where the list is empty or null
+							System.out.println("No PlayerInfoData available");
+						}
+
+						/*UUID uuid = event.getPacket().getPlayerInfoDataLists().read(0).getFirst().getProfileId();
 						Player player = Bukkit.getPlayer(uuid);
 						if(player != null && player.isOnline() && event.getPlayer().getUniqueId() != uuid){
 							GamePlayer gPlayer = game.getGamePlayer(player);
@@ -68,7 +85,7 @@ public class GameSpectator implements Listener {
 									event.setCancelled(true);
 								}
 							}
-						}
+						}*/
 					} catch (Exception e){
 						e.printStackTrace();
 					}

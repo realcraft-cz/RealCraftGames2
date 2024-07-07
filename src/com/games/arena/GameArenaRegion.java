@@ -6,7 +6,8 @@ import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.extent.clipboard.Clipboard;
-import com.sk89q.worldedit.extent.clipboard.io.BuiltInClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormat;
+import com.sk89q.worldedit.extent.clipboard.io.ClipboardFormats;
 import com.sk89q.worldedit.extent.clipboard.io.ClipboardReader;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.math.BlockVector2;
@@ -14,6 +15,7 @@ import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.block.BaseBlock;
 import org.bukkit.*;
 import org.bukkit.block.Biome;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.ChunkGenerator;
@@ -103,14 +105,14 @@ public class GameArenaRegion {
 	}
 
 	public boolean isLocationInside(BlockVector2 vector){
-		return (vector.getBlockX() >= this.getMinLocation().getBlockX() && vector.getBlockX() <= this.getMaxLocation().getBlockX()
-				&& vector.getBlockZ() >= this.getMinLocation().getBlockZ() && vector.getBlockZ() <= this.getMaxLocation().getBlockZ());
+		return (vector.x() >= this.getMinLocation().getBlockX() && vector.x() <= this.getMaxLocation().getBlockX()
+				&& vector.z() >= this.getMinLocation().getBlockZ() && vector.z() <= this.getMaxLocation().getBlockZ());
 	}
 
 	public boolean isLocationInsideClipboard(Location location){
-		return (location.getBlockX() >= regionMinPoint.getBlockX() && location.getBlockX() <= regionMaxPoint.getBlockX()
-				&& location.getBlockY() >= regionMinPoint.getBlockY() && location.getBlockY() <= regionMaxPoint.getBlockY()
-				&& location.getBlockZ() >= regionMinPoint.getBlockZ() && location.getBlockZ() <= regionMaxPoint.getBlockZ());
+		return (location.getBlockX() >= regionMinPoint.x() && location.getBlockX() <= regionMaxPoint.x()
+				&& location.getBlockY() >= regionMinPoint.y() && location.getBlockY() <= regionMaxPoint.y()
+				&& location.getBlockZ() >= regionMinPoint.z() && location.getBlockZ() <= regionMaxPoint.z());
 	}
 
 	public void createWorld() {
@@ -168,8 +170,11 @@ public class GameArenaRegion {
 
 	protected Clipboard _getClipboard() {
 		try {
-			ByteArrayInputStream bais = new ByteArrayInputStream(regionBytes);
-			ClipboardReader reader = BuiltInClipboardFormat.SPONGE_SCHEMATIC.getReader(bais);
+			ClipboardFormat format = ClipboardFormats.findByInputStream(() -> new ByteArrayInputStream(regionBytes));
+			if (format == null) {
+				throw new RuntimeException("Unsupported schematic format for map_id " + this.getArena().getId());
+			}
+			ClipboardReader reader = format.getReader(new ByteArrayInputStream(regionBytes));
 			Clipboard clipboard = reader.read();
 
 			this._initClipboardPoints(clipboard);
@@ -192,19 +197,23 @@ public class GameArenaRegion {
 		regionChunks = clipboard.getRegion().getChunks();
 	}
 
+	public boolean isEntityValidToClear(Entity entity) {
+		return !(entity instanceof Player);
+	}
+
 	public void clearEntities(){
 		if (regionChunks == null) {
 			return;
 		}
 
 		for(BlockVector2 coords : regionChunks){
-			coords = coords.add(-(regionMinPoint.getBlockX() >> 4),-(regionMinPoint.getBlockZ() >> 4));
+			coords = coords.add(-(regionMinPoint.x() >> 4),-(regionMinPoint.z() >> 4));
 			coords = coords.add((this.getBaseLocation().getBlockX() >> 4),(this.getBaseLocation().getBlockZ() >> 4));
-			coords = coords.add(BlockVector2.at((regionMinPoint.getBlockX() >> 4) - (this.getBaseLocation().getBlockX() >> 4),(regionMinPoint.getBlockZ() >> 4) - (this.getBaseLocation().getBlockZ() >> 4)));
-			Chunk chunk = this.getBaseLocation().getWorld().getChunkAt(coords.getBlockX(),coords.getBlockZ());
+			coords = coords.add(BlockVector2.at((regionMinPoint.x() >> 4) - (this.getBaseLocation().getBlockX() >> 4),(regionMinPoint.z() >> 4) - (this.getBaseLocation().getBlockZ() >> 4)));
+			Chunk chunk = this.getBaseLocation().getWorld().getChunkAt(coords.x(),coords.z());
 			if(!chunk.isLoaded()) chunk.load();
 			for(org.bukkit.entity.Entity entity : chunk.getEntities()){
-				if(!(entity instanceof Player)){
+				if (this.isEntityValidToClear(entity)) {
 					entity.remove();
 				}
 			}
@@ -238,21 +247,23 @@ public class GameArenaRegion {
 				Bukkit.getScheduler().runTask(RealCraft.getInstance(),new Runnable(){
 					@Override
 					public void run(){
+						editSession.close();
 						for(Chunk chunk : location.getWorld().getLoadedChunks()) chunk.unload();
 						arena.setLoaded(true);
 						Bukkit.getServer().getPluginManager().callEvent(new GameRegionLoadEvent(GameArenaRegion.this.getArena().getGame(),GameArenaRegion.this.getArena()));
 					}
 				});
 			} catch (InterruptedException | SecurityException | IllegalArgumentException e){
+				editSession.close();
 				e.printStackTrace();
 			}
 		}
 
 		private void startStage(int stage) throws InterruptedException, SecurityException, IllegalArgumentException {
-			int maxBlocksPerRun = 16 * 16 * clipboard.getDimensions().getBlockY();
-			for(int x=clipboard.getRegion().getMinimumPoint().getBlockX();x<=clipboard.getRegion().getMaximumPoint().getBlockX();x++){
-				for(int y=clipboard.getRegion().getMinimumPoint().getBlockY();y<=clipboard.getRegion().getMaximumPoint().getBlockY();y++){
-					for(int z=clipboard.getRegion().getMinimumPoint().getBlockZ();z<=clipboard.getRegion().getMaximumPoint().getBlockZ();z++){
+			int maxBlocksPerRun = 16 * 16 * clipboard.getDimensions().y();
+			for(int x=clipboard.getRegion().getMinimumPoint().x();x<=clipboard.getRegion().getMaximumPoint().x();x++){
+				for(int y=clipboard.getRegion().getMinimumPoint().y();y<=clipboard.getRegion().getMaximumPoint().y();y++){
+					for(int z=clipboard.getRegion().getMinimumPoint().z();z<=clipboard.getRegion().getMaximumPoint().z();z++){
 						BlockVector3 pt = BlockVector3.at(x,y,z);
 						BaseBlock block = clipboard.getFullBlock(pt);
 						boolean place = false;
@@ -260,7 +271,7 @@ public class GameArenaRegion {
 						else if(stage == 2 && shouldPlaceLast(BukkitAdapter.adapt(block.getBlockType()))) place = true;
 						else if(stage == 3 && shouldPlaceFinal(BukkitAdapter.adapt(block.getBlockType()))) place = true;
 						if(place){
-							BlockVector3 pos = pt.add(-clipboard.getRegion().getMinimumPoint().getBlockX(),-clipboard.getRegion().getMinimumPoint().getBlockY(),-clipboard.getRegion().getMinimumPoint().getBlockZ());
+							BlockVector3 pos = pt.add(-clipboard.getRegion().getMinimumPoint().x(),-clipboard.getRegion().getMinimumPoint().y(),-clipboard.getRegion().getMinimumPoint().z());
 							pos = pos.add(location.getBlockX(),location.getBlockY(),location.getBlockZ());
 							pos = pos.add(clipboard.getRegion().getMinimumPoint().subtract(BlockVector3.at(location.getBlockX(),location.getBlockY(),location.getBlockZ())));
 							blocks.put(pos,block);
@@ -287,8 +298,8 @@ public class GameArenaRegion {
 				public Void call(){
 					for(java.util.Map.Entry<BlockVector3,BaseBlock> map : blocks.entrySet()){
 						if(!map.getValue().hasNbtData()){
-							location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setType(BukkitAdapter.adapt(map.getValue().getBlockType()),false);
-							location.getWorld().getBlockAt(map.getKey().getBlockX(),map.getKey().getBlockY(),map.getKey().getBlockZ()).setBlockData(BukkitAdapter.adapt(map.getValue()),false);
+							location.getWorld().getBlockAt(map.getKey().x(),map.getKey().y(),map.getKey().z()).setType(BukkitAdapter.adapt(map.getValue().getBlockType()),false);
+							location.getWorld().getBlockAt(map.getKey().x(),map.getKey().y(),map.getKey().z()).setBlockData(BukkitAdapter.adapt(map.getValue()),false);
 						} else {
 							editSession.smartSetBlock(map.getKey(),map.getValue());
 						}
@@ -326,7 +337,7 @@ public class GameArenaRegion {
 		shouldPlaceLast.add(Material.RED_BED);
 		shouldPlaceLast.add(Material.WHITE_BED);
 		shouldPlaceLast.add(Material.YELLOW_BED);
-		shouldPlaceLast.add(Material.GRASS);
+		shouldPlaceLast.add(Material.SHORT_GRASS);
 		shouldPlaceLast.add(Material.TALL_GRASS);
 		shouldPlaceLast.add(Material.DEAD_BUSH);
 		shouldPlaceLast.add(Material.SUNFLOWER);

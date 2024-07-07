@@ -15,6 +15,8 @@ import java.util.ArrayList;
 
 public class RaceArena extends GameArena {
 
+	private RaceArenaRegion region = new RaceArenaRegion(this);
+
 	private RaceType type;
 	private int rounds;
 	private ArrayList<Location> spawns = new ArrayList<Location>();
@@ -47,6 +49,10 @@ public class RaceArena extends GameArena {
 
 	public RaceBarrier getBarrier(){
 		return barrier;
+	}
+
+	public RaceArenaRegion getRegion(){
+		return region;
 	}
 
 	@Override

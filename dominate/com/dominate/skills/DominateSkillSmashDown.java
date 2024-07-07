@@ -67,7 +67,7 @@ public class DominateSkillSmashDown extends DominateSkill {
 			started = -2;
 			if(!this.getGame().getTeams().isLocationInSpawn(this.getPlayer().getLocation())){
 				this.getPlayer().getWorld().playSound(this.getPlayer().getLocation(),Sound.ENTITY_DRAGON_FIREBALL_EXPLODE,2f,1f);
-				Particles.EXPLOSION_LARGE.display(2.0f,1.0f,2.0f,0f,4,this.getPlayer().getLocation(),128);
+				Particles.EXPLOSION.display(2.0f,1.0f,2.0f,0f,4,this.getPlayer().getLocation(),128);
 				List<Entity> entities = this.getPlayer().getNearbyEntities(3.0,3.0,3.0);
 				for(Entity victim : entities){
 	                if(!(victim instanceof Player)) continue;

@@ -5,7 +5,6 @@ import com.dominate.skills.DominateSkill.DominateSkillType;
 import com.games.Games;
 import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
-import com.games.utils.Glow;
 import org.bukkit.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
@@ -241,35 +240,35 @@ public class DominateKit implements Listener {
 			if(this == ARCHER){
 				item = new ItemStack(Material.CHAINMAIL_HELMET);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_PROJECTILE,1,false);
+				meta.addEnchant(Enchantment.PROJECTILE_PROTECTION,1,false);
 				item.setItemMeta(meta);
 			}
 			else if(this == FROST){
 				item = new ItemStack(Material.LEATHER_HELMET,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.WHITE);
-				letherMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
+				letherMeta.addEnchant(Enchantment.PROTECTION,2,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == PYROMAN){
 				item = new ItemStack(Material.LEATHER_HELMET,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.ORANGE);
-				letherMeta.addEnchant(Enchantment.PROTECTION_FIRE,4,false);
+				letherMeta.addEnchant(Enchantment.FIRE_PROTECTION,4,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == CONFUSER){
 				item = new ItemStack(Material.LEATHER_HELMET,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.BLACK);
-				letherMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
+				letherMeta.addEnchant(Enchantment.PROTECTION,2,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
 				item = new ItemStack(Material.GOLDEN_HELMET);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,1,false);
-				meta.addEnchant(Enchantment.DURABILITY,3,false);
+				meta.addEnchant(Enchantment.PROTECTION,1,false);
+				meta.addEnchant(Enchantment.UNBREAKING,3,false);
 				item.setItemMeta(meta);
 			}
 			return item;
@@ -282,34 +281,34 @@ public class DominateKit implements Listener {
 			if(this == ARCHER){
 				item = new ItemStack(Material.CHAINMAIL_CHESTPLATE);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_PROJECTILE,2,false);
+				meta.addEnchant(Enchantment.PROJECTILE_PROTECTION,2,false);
 				item.setItemMeta(meta);
 			}
 			else if(this == FROST){
 				item = new ItemStack(Material.IRON_CHESTPLATE);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
+				meta.addEnchant(Enchantment.PROTECTION,2,false);
 				item.setItemMeta(meta);
 			}
 			else if(this == PYROMAN){
 				item = new ItemStack(Material.LEATHER_CHESTPLATE,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.ORANGE);
-				letherMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,3,false);
+				letherMeta.addEnchant(Enchantment.PROTECTION,3,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == CONFUSER){
 				item = new ItemStack(Material.LEATHER_CHESTPLATE,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.GRAY);
-				letherMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,3,false);
+				letherMeta.addEnchant(Enchantment.PROTECTION,3,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
 				item = new ItemStack(Material.GOLDEN_CHESTPLATE);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
-				meta.addEnchant(Enchantment.DURABILITY,3,false);
+				meta.addEnchant(Enchantment.PROTECTION,2,false);
+				meta.addEnchant(Enchantment.UNBREAKING,3,false);
 				item.setItemMeta(meta);
 			}
 			return item;
@@ -322,35 +321,35 @@ public class DominateKit implements Listener {
 			if(this == ARCHER){
 				item = new ItemStack(Material.CHAINMAIL_LEGGINGS);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_PROJECTILE,2,false);
+				meta.addEnchant(Enchantment.PROJECTILE_PROTECTION,2,false);
 				item.setItemMeta(meta);
 			}
 			else if(this == FROST){
 				item = new ItemStack(Material.LEATHER_LEGGINGS,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.WHITE);
-				letherMeta.addEnchant(Enchantment.PROTECTION_FIRE,3,false);
+				letherMeta.addEnchant(Enchantment.FIRE_PROTECTION,3,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == PYROMAN){
 				item = new ItemStack(Material.LEATHER_LEGGINGS,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.ORANGE);
-				letherMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,1,false);
+				letherMeta.addEnchant(Enchantment.PROTECTION,1,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == CONFUSER){
 				item = new ItemStack(Material.LEATHER_LEGGINGS,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.BLACK);
-				letherMeta.addEnchant(Enchantment.PROTECTION_FIRE,1,false);
+				letherMeta.addEnchant(Enchantment.FIRE_PROTECTION,1,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
 				item = new ItemStack(Material.GOLDEN_LEGGINGS);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_FIRE,1,false);
-				meta.addEnchant(Enchantment.DURABILITY,3,false);
+				meta.addEnchant(Enchantment.FIRE_PROTECTION,1,false);
+				meta.addEnchant(Enchantment.UNBREAKING,3,false);
 				item.setItemMeta(meta);
 			}
 			return item;
@@ -363,34 +362,33 @@ public class DominateKit implements Listener {
 			if(this == ARCHER){
 				item = new ItemStack(Material.CHAINMAIL_BOOTS);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_PROJECTILE,2,false);
+				meta.addEnchant(Enchantment.PROJECTILE_PROTECTION,2,false);
 				item.setItemMeta(meta);
 			}
 			else if(this == FROST){
 				item = new ItemStack(Material.IRON_BOOTS,1);
 		        meta = item.getItemMeta();
-		        meta.addEnchant(Glow.getGlow(),1,true);
-		        meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
+		        meta.addEnchant(Enchantment.PROTECTION,2,false);
 		        item.setItemMeta(meta);
 			}
 			else if(this == PYROMAN){
 				item = new ItemStack(Material.GOLDEN_BOOTS);
 				meta = item.getItemMeta();
-		        meta.addEnchant(Enchantment.PROTECTION_FIRE,4,false);
+		        meta.addEnchant(Enchantment.FIRE_PROTECTION,4,false);
 		        item.setItemMeta(meta);
 			}
 			else if(this == CONFUSER){
 				item = new ItemStack(Material.LEATHER_BOOTS,1);
 				letherMeta = (LeatherArmorMeta) item.getItemMeta();
 				letherMeta.setColor(Color.GRAY);
-				letherMeta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
+				letherMeta.addEnchant(Enchantment.PROTECTION,2,false);
 		        item.setItemMeta(letherMeta);
 			}
 			else if(this == BOOMER){
 				item = new ItemStack(Material.GOLDEN_BOOTS);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL,2,false);
-				meta.addEnchant(Enchantment.DURABILITY,3,false);
+				meta.addEnchant(Enchantment.PROTECTION,2,false);
+				meta.addEnchant(Enchantment.UNBREAKING,3,false);
 				item.setItemMeta(meta);
 			}
 			return item;
@@ -402,15 +400,15 @@ public class DominateKit implements Listener {
 			if(this == ARCHER){
 				item = new ItemStack(Material.WOODEN_SWORD);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.DAMAGE_ALL,1,false);
-				meta.addEnchant(Enchantment.DURABILITY,3,false);
+				meta.addEnchant(Enchantment.SHARPNESS,1,false);
+				meta.addEnchant(Enchantment.UNBREAKING,3,false);
 				meta.addEnchant(Enchantment.KNOCKBACK,1,false);
 				item.setItemMeta(meta);
 			}
 			else if(this == FROST){
 				item = new ItemStack(Material.IRON_SWORD);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.DAMAGE_ALL,1,false);
+				meta.addEnchant(Enchantment.SHARPNESS,1,false);
 				item.setItemMeta(meta);
 			}
 			else if(this == PYROMAN){
@@ -434,7 +432,7 @@ public class DominateKit implements Listener {
 			if(this == ARCHER){
 				item = new ItemStack(Material.BOW);
 				meta = item.getItemMeta();
-				meta.addEnchant(Enchantment.DAMAGE_ALL,2,false);
+				meta.addEnchant(Enchantment.SHARPNESS,2,false);
 				meta.addEnchant(Enchantment.KNOCKBACK,1,false);
 				item.setItemMeta(meta);
 			}

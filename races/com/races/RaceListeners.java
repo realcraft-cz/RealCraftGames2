@@ -12,7 +12,6 @@ import com.games.player.GamePlayer;
 import com.games.player.GamePlayerState;
 import com.races.RaceCheckpoint.RaceCheckpointType;
 import com.races.arenas.RaceArena.RaceBarrier;
-import net.minecraft.network.protocol.game.PacketPlayInSteerVehicle;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.EntityType;
@@ -49,10 +48,14 @@ public class RaceListeners implements Listener {
 			@Override
 			public void onPacketReceiving(PacketEvent event){
 				if(event.getPacketType() == PacketType.Play.Client.STEER_VEHICLE){
-					PacketPlayInSteerVehicle packet = (PacketPlayInSteerVehicle) event.getPacket().getHandle();
 					GamePlayer gPlayer = game.getGamePlayer(event.getPlayer());
-					if(packet.d() && gPlayer.getState() != GamePlayerState.SPECTATOR) event.setCancelled(true);
-					if(Math.abs(packet.b()) > 0.0001 || Math.abs(packet.c()) > 0.0001) game.getUser(game.getGamePlayer(event.getPlayer())).setLastKeyAction();
+
+					float sideways = event.getPacket().getFloat().read(0);
+					float forward = event.getPacket().getFloat().read(1);
+					boolean unmount = event.getPacket().getBooleans().read(1);
+
+					if(unmount && gPlayer.getState() != GamePlayerState.SPECTATOR) event.setCancelled(true);
+					if(Math.abs(sideways) > 0.0001 || Math.abs(forward) > 0.0001) game.getUser(gPlayer).setLastKeyAction();
 				}
 			}
 		});
@@ -257,7 +260,7 @@ public class RaceListeners implements Listener {
 	@EventHandler
 	public void VehicleEntityCollisionEvent(VehicleEntityCollisionEvent event){
 		if(event.getVehicle().getType() == EntityType.BOAT && event.getEntity().getType() == EntityType.PLAYER){
-			if(!event.getEntity().getVehicle().equals(event.getVehicle())){
+			if(!event.getVehicle().equals(event.getEntity().getVehicle())){
 				event.setCancelled(true);
 			}
 		}

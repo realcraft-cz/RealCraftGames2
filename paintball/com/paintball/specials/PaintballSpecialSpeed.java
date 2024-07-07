@@ -18,7 +18,7 @@ public class PaintballSpecialSpeed extends PaintballSpecial {
 	private Location location;
 
 	public PaintballSpecialSpeed(Paintball game,int duration,Location location){
-		super(PaintballSpecialType.JUMP,game);
+		super(PaintballSpecialType.SPEED,game);
 		this.duration = duration;
 		this.location = location;
 	}

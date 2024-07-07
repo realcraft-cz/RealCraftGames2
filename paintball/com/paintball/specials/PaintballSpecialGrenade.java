@@ -57,7 +57,7 @@ public class PaintballSpecialGrenade extends PaintballSpecial {
 								        snowball.setVelocity(velocity);
 					                }
 								}
-								Particles.EXPLOSION_LARGE.display(0,0,0,0,1,grenade.getLocation(),128);
+								Particles.EXPLOSION.display(0,0,0,0,1,grenade.getLocation(),128);
 								grenade.getWorld().playSound(grenade.getLocation(),Sound.ENTITY_GENERIC_EXPLODE,1f,2f);
 								grenade.remove();
 							}

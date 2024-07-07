@@ -5,10 +5,10 @@ import com.dominate.DominateUser;
 import com.games.Games;
 import com.games.game.GameState;
 import com.games.player.GamePlayerState;
-import com.games.utils.Glow;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.block.Action;
@@ -16,6 +16,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
@@ -66,7 +67,7 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 	public void ProjectileLaunchEvent(ProjectileLaunchEvent event){
 		Projectile entity = event.getEntity();
 		if(entity.getShooter() instanceof Player && ((Player)entity.getShooter()).equals(this.getPlayer())){
-			if(entity.getType() == EntityType.ARROW && ((Arrow)entity).getBasePotionData().getType() == PotionType.SPEED){
+			if(entity.getType() == EntityType.ARROW && ((Arrow)entity).getBasePotionType() == PotionType.SWIFTNESS){
 				if(!this.trigger(entity)) event.setCancelled(true);
 			}
 		}
@@ -84,9 +85,9 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 	                if(!(victim instanceof Player)) continue;
 	                if(this.getGame().getGamePlayer((Player)victim).getState() == GamePlayerState.SPECTATOR) continue;
 	                if(this.getGame().getTeams().getPlayerTeam(this.getGame().getGamePlayer((Player)victim)) == this.getGame().getTeams().getPlayerTeam(this.getGamePlayer())) continue;
-	                ((Player)victim).addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION,8*20,1),true);
+	                ((Player)victim).addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA,8*20,1),true);
 	                ((Player)victim).addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS,5*20,1),true);
-	                ((Player)victim).addPotionEffect(new PotionEffect(PotionEffectType.SLOW,4*20,2),true);
+	                ((Player)victim).addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,4*20,2),true);
 	                ((Player)victim).addPotionEffect(new PotionEffect(PotionEffectType.GLOWING,5*20,1),true);
 				}
 			}
@@ -145,7 +146,8 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.addEnchant(Glow.getGlow(),1,true);
+			meta.addEnchant(Enchantment.LURE,1,true);
+			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		} else {
@@ -155,7 +157,7 @@ public class DominateSkillArrowBlindness extends DominateSkill {
 			}
 			item = this.getPlayer().getInventory().getItem(1);
 			meta = item.getItemMeta();
-			meta.removeEnchant(Glow.getGlow());
+			meta.removeEnchant(Enchantment.LURE);
 			item.setItemMeta(meta);
 			this.getPlayer().getInventory().setItem(1,item);
 		}

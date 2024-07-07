@@ -291,7 +291,7 @@ public class BedWarsListeners implements Listener {
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityShootBowEvent(EntityShootBowEvent event){
-		int level = event.getBow().getEnchantmentLevel(Enchantment.DURABILITY);
+		int level = event.getBow().getEnchantmentLevel(Enchantment.UNBREAKING);
 		int damage = 9;
 		if(level == 1) damage = 8;
 		else if(level == 2) damage = 7;
@@ -307,7 +307,7 @@ public class BedWarsListeners implements Listener {
 
 	@EventHandler(ignoreCancelled=true)
 	public void EntityExplodeEvent(EntityExplodeEvent event){
-		if(event.getEntityType() == EntityType.PRIMED_TNT){
+		if(event.getEntityType() == EntityType.TNT){
 			List<Block> blocks = new ArrayList<Block>(event.blockList());
 			for(Block block : blocks){
 				if(game.getArena().getRegion().isLocationInside(block.getLocation()) && !game.getArena().isPlayerBlock(block)){
